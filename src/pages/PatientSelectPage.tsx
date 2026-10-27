@@ -114,7 +114,7 @@ export const PatientSelectPage: React.FC<PatientSelectPageProps> = ({
   }, [cases]);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 py-4 px-4 sm:px-6">
+    <div className="max-w-6xl mx-auto space-y-6 py-4 sm:px-6">
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-700/80 relative overflow-hidden">
         <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-10 pointer-events-none flex items-center justify-end pr-8">
@@ -339,11 +339,11 @@ export const PatientSelectPage: React.FC<PatientSelectPageProps> = ({
               <div>
                 {/* Top Row: Case ID, Demographics, Severity Tag */}
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition">
                       {c.case_id.replace('CUSTOM-', 'C*')}
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <div className="font-bold text-sm text-slate-900 flex items-center gap-1.5 flex-wrap">
                         <span className="group-hover:text-brand-800 transition">{p.name}</span>
                         <span className="text-xs font-normal text-slate-500">
@@ -355,7 +355,7 @@ export const PatientSelectPage: React.FC<PatientSelectPageProps> = ({
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
+                      <div className="text-[11px] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
                         <span className="flex items-center gap-0.5">
                           <MapPin className="w-3 h-3 text-slate-400" />
                           {enc.ambient_context.location}

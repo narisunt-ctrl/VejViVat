@@ -50,7 +50,7 @@ export const ElementRadarChart: React.FC<ElementRadarChartProps> = ({
       {/* Radar Chart */}
       <div className="h-64 w-full my-1">
         <ResponsiveContainer width="100%" height="100%">
-          <RadarChart cx="50%" cy="50%" outerRadius="75%" data={chartData}>
+          <RadarChart cx="50%" cy="50%" outerRadius="65%" data={chartData}>
             <PolarGrid stroke="#e2e8f0" strokeDasharray="3 3" />
             <PolarAngleAxis
               dataKey="element"

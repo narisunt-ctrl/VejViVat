@@ -7,15 +7,16 @@ interface FloatingVoiceButtonProps {
 
 export const FloatingVoiceButton: React.FC<FloatingVoiceButtonProps> = ({ onClick }) => {
   return (
-    <aside aria-label="ผู้ช่วยเสียง AI" className="fixed bottom-5 right-5 z-40 no-print">
+    <aside aria-label="ผู้ช่วยเสียง AI" className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-40 no-print">
       <div className="relative group">
         {/* Ambient pulse glow */}
         <div className="absolute -inset-1 bg-gradient-to-r from-teal-500 via-emerald-400 to-indigo-500 rounded-full blur-md opacity-70 group-hover:opacity-100 animate-pulse transition duration-500 pointer-events-none" />
 
         <button
           onClick={onClick}
-          className="relative flex items-center gap-2.5 bg-gradient-to-r from-slate-950 via-teal-950 to-slate-900 border-2 border-teal-400/80 text-white pl-3.5 pr-4 py-2.5 rounded-full shadow-2xl hover:shadow-teal-500/30 transition-all duration-300 transform group-hover:scale-105 active:scale-95 cursor-pointer"
+          className="relative flex items-center gap-2.5 bg-gradient-to-r from-slate-950 via-teal-950 to-slate-900 border-2 border-teal-400/80 text-white p-2.5 sm:pl-3.5 sm:pr-4 sm:py-2.5 rounded-full shadow-2xl hover:shadow-teal-500/30 transition-all duration-300 transform group-hover:scale-105 active:scale-95 cursor-pointer"
           title="คลิกเพื่อเปิดระบบดักจับเสียงคนไข้ AI Speech-to-Text"
+          aria-label="เปิดผู้ช่วยเสียง AI Speech-to-Text"
         >
           {/* Animated pulsing mic badge */}
           <div className="relative flex items-center justify-center">
@@ -25,7 +26,7 @@ export const FloatingVoiceButton: React.FC<FloatingVoiceButtonProps> = ({ onClic
             </div>
           </div>
 
-          <div className="text-left">
+          <div className="hidden sm:block text-left">
             <div className="flex items-center gap-1.5">
               <span className="font-black text-xs text-white tracking-tight">
                 AI Speech-to-Text

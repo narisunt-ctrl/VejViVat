@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Activity, AlertCircle, FileText, ChevronRight, UserPlus, Sparkles, Mic } from 'lucide-react';
+import { User, Activity, AlertCircle, FileText, ChevronRight, UserPlus, Sparkles, Mic, Menu } from 'lucide-react';
 import { SyntheticCase } from '../../types/patient';
 import { WeatherWidget } from './WeatherWidget';
 import teamLogo from '@/assets/team-logo.png';
@@ -10,6 +10,7 @@ interface NavbarProps {
   onOpenIntake?: () => void;
   onOpenVoiceAssistant?: () => void;
   onWeatherUpdate?: (weather: any) => void;
+  onOpenMenu?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -18,21 +19,32 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenIntake,
   onOpenVoiceAssistant,
   onWeatherUpdate,
+  onOpenMenu,
 }) => {
   const p = currentCase.patient_info;
   const v = currentCase.current_encounter.vitals;
 
   return (
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm no-print">
-      <div className="px-4 sm:px-6 py-2.5 flex items-center justify-between gap-4">
+      <div className="px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Patient Ribbon + Active Case Selector */}
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          {onOpenMenu && (
+            <button
+              onClick={onOpenMenu}
+              className="lg:hidden shrink-0 p-2 -ml-1 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+              title="เปิดเมนู"
+              aria-label="เปิดเมนู"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          )}
           <button
             onClick={onSelectCaseClick}
-            className="flex items-center gap-2.5 bg-slate-50/90 hover:bg-brand-50/80 border border-slate-200 hover:border-brand-300 rounded-xl px-3 py-1.5 transition-all text-left group shadow-xs active:scale-[0.99]"
+            className="min-w-0 flex items-center gap-2.5 bg-slate-50/90 hover:bg-brand-50/80 border border-slate-200 hover:border-brand-300 rounded-xl px-3 py-1.5 transition-all text-left group shadow-xs active:scale-[0.99]"
             title="คลิกเพื่อสลับเคสผู้ป่วย (Switch Patient)"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-700 to-teal-800 text-white flex items-center justify-center font-bold text-xs shadow-sm ring-1 ring-brand-900/10">
+            <div className="w-8 h-8 shrink-0 rounded-lg bg-gradient-to-br from-brand-700 to-teal-800 text-white flex items-center justify-center font-bold text-xs shadow-sm ring-1 ring-brand-900/10">
               {currentCase.case_id}
             </div>
             <div className="min-w-0">
@@ -41,11 +53,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="text-[11px] text-slate-500 shrink-0">
                   ({p.gender}, {p.age} ปี)
                 </span>
-                <span className="text-[10px] bg-slate-200/80 text-slate-700 font-mono px-1 rounded shrink-0">
+                <span className="hidden sm:inline text-[10px] bg-slate-200/80 text-slate-700 font-mono px-1 rounded shrink-0">
                   {p.hn}
                 </span>
               </div>
-              <div className="text-[11px] text-slate-500 flex items-center gap-2 truncate">
+              <div className="hidden sm:flex text-[11px] text-slate-500 items-center gap-2 truncate">
                 <span className="truncate">ภูมิลำเนา: {p.province}</span>
                 <span>•</span>
                 <span className="text-brand-800 font-medium shrink-0">ธาตุกำเนิด: {p.birth_element}</span>
@@ -70,11 +82,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Right: Voice STT + New Patient CTA + Weather & Team Branding */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
           {onOpenVoiceAssistant && (
             <button
               onClick={onOpenVoiceAssistant}
-              className="inline-flex items-center gap-1.5 bg-gradient-to-r from-teal-900 via-slate-900 to-indigo-950 border border-teal-400/80 hover:border-teal-300 text-teal-200 hover:text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow-sm hover:shadow-teal-500/25 transition active:scale-95 group cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-1.5 bg-gradient-to-r from-teal-900 via-slate-900 to-indigo-950 border border-teal-400/80 hover:border-teal-300 text-teal-200 hover:text-white font-bold px-3 py-1.5 rounded-xl text-xs shadow-sm hover:shadow-teal-500/25 transition active:scale-95 group cursor-pointer"
               title="เปิดระบบดักจับเสียงคนไข้บอกอาการ (Speech-to-Text Model)"
             >
               <div className="relative flex items-center justify-center">
@@ -102,15 +114,17 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
 
           {/* Live Open-Meteo Weather */}
+          <div className="hidden xl:block">
           <WeatherWidget
             latitude={currentCase.current_encounter.ambient_context.latitude}
             longitude={currentCase.current_encounter.ambient_context.longitude}
             locationName={currentCase.current_encounter.ambient_context.location}
             onWeatherLoaded={onWeatherUpdate}
           />
+          </div>
 
           {/* Subtle Team Crest in Header */}
-          <div className="hidden md:flex items-center gap-1.5 pl-2 border-l border-slate-200">
+          <div className="hidden xl:flex items-center gap-1.5 pl-2 border-l border-slate-200">
             <div className="w-7 h-7 rounded-lg overflow-hidden bg-slate-900 p-0.5 border border-amber-500/30 shadow-xs">
               <img src={teamLogo} alt="VejVivat" className="w-full h-full object-contain" />
             </div>
