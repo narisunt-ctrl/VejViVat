@@ -28,8 +28,14 @@ export const App: React.FC = () => {
   const [cases, setCases] = useState<SyntheticCase[]>(() => MockDataService.getCases());
   const [selectedCaseId, setSelectedCaseId] = useState<string>('C01');
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState<boolean>(false);
   const [isIntakeOpen, setIsIntakeOpen] = useState<boolean>(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState<boolean>(false);
+
+  // Close the mobile drawer whenever the route changes
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [location.pathname]);
 
   const currentCase = cases.find((c) => c.case_id === selectedCaseId) || cases[0];
 
@@ -70,7 +76,12 @@ export const App: React.FC = () => {
         <Sidebar
           collapsed={sidebarCollapsed}
           onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-          onOpenIntake={() => setIsIntakeOpen(true)}
+          mobileOpen={mobileNavOpen}
+          onCloseMobile={() => setMobileNavOpen(false)}
+          onOpenIntake={() => {
+            setMobileNavOpen(false);
+            setIsIntakeOpen(true);
+          }}
           casesCount={cases.length}
         />
 
@@ -82,10 +93,11 @@ export const App: React.FC = () => {
             onSelectCaseClick={() => navigate('/patients')}
             onOpenIntake={() => setIsIntakeOpen(true)}
             onOpenVoiceAssistant={() => setIsVoiceModalOpen(true)}
+            onOpenMenu={() => setMobileNavOpen(true)}
           />
 
           {/* Page Routing */}
-          <main className="flex-1 p-3 sm:p-6 pb-12">
+          <main className="flex-1 px-4 py-3 sm:p-6 pb-28 sm:pb-28">
             <Routes>
               <Route
                 path="/"

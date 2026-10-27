@@ -31,7 +31,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenIntake }) => {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState<boolean>(false);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-10 py-6 px-4 sm:px-6">
+    <div className="max-w-6xl mx-auto space-y-10 py-6 sm:px-6">
       {/* Hero Section with VejVivat Team Branding & Crest */}
       <div className="text-center space-y-5 max-w-3xl mx-auto pt-4">
         {/* Team Logo Badge */}

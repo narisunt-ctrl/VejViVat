@@ -206,9 +206,9 @@ export const PrescribePage: React.FC<PrescribePageProps> = ({ currentCase }) => 
   const vitals = currentCase.current_encounter.vitals;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-5 py-4 px-4 sm:px-6">
+    <div className="max-w-7xl mx-auto space-y-5 py-4 sm:px-6">
       {/* Top Navigation & Stepper */}
-      <div className="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-soft flex items-center justify-between text-xs">
+      <div className="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-soft flex flex-wrap items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <button
             onClick={() => navigate('/smutthan')}
@@ -428,9 +428,9 @@ export const PrescribePage: React.FC<PrescribePageProps> = ({ currentCase }) => 
         />
       ) : (
         /* 3-Column Clinical Prescribing Grid */
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
           {/* Column 1 (Left 3 cols): Active Medications & Chronic Diseases */}
-          <div className="lg:col-span-3 space-y-4">
+          <div className="xl:col-span-3 space-y-4">
             <PatientActiveMeds
               patient={currentCase.patient_info}
               medications={activeMeds}
@@ -441,7 +441,7 @@ export const PrescribePage: React.FC<PrescribePageProps> = ({ currentCase }) => 
           </div>
 
         {/* Column 2 (Middle 5 cols): Formulary Catalog & Prescribing Form */}
-        <div className="lg:col-span-5 space-y-4">
+        <div className="xl:col-span-5 space-y-4">
           {/* AI Recommended Herbs Spotlight Card */}
           <div className="bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 text-white rounded-2xl p-4 border border-emerald-400/30 shadow-soft space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-emerald-400/20">
@@ -554,7 +554,7 @@ export const PrescribePage: React.FC<PrescribePageProps> = ({ currentCase }) => 
         </div>
 
         {/* Column 3 (Right 4 cols): Real-Time HDI Alerts & Prescription Cart */}
-        <div className="lg:col-span-4 space-y-4">
+        <div className="xl:col-span-4 space-y-4">
           {/* Live Alerts for Currently Selected Herb */}
           <InteractionAlerts interactions={liveInteractions} />
 

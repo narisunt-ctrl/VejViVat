@@ -99,7 +99,7 @@ export const PrescriptionPrintPage: React.FC<PrescriptionPrintPageProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 py-4 px-4 sm:px-6">
+    <div className="max-w-4xl mx-auto space-y-6 py-4 sm:px-6">
       {/* Top Action Bar (hidden when printing) */}
       <div className="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-soft flex flex-wrap items-center justify-between gap-3 text-xs no-print">
         <button

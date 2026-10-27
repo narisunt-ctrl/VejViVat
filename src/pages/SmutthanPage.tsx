@@ -194,20 +194,20 @@ export const SmutthanPage: React.FC<SmutthanPageProps> = ({
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 py-4 px-4 sm:px-6">
+    <div className="max-w-6xl mx-auto space-y-6 py-4 sm:px-6">
       {/* Stepper Navigation */}
-      <div className="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-soft flex items-center justify-between text-xs">
-        <div className="flex items-center gap-3">
+      <div className="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-soft flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="flex items-center gap-2 font-bold text-brand-800 bg-brand-50 px-3 py-1 rounded-xl border border-brand-200">
             <span className="w-5 h-5 rounded-full bg-brand-700 text-white flex items-center justify-center text-[10px]">
               1
             </span>
             <span>ประเมินสมุฏฐานวินิจฉัย (Smutthan Engine)</span>
           </div>
-          <span className="text-slate-300 hidden sm:inline">→</span>
-          <span className="text-slate-400 hidden sm:inline">2. สั่งยาแผนไทย & ตรวจ HDI</span>
-          <span className="text-slate-300 hidden sm:inline">→</span>
-          <span className="text-slate-400 hidden sm:inline">3. ยืนยันใบสั่งยา & ฉลากยา</span>
+          <span className="text-slate-300 hidden xl:inline">→</span>
+          <span className="text-slate-400 hidden xl:inline">2. สั่งยาแผนไทย & ตรวจ HDI</span>
+          <span className="text-slate-300 hidden xl:inline">→</span>
+          <span className="text-slate-400 hidden xl:inline">3. ยืนยันใบสั่งยา & ฉลากยา</span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -281,9 +281,9 @@ export const SmutthanPage: React.FC<SmutthanPageProps> = ({
       )}
 
       {/* Main Content Layout (2 Columns) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
         {/* Left Column (7 cols): Radar Chart & Explainability */}
-        <div className="lg:col-span-7 space-y-4">
+        <div className="xl:col-span-7 space-y-4">
           {/* Radar Chart */}
           <ElementRadarChart
             scores={analysis.scores}
@@ -363,7 +363,7 @@ export const SmutthanPage: React.FC<SmutthanPageProps> = ({
         </div>
 
         {/* Right Column (5 cols): Vitals & Patient Context */}
-        <div className="lg:col-span-5 space-y-4">
+        <div className="xl:col-span-5 space-y-4">
           {/* Spotlight Hero: AI Speech-to-Text Model */}
           <VoiceSymptomRecorder
             variant="hero"
