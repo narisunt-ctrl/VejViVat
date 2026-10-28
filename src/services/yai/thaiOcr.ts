@@ -120,4 +120,6 @@ export const OCR_STATUS_TH: Record<string, string> = {
   'loading language traineddata': 'กำลังโหลดภาษาไทย (ครั้งแรกอาจใช้เวลาสักครู่)',
   'initializing api': 'กำลังเตรียมระบบอ่านข้อความ',
   'recognizing text': 'กำลังอ่านข้อความ',
+  server: 'กำลังอ่านข้อความ',
+  'server accurate': 'กำลังอ่านอย่างละเอียด อาจใช้เวลา 1–2 นาที',
 };

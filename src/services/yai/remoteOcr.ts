@@ -18,7 +18,8 @@ export interface RemoteOcrResult {
   fallbackReason: string | null;
 }
 
-const TIMEOUT_MS = 45_000;
+// "accurate" may run Typhoon OCR on the server's own small GPU, measured at 1-2 minutes per image
+const TIMEOUT_MS: Record<RemoteMode, number> = { fast: 45_000, auto: 45_000, accurate: 240_000 };
 
 export async function remoteOcr(image: Blob, mode: RemoteMode): Promise<RemoteOcrResult> {
   if (!OCR_API_URL) throw new Error('OCR server not configured');
@@ -26,7 +27,7 @@ export async function remoteOcr(image: Blob, mode: RemoteMode): Promise<RemoteOc
   form.append('file', image, 'label.jpg');
   form.append('mode', mode);
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS[mode]);
   try {
     const res = await fetch(`${OCR_API_URL}/ocr`, { method: 'POST', body: form, signal: ctrl.signal });
     if (!res.ok) throw new Error(`OCR server ${res.status}`);

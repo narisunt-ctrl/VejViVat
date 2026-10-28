@@ -30,6 +30,7 @@ export async function readLabel(
   let fallbackReason: string | undefined;
   if (OCR_API_URL && opts.allowCloud) {
     try {
+      opts.onProgress?.(0, opts.thorough ? 'server accurate' : 'server');
       const r = await remoteOcr(await dataUrlToBlob(source), opts.thorough ? 'accurate' : 'auto');
       return {
         text: r.text,

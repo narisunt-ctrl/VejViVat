@@ -5,8 +5,8 @@ Small FastAPI service that reads medicine labels for the ยายพร้อ�
 | Mode | Engine | Data leaves this server? |
 |---|---|---|
 | `fast` | PaddleOCR PP-OCRv5, Thai recognizer `th_PP-OCRv5_mobile_rec` | No |
-| `accurate` | Typhoon OCR 1.5 (`typhoon-ocr`, task `v1.5`) via the Typhoon API | Yes, to Typhoon (SCB 10X) |
-| `auto` (default) | PaddleOCR, then Typhoon if PaddleOCR's mean confidence < `AUTO_ACCURATE_BELOW` | Only when it escalates |
+| `accurate` | Typhoon OCR 1.5 (task `v1.5`): the Typhoon API (`typhoon-ocr`) when `TYPHOON_OCR_API_KEY` is set, otherwise self-hosted `scb10x/typhoon-ocr1.5-3b` through Ollama (`typhoon-local`) | API: yes, to Typhoon (SCB 10X). Local: no |
+| `auto` (default) | PaddleOCR, then the Typhoon API if PaddleOCR's mean confidence < `AUTO_ACCURATE_BELOW`. Not local Typhoon (1–2 min/image) unless `AUTO_ESCALATE_LOCAL=1` | Only when it escalates to the API |
 
 - **Credentials stay server-side.** `TYPHOON_OCR_API_KEY` is read from this server's environment. The web app only knows
   `VITE_OCR_API_URL`; never put the key in a `VITE_*` variable or in the repository.
@@ -36,7 +36,9 @@ Then create `.env.local` in the web app root with `VITE_OCR_API_URL=http://127.0
 | `RATE_LIMIT_PER_MIN` | `20` | Per-IP requests per minute (in memory) |
 | `AUTO_ACCURATE_BELOW` | `0.80` | PaddleOCR confidence below which `auto` escalates to Typhoon |
 | `OCR_PREPROCESS` | `raw` | `raw`, or `clahe` (grayscale + CLAHE + median, same as the browser OpenCV.js worker). The benchmark showed CLAHE hurts PaddleOCR (CER 0.036 → 0.074), so it is off by default |
-| `TYPHOON_LOCAL_URL` | `http://127.0.0.1:11434/v1` | Ollama endpoint for `typhoon-local` (benchmark engine, no key; image stays on this machine) |
+| `OCR_ACCURATE_ENGINE` | `auto` | Engine behind `accurate`: `auto` (API if a key is set, else local), `api`, `local`, `off`. `/health` reports the one in use |
+| `AUTO_ESCALATE_LOCAL` | `0` | `1` lets `auto` escalate to local Typhoon too (slow) |
+| `TYPHOON_LOCAL_URL` | `http://127.0.0.1:11434/v1` | Ollama endpoint for `typhoon-local` (no key; image stays on this machine). Install Ollama and `ollama pull scb10x/typhoon-ocr1.5-3b` |
 | `TYPHOON_LOCAL_MODEL` | `scb10x/typhoon-ocr1.5-3b` | Ollama model name |
 | `TYPHOON_LOCAL_IMAGE_DIM` | `1024` | Long side sent to the local model. Ollama's default 4096-token context overflows at 1800 px and the model returns nothing |
 | `PADDLE_ENABLE_MKLDNN` | `0` | oneDNN acceleration; off because PaddlePaddle 3.3 fails with it on some CPUs |
