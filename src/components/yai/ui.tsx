@@ -87,6 +87,9 @@ export const SourceChip: React.FC<{ origin: EvidenceOrigin; synthetic?: boolean;
     {synthetic && <span className="rounded-full bg-amber-50 px-2 py-0.5 font-semibold text-yai-warn">อ่านจากตัวอย่าง ไม่ใช่จากรูปจริง</span>}
     {typeof confidence === 'number' && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-700">ความมั่นใจของ OCR {Math.round(confidence * 100)}%</span>}
     {verification === 'DEMO_REVIEW' && <span className="rounded-full bg-violet-50 px-2 py-0.5 font-semibold text-violet-800">ทบทวนจำลอง</span>}
+    {origin === 'PHOTO_LABEL' && (verification === 'PATIENT_REPORTED' || verification === 'CAREGIVER_REPORTED') && (
+      <span className="rounded-full bg-yai-mint px-2 py-0.5 font-semibold text-yai-deep">✓ ตรวจกับฉลากแล้ว</span>
+    )}
   </span>
 );
 

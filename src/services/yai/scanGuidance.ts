@@ -49,10 +49,15 @@ export function scanGuidance(captured: CaptureSide[], parsed: ParsedLabel | null
 }
 
 /** Merge OCR lines from several photos into one parse */
-export function parsePhotos(photos: { side?: CaptureSide; ocr?: { lines: OcrLine[] } }[]): ParsedLabel | null {
+export function parsePhotos(photos: { side?: CaptureSide; ocr?: { lines: OcrLine[]; confidence: number; editedText?: string; verified?: boolean } }[]): ParsedLabel | null {
   // Read the front first so name and strength come from the side that is meant to show them
   const rank = (s?: CaptureSide) => (s ? SIDE_ORDER.indexOf(s) : SIDE_ORDER.length);
-  const lines = [...photos].sort((a, b) => rank(a.side) - rank(b.side)).flatMap((p) => p.ocr?.lines ?? []);
+  // Text the patient checked or corrected replaces the raw OCR lines of that photo
+  const linesOf = (p: (typeof photos)[number]): OcrLine[] =>
+    p.ocr?.editedText !== undefined
+      ? p.ocr.editedText.split('\n').map((text) => ({ text, confidence: p.ocr!.confidence, verified: !!p.ocr!.verified }))
+      : p.ocr?.lines ?? [];
+  const lines = [...photos].sort((a, b) => rank(a.side) - rank(b.side)).flatMap(linesOf);
   return lines.length ? parseLabel(lines) : null;
 }
 
@@ -61,7 +66,9 @@ export function draftFromParsed(parsed: ParsedLabel, patientId: string, photoIds
   const f = (p: ParsedLabel[ParsedKey]) =>
     field<string>(p?.value ?? null, 'PHOTO_LABEL', {
       isSynthetic: false,
-      extractionConfidence: p ? p.confidence : undefined,
+      // Checked text is the patient's statement about the label, not an OCR guess
+      verification: p?.verified ? 'PATIENT_REPORTED' : 'UNVERIFIED',
+      extractionConfidence: p && !p.verified ? p.confidence : undefined,
       rawText: p?.line,
       evidencePhotoIds: photoIds,
       capturedAt: nowIso,
