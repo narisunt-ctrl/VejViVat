@@ -1,0 +1,73 @@
+{
+  "meta": {
+    "started": "20261028T171310Z",
+    "n_images": 28,
+    "sources": "real, synthetic",
+    "engines": [
+      "typhoon-local"
+    ],
+    "preprocess": [
+      "raw"
+    ],
+    "skipped": {},
+    "typhoon_usd_per_page": null
+  },
+  "summary": {
+    "typhoon-local|raw|all": {
+      "engine": "typhoon-local",
+      "preprocess": "raw",
+      "variant": "all",
+      "n": 28,
+      "cer_mean": 0.3147710883249485,
+      "name_exact": 0.8928571428571429,
+      "ingredient_acc": 1.0,
+      "strength_acc": 1.0,
+      "latency_p50_ms": 29337.108400068246,
+      "latency_p95_ms": 48703.8777200272,
+      "api_cost_usd": 0.0,
+      "api_cost_per_1000_usd": 0.0
+    },
+    "typhoon-local|raw|clean": {
+      "engine": "typhoon-local",
+      "preprocess": "raw",
+      "variant": "clean",
+      "n": 12,
+      "cer_mean": 0.0,
+      "name_exact": 1.0,
+      "ingredient_acc": 1.0,
+      "strength_acc": 1.0,
+      "latency_p50_ms": 29113.580250064842,
+      "latency_p95_ms": 31160.055845137686,
+      "api_cost_usd": 0.0,
+      "api_cost_per_1000_usd": 0.0
+    },
+    "typhoon-local|raw|photo": {
+      "engine": "typhoon-local",
+      "preprocess": "raw",
+      "variant": "photo",
+      "n": 12,
+      "cer_mean": 0.038816762660120234,
+      "name_exact": 0.8333333333333334,
+      "ingredient_acc": 1.0,
+      "strength_acc": 1.0,
+      "latency_p50_ms": 29366.21419992298,
+      "latency_p95_ms": 30829.110730043612,
+      "api_cost_usd": 0.0,
+      "api_cost_per_1000_usd": 0.0
+    },
+    "typhoon-local|raw|real": {
+      "engine": "typhoon-local",
+      "preprocess": "raw",
+      "variant": "real",
+      "n": 4,
+      "cer_mean": 2.086947330294279,
+      "name_exact": 0.75,
+      "ingredient_acc": 1.0,
+      "strength_acc": 1.0,
+      "latency_p50_ms": 45818.639300065115,
+      "latency_p95_ms": 272610.58474996814,
+      "api_cost_usd": 0.0,
+      "api_cost_per_1000_usd": 0.0
+    }
+  }
+}

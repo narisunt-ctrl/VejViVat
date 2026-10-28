@@ -68,3 +68,26 @@ Ground truth was drafted from the images and checked by the owner (2026-10-28). 
 PaddleOCR drops or swaps Thai vowels and tone marks in large display fonts (`ขมินซิน`, `ขมิ้นผJ`, `oโรก`). Typhoon gets
 the names but invents fluent text where print is small (`ไข่โภค` for the brand, `รูปถังหมดไม่ใช่เพื่อประกอบ`, which
 reverses the meaning) and skipped ขมิ้นชัน on one box. Report: `results/20261028T155608Z/report.md`.
+
+### Typhoon OCR 1.5 2B (Apache-2.0) vs 3B (non-commercial base), 2026-10-29
+
+The 3B build on Ollama is based on Qwen2.5-VL-3B (Qwen Research License, non-commercial), so the server now uses
+the 2B model (Apache-2.0, base Qwen3-VL-2B Apache-2.0, GGUF Q8_0 via Ollama). Engine names: `typhoon-local` = 2B,
+`typhoon-local-3b` = 3B, kept for comparison only.
+
+| Model | Synthetic CER | Synthetic name | Synthetic ingredients | Real name | Real ingredients found | p50 |
+|---|---|---|---|---|---|---|
+| Typhoon 1.5 3B | 0.021 | 91.7% | 97.9% | 4/4 | 75% | 58 s synthetic, 111 s real |
+| Typhoon 1.5 2B (Q8_0) | 0.020 | 91.7% | 100% | 3/4 | 100% | 29 s synthetic, 38 s real |
+| PaddleOCR PP-OCRv5 | 0.036 | 87.5% | 92.4% | 0/4 | 25% | 5 s synthetic, 10 s real |
+
+Reports: `results/20261028T171310Z` (2B, all images, before the output cap) and `results/20261028T174318Z` (2B, real,
+with the cap). The 2B model is about twice as fast because it fits mostly on the 4 GB GPU.
+
+**Invented ingredients.** On the Aroka box the 2B model added a list that is not on the label (L-Glutathione, Taurine,
+vitamins …; another run gave "Carrot, Rice, Lactic Acid"). The ingredient score counts listed ingredients that were
+found and does not penalise extra ones, so it hides this. The 3B model invents text too. Any Typhoon output is a draft:
+the patient or a pharmacist must check every field against the package before it is used.
+
+**Loops.** Once, the 2B model repeated one character until the 16384-token limit (5 minutes). The server now caps local
+output at `TYPHOON_LOCAL_MAX_TOKENS` (1024) and drops a line repeated more than twice in a row.

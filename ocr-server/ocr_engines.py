@@ -173,33 +173,45 @@ def _markdown_to_lines(md: str) -> list[str]:
     md = re.sub(r"</(td|th)>", " ", md)
     md = re.sub(r"<(br|/tr|/p|/li|/h\d)\s*/?>", "\n", md)
     md = re.sub(r"<[^>]+>", " ", md)
-    out = []
+    out: list[str] = []
     for line in md.splitlines():
         line = re.sub(r"^[#>*\-\s|]+", "", line).replace("**", "").replace("|", " ").strip()
-        if line:
-            out.append(re.sub(r"\s+", " ", line))
+        if not line:
+            continue
+        line = re.sub(r"\s+", " ", line)
+        # a small vision model can get stuck repeating one line; keep at most two copies in a row
+        if len(out) >= 2 and out[-1] == line and out[-2] == line:
+            continue
+        out.append(line)
     return out
 
 
 TYPHOON_LOCAL_URL = os.environ.get("TYPHOON_LOCAL_URL", "http://127.0.0.1:11434/v1")
-TYPHOON_LOCAL_MODEL = os.environ.get("TYPHOON_LOCAL_MODEL", "scb10x/typhoon-ocr1.5-3b")
+# Default: Typhoon OCR 1.5 2B (Apache-2.0, base Qwen3-VL-2B Apache-2.0), commercial use allowed.
+# The 3B build on Ollama is based on Qwen2.5-VL-3B (Qwen Research License, non-commercial): benchmark only.
+TYPHOON_LOCAL_MODEL = os.environ.get("TYPHOON_LOCAL_MODEL", "hf.co/mradermacher/typhoon-ocr1.5-2b-GGUF:Q8_0")
+TYPHOON_LOCAL_3B_MODEL = "scb10x/typhoon-ocr1.5-3b"
 # Ollama's default 4096-token context truncates the vision tokens of a 1800 px image and the model returns
-# nothing; 1024 px fits and read the test label perfectly (measured 2026-10-28, ~83 s/image on a Quadro M1200)
+# nothing; 1024 px fits (measured 2026-10-28 on a Quadro M1200: 3B ~60 s/image, 2B ~30 s/image)
 TYPHOON_LOCAL_IMAGE_DIM = int(os.environ.get("TYPHOON_LOCAL_IMAGE_DIM", "1024"))
+# A label is a few hundred characters; the upstream client allows 16384 tokens, which let the 2B model loop on
+# repeated characters for 5 minutes on one real label (2026-10-29). Cap the local output instead.
+TYPHOON_LOCAL_MAX_TOKENS = int(os.environ.get("TYPHOON_LOCAL_MAX_TOKENS", "1024"))
 
 
 class TyphoonEngine:
     """Typhoon OCR 1.5 either through the Typhoon API (needs TYPHOON_OCR_API_KEY) or self-hosted through
     Ollama's OpenAI-compatible endpoint (no key; the image never leaves this machine)."""
 
-    def __init__(self, local: bool = False) -> None:
+    def __init__(self, local: bool = False, local_model: str = TYPHOON_LOCAL_MODEL, name: str = "") -> None:
         self.local = local
-        self.name = "typhoon-local" if local else "typhoon-ocr"
+        self.local_model = local_model
+        self.name = name or ("typhoon-local" if local else "typhoon-ocr")
 
     @property
     def model(self) -> str:
         if self.local:
-            return f"Typhoon OCR 1.5 ({TYPHOON_LOCAL_MODEL}, local Ollama, task {TYPHOON_TASK})"
+            return f"Typhoon OCR 1.5 ({self.local_model}, local Ollama, task {TYPHOON_TASK})"
         return f"Typhoon OCR 1.5 ({TYPHOON_MODEL}, API, task {TYPHOON_TASK})"
 
     def available(self) -> bool:
@@ -209,9 +221,25 @@ class TyphoonEngine:
             import httpx
 
             tags = httpx.get(TYPHOON_LOCAL_URL.rsplit("/v1", 1)[0] + "/api/tags", timeout=2).json()
-            return any(m.get("name", "").startswith(TYPHOON_LOCAL_MODEL) for m in tags.get("models", []))
+            return any(m.get("name", "").startswith(self.local_model) for m in tags.get("models", []))
         except Exception:
             return False
+
+    def _run_local(self, path: str) -> str:
+        """Same prompt and sampling as typhoon_ocr.ocr_document, but with an output cap (see TYPHOON_LOCAL_MAX_TOKENS)."""
+        from openai import OpenAI
+        from typhoon_ocr.ocr_utils import prepare_ocr_messages
+
+        messages = prepare_ocr_messages(pdf_or_image_path=path, task_type=TYPHOON_TASK, target_image_dim=TYPHOON_LOCAL_IMAGE_DIM, page_num=1)
+        response = OpenAI(base_url=TYPHOON_LOCAL_URL, api_key="ollama").chat.completions.create(
+            model=self.local_model,
+            messages=messages,
+            max_tokens=TYPHOON_LOCAL_MAX_TOKENS,
+            temperature=0.1,
+            top_p=0.6,
+            extra_body={"repetition_penalty": 1.1},
+        )
+        return response.choices[0].message.content or ""
 
     def run(self, img: np.ndarray, preprocess_mode: str, image_sha256: str = "") -> OcrResult:
         if not self.available():
@@ -225,14 +253,7 @@ class TyphoonEngine:
             cv2.imwrite(path, processed)
             t0 = time.perf_counter()
             if self.local:
-                md = ocr_document(
-                    path,
-                    base_url=TYPHOON_LOCAL_URL,
-                    api_key="ollama",
-                    model=TYPHOON_LOCAL_MODEL,
-                    task_type=TYPHOON_TASK,
-                    target_image_dim=TYPHOON_LOCAL_IMAGE_DIM,
-                )
+                md = self._run_local(path)
             else:
                 md = ocr_document(path, model=TYPHOON_MODEL, task_type=TYPHOON_TASK)
             latency = (time.perf_counter() - t0) * 1000
@@ -251,4 +272,10 @@ class TyphoonEngine:
         )
 
 
-ENGINES = {"paddleocr": PaddleEngine(), "typhoon-ocr": TyphoonEngine(), "typhoon-local": TyphoonEngine(local=True)}
+ENGINES = {
+    "paddleocr": PaddleEngine(),
+    "typhoon-ocr": TyphoonEngine(),
+    "typhoon-local": TyphoonEngine(local=True),
+    # non-commercial base model (see above); kept so the benchmark can compare it
+    "typhoon-local-3b": TyphoonEngine(local=True, local_model=TYPHOON_LOCAL_3B_MODEL, name="typhoon-local-3b"),
+}

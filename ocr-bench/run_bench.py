@@ -61,7 +61,7 @@ def summarize(rows: list[dict], usd_per_page: float | None) -> dict:
         cost = None
         if engine == "typhoon-ocr":
             cost = None if usd_per_page is None else usd_per_page * len(rs)
-        elif engine in ("paddleocr", "typhoon-local"):
+        elif engine in ("paddleocr", "typhoon-local", "typhoon-local-3b"):
             cost = 0.0  # no per-call API fee; runs on your own machine (see latency)
         out[key] = {
             "engine": engine,
@@ -134,7 +134,7 @@ def main() -> None:
     for e in engines:
         eng = ENGINES[e]
         if not eng.available():
-            skipped[e] = {"typhoon-ocr": "TYPHOON_OCR_API_KEY not set", "typhoon-local": "Ollama model scb10x/typhoon-ocr1.5-3b not found"}.get(e, "engine not installed")
+            skipped[e] = "TYPHOON_OCR_API_KEY not set" if e == "typhoon-ocr" else f"Ollama model {getattr(eng, 'local_model', '')} not found" if e.startswith("typhoon-local") else "engine not installed"
         else:
             active.append(e)
 
