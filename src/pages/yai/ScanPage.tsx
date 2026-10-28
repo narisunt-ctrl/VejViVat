@@ -65,7 +65,7 @@ export const ScanPage: React.FC = () => {
   }, [guidance.side, guidance.text, reading.count, voice, sessionPhotos.length]);
 
   const onCapture = (r: CaptureResult) => {
-    const id = yaiStore.addPhoto({ dataUrl: r.dataUrl, source: r.source, quality: r.quality, side, capturedAt: demoNow().toISOString() });
+    const id = yaiStore.addPhoto({ dataUrl: r.dataUrl, source: r.source, quality: r.quality, cropped: r.cropped, side, capturedAt: demoNow().toISOString() });
     scanSession.add(id);
     setSessionIds(scanSession.get());
     if (voice) speak(`ได้ภาพ${SIDE_INFO[side].label}แล้ว กำลังอ่านข้อความ`);
@@ -148,6 +148,7 @@ export const ScanPage: React.FC = () => {
                 <img src={p.dataUrl} alt={`รูป${p.side ? SIDE_INFO[p.side].label : 'ยา'}`} className="h-24 w-20 rounded-xl object-cover" />
                 <figcaption className="text-center text-xs">
                   {p.side ? SIDE_INFO[p.side].label : ''}
+                  {p.cropped ? ' ✂' : ''}
                   {p.ocr?.status === 'DONE' ? ' ✓' : p.ocr?.status === 'FAILED' ? ' ✕' : ' …'}
                 </figcaption>
               </figure>
