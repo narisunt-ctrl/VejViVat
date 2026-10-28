@@ -181,19 +181,41 @@ def _markdown_to_lines(md: str) -> list[str]:
     return out
 
 
+TYPHOON_LOCAL_URL = os.environ.get("TYPHOON_LOCAL_URL", "http://127.0.0.1:11434/v1")
+TYPHOON_LOCAL_MODEL = os.environ.get("TYPHOON_LOCAL_MODEL", "scb10x/typhoon-ocr1.5-3b")
+# Ollama's default 4096-token context truncates the vision tokens of a 1800 px image and the model returns
+# nothing; 1024 px fits and read the test label perfectly (measured 2026-10-28, ~83 s/image on a Quadro M1200)
+TYPHOON_LOCAL_IMAGE_DIM = int(os.environ.get("TYPHOON_LOCAL_IMAGE_DIM", "1024"))
+
+
 class TyphoonEngine:
-    name = "typhoon-ocr"
+    """Typhoon OCR 1.5 either through the Typhoon API (needs TYPHOON_OCR_API_KEY) or self-hosted through
+    Ollama's OpenAI-compatible endpoint (no key; the image never leaves this machine)."""
+
+    def __init__(self, local: bool = False) -> None:
+        self.local = local
+        self.name = "typhoon-local" if local else "typhoon-ocr"
 
     @property
     def model(self) -> str:
-        return f"Typhoon OCR 1.5 ({TYPHOON_MODEL}, task {TYPHOON_TASK})"
+        if self.local:
+            return f"Typhoon OCR 1.5 ({TYPHOON_LOCAL_MODEL}, local Ollama, task {TYPHOON_TASK})"
+        return f"Typhoon OCR 1.5 ({TYPHOON_MODEL}, API, task {TYPHOON_TASK})"
 
     def available(self) -> bool:
-        return bool(os.environ.get("TYPHOON_OCR_API_KEY"))
+        if not self.local:
+            return bool(os.environ.get("TYPHOON_OCR_API_KEY"))
+        try:
+            import httpx
+
+            tags = httpx.get(TYPHOON_LOCAL_URL.rsplit("/v1", 1)[0] + "/api/tags", timeout=2).json()
+            return any(m.get("name", "").startswith(TYPHOON_LOCAL_MODEL) for m in tags.get("models", []))
+        except Exception:
+            return False
 
     def run(self, img: np.ndarray, preprocess_mode: str, image_sha256: str = "") -> OcrResult:
         if not self.available():
-            raise RuntimeError("TYPHOON_OCR_API_KEY is not set on the server")
+            raise RuntimeError("Typhoon local model not available in Ollama" if self.local else "TYPHOON_OCR_API_KEY is not set on the server")
         from typhoon_ocr import ocr_document
 
         processed = preprocess(img, preprocess_mode)
@@ -202,7 +224,17 @@ class TyphoonEngine:
         try:
             cv2.imwrite(path, processed)
             t0 = time.perf_counter()
-            md = ocr_document(path, model=TYPHOON_MODEL, task_type=TYPHOON_TASK)
+            if self.local:
+                md = ocr_document(
+                    path,
+                    base_url=TYPHOON_LOCAL_URL,
+                    api_key="ollama",
+                    model=TYPHOON_LOCAL_MODEL,
+                    task_type=TYPHOON_TASK,
+                    target_image_dim=TYPHOON_LOCAL_IMAGE_DIM,
+                )
+            else:
+                md = ocr_document(path, model=TYPHOON_MODEL, task_type=TYPHOON_TASK)
             latency = (time.perf_counter() - t0) * 1000
         finally:
             os.remove(path)  # nothing is kept on disk
@@ -219,4 +251,4 @@ class TyphoonEngine:
         )
 
 
-ENGINES = {"paddleocr": PaddleEngine(), "typhoon-ocr": TyphoonEngine()}
+ENGINES = {"paddleocr": PaddleEngine(), "typhoon-ocr": TyphoonEngine(), "typhoon-local": TyphoonEngine(local=True)}
