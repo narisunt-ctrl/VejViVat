@@ -4,7 +4,10 @@ import { CheckCircle2, Circle, Volume2, VolumeX } from 'lucide-react';
 import { LiveCamera, CaptureResult } from '../../components/medsight/LiveCamera';
 import { yaiStore, useYai, demoNow } from '../../services/yai/yaiStore';
 import { scanSession } from '../../services/yai/scanSession';
-import { recognizeThai, OCR_STATUS_TH } from '../../services/yai/thaiOcr';
+import { OCR_STATUS_TH } from '../../services/yai/thaiOcr';
+import { readLabel, cloudOcrAvailable, PipelineResult } from '../../services/yai/ocrPipeline';
+import { warmUpOpenCv } from '../../services/yai/cvPreprocess';
+import { photoStore } from '../../services/yai/photoStore';
 import { parsePhotos, scanGuidance } from '../../services/yai/scanGuidance';
 import { PARSED_FIELD_LABEL, PARSED_ORDER, ParsedLabel } from '../../services/yai/labelParser';
 import { CapturedPhoto, CaptureSide } from '../../domain/yai/models';
@@ -40,14 +43,19 @@ const FieldChips: React.FC<{ parsed: ParsedLabel | null; dark?: boolean }> = ({ 
   </ul>
 );
 
-function saveOcr(photoId: string, status: 'DONE' | 'FAILED', res: { text: string; lines: { text: string; confidence: number }[]; confidence: number; engine: string } | null) {
+function saveOcr(photoId: string, status: 'DONE' | 'FAILED', res: PipelineResult | null) {
   yaiStore.setPhotoOcr(photoId, {
     status,
     text: res?.text ?? '',
     lines: res?.lines ?? [],
-    confidence: res?.confidence ?? 0,
+    confidence: res ? res.confidence : null,
     engine: res?.engine ?? '',
     at: demoNow().toISOString(),
+    provider: res?.provider,
+    model: res?.model,
+    preprocess: res?.preprocess,
+    fallbackReason: res?.fallbackReason,
+    imageSha256: res?.imageSha256,
   });
 }
 
@@ -70,7 +78,9 @@ const PhotoTextCard: React.FC<{ photo: CapturedPhoto; reading: boolean; onReread
     ? 'อ่านไม่สำเร็จ'
     : empty
     ? 'อ่านไม่ออก'
-    : `อ่านได้ (มั่นใจ ${Math.round(photo.ocr.confidence)}%) รอตรวจ`;
+    : photo.ocr.confidence !== null
+    ? `อ่านได้ (มั่นใจ ${Math.round(photo.ocr.confidence)}%) รอตรวจ`
+    : 'อ่านได้แล้ว รอตรวจ';
 
   return (
     <Card className={`space-y-3 ${photo.ocr?.verified ? 'border-yai-leaf' : ''}`}>
@@ -82,6 +92,14 @@ const PhotoTextCard: React.FC<{ photo: CapturedPhoto; reading: boolean; onReread
           <p className="text-lg font-bold">{photo.side ? SIDE_INFO[photo.side].label : 'รูปยา'}</p>
           <p className={`text-base ${photo.ocr?.verified ? 'font-semibold text-yai-deep' : ''}`}>{statusLine}</p>
           <p className="text-sm text-yai-ink/60">แตะรูปเพื่อ{zoom ? 'ย่อ' : 'ขยายเทียบกับข้อความ'}</p>
+          {photo.ocr?.model && (
+            <p className="text-xs text-yai-ink/60">
+              อ่านด้วย {photo.ocr.provider === 'server' ? 'เซิร์ฟเวอร์' : 'เครื่องนี้'}: {photo.ocr.model}
+              {photo.ocr.preprocess ? ` · ${photo.ocr.preprocess}` : ''}
+              {photo.originalStored ? ' · เก็บรูปต้นฉบับแล้ว' : ''}
+            </p>
+          )}
+          {photo.ocr?.fallbackReason && <p className="text-xs text-yai-warn">{photo.ocr.fallbackReason}</p>}
         </div>
       </div>
 
@@ -133,6 +151,7 @@ export const ScanPage: React.FC = () => {
   const navigate = useNavigate();
   const photos = useYai((s) => s.photos);
   const voice = useYai((s) => !!s.settings.voiceGuide);
+  const cloudConsent = useYai((s) => s.settings.cloudOcrConsent);
   const [sessionIds, setSessionIds] = useState<string[]>(() => scanSession.get());
   const [readingIds, setReadingIds] = useState<string[]>([]);
   const [progress, setProgress] = useState({ status: '', value: 0 });
@@ -153,9 +172,11 @@ export const ScanPage: React.FC = () => {
     }
   }, [guidance.side, guidance.text, readingIds.length, voice, sessionPhotos.length]);
 
+  useEffect(() => warmUpOpenCv(), []);
+
   const read = (photoId: string, source: string, thorough: boolean) => {
     setReadingIds((ids) => [...ids, photoId]);
-    recognizeThai(source, (value, status) => setProgress({ value, status }), { thorough })
+    readLabel(source, { thorough, allowCloud: cloudConsent === true, onProgress: (value, status) => setProgress({ value, status }) })
       .then((res) => saveOcr(photoId, 'DONE', res))
       .catch(() => saveOcr(photoId, 'FAILED', null))
       .finally(() => {
@@ -169,6 +190,13 @@ export const ScanPage: React.FC = () => {
     scanSession.add(id);
     setSessionIds(scanSession.get());
     if (voice) speak(`ได้ภาพ${SIDE_INFO[side].label}แล้ว กำลังอ่านข้อความ`);
+    // Keep the untouched original in IndexedDB as the evidence source for every field read from it
+    if (photoStore.available()) {
+      r.original
+        .then((blob) => (blob ? photoStore.put(id, blob) : false))
+        .then((ok) => ok && yaiStore.setPhotoMeta(id, { originalStored: true }))
+        .catch(() => undefined);
+    }
     read(id, r.ocrSource, false);
   };
 
@@ -217,6 +245,23 @@ export const ScanPage: React.FC = () => {
         ))}
       </div>
 
+      {cloudOcrAvailable() && cloudConsent === undefined && (
+        <Card className="space-y-3 border-yai-teal">
+          <h2 className="text-lg font-bold">ให้อ่านฉลากที่เซิร์ฟเวอร์เพื่อความแม่นยำไหมคะ?</h2>
+          <p className="text-base">
+            รูปฉลากจะถูกส่งไปที่เซิร์ฟเวอร์ของยายพร้อม (อ่านด้วย PaddleOCR) และถ้าอ่านไม่ชัด จะส่งต่อให้ Typhoon OCR ของ SCB 10X อ่านอีกครั้ง
+            เซิร์ฟเวอร์ไม่เก็บรูป ถ้าไม่อนุญาต ระบบจะอ่านในเครื่องนี้แทน (แม่นน้อยกว่า)
+          </p>
+          <p className="text-sm text-yai-ink/70">ถ่ายเฉพาะฉลากยา อย่าให้เห็นชื่อ ที่อยู่ หรือใบสั่งยาของคุณยาย เปลี่ยนได้ที่ตั้งค่า</p>
+          <div className="grid grid-cols-2 gap-2">
+            <BigButton onClick={() => yaiStore.updateSettings({ cloudOcrConsent: true })}>อนุญาต</BigButton>
+            <BigButton variant="secondary" onClick={() => yaiStore.updateSettings({ cloudOcrConsent: false })}>
+              อ่านในเครื่อง
+            </BigButton>
+          </div>
+        </Card>
+      )}
+
       <LiveCamera onCapture={onCapture} overlay={hud} />
 
       <Card className="space-y-3">
@@ -226,7 +271,10 @@ export const ScanPage: React.FC = () => {
         </div>
         <FieldChips parsed={readable.length ? parsed : null} />
         <Notice tone={guidance.tone === 'retry' ? 'warn' : 'info'} title={sessionPhotos.length ? guidance.text : 'ถ่ายใกล้ๆ ให้เห็นชื่อยาชัดๆ ก่อน'} />
-        <p className="text-sm text-yai-ink/70">อ่านในเครื่องนี้ด้วยระบบอ่านภาษาไทย อาจอ่านผิดได้ ขอให้คุณยายหรือหลานตรวจข้อความของแต่ละรูปด้านล่าง</p>
+        <p className="text-sm text-yai-ink/70">
+          {cloudConsent && cloudOcrAvailable() ? 'อ่านที่เซิร์ฟเวอร์ (PaddleOCR / Typhoon OCR)' : 'อ่านในเครื่องนี้ (OpenCV + Tesseract)'} อาจอ่านผิดได้
+          ขอให้คุณยายหรือหลานตรวจข้อความของแต่ละรูปด้านล่าง
+        </p>
       </Card>
 
       {sessionPhotos.length > 0 && (

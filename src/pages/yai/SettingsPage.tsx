@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useYai, yaiStore } from '../../services/yai/yaiStore';
 import { BigButton, Card, Notice, PageTitle, formatThaiDateTime } from '../../components/yai/ui';
+import { cloudOcrAvailable } from '../../services/yai/ocrPipeline';
 
 const AUDIT_LABEL: Record<string, string> = {
   CONSENT_GRANTED: 'อนุญาตให้เห็นข้อมูล',
@@ -55,7 +56,21 @@ export const SettingsPage: React.FC = () => {
 
       <Card className="space-y-3">
         <h2 className="text-xl font-bold">ความเป็นส่วนตัว</h2>
-        <p className="text-base">ข้อมูลในแอปนี้เป็นข้อมูลจำลอง เก็บในเบราว์เซอร์เครื่องนี้เท่านั้น ไม่มีการส่งขึ้นเซิร์ฟเวอร์</p>
+        <p className="text-base">ข้อมูลในแอปนี้เป็นข้อมูลจำลอง เก็บในเบราว์เซอร์เครื่องนี้ (รูปต้นฉบับเก็บใน IndexedDB ของเครื่องนี้)</p>
+        {cloudOcrAvailable() && (
+          <label className="flex min-h-[56px] items-start gap-3 text-lg">
+            <input
+              type="checkbox"
+              className="mt-1 h-7 w-7 shrink-0 accent-yai-deep"
+              checked={state.settings.cloudOcrConsent === true}
+              onChange={(e) => yaiStore.updateSettings({ cloudOcrConsent: e.target.checked })}
+            />
+            <span>
+              ส่งรูปฉลากไปอ่านที่เซิร์ฟเวอร์ (PaddleOCR และ Typhoon OCR) เพื่อความแม่นยำ
+              <span className="block text-sm text-yai-ink/70">เซิร์ฟเวอร์ไม่เก็บรูป ถ้าปิด ระบบจะอ่านในเครื่องนี้แทน</span>
+            </span>
+          </label>
+        )}
         {!confirmReset ? (
           <BigButton variant="secondary" onClick={() => setConfirmReset(true)}>
             ล้างข้อมูลสาธิตทั้งหมด

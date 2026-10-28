@@ -25,6 +25,8 @@ export interface EvidenceField<T> {
   extractionConfidence?: number;
   /** true when the value came from a simulated OCR fixture, not from the captured pixels */
   isSynthetic?: boolean;
+  /** OCR engine/model that produced the value (field-level provenance) */
+  ocrEngine?: string;
   verification: Verification;
 }
 
@@ -70,15 +72,24 @@ export interface CapturedPhoto {
   dataUrl: string;
   capturedAt: string;
   source: 'CAMERA' | 'UPLOAD';
+  /** full-resolution original saved in IndexedDB (see photoStore) */
+  originalStored?: boolean;
   quality?: { brightness: number; sharpness: number; glare: number };
   /** on-device OCR result for this photo, if it has been read */
   ocr?: {
     status: 'DONE' | 'FAILED';
     text: string;
-    lines: { text: string; confidence: number }[];
-    confidence: number;
+    lines: { text: string; confidence: number | null }[];
+    /** 0..100, or null when the engine reports none (Typhoon) */
+    confidence: number | null;
     engine: string;
     at: string;
+    provider?: 'server' | 'on-device';
+    model?: string;
+    preprocess?: string;
+    fallbackReason?: string;
+    /** SHA-256 of the exact bytes the server read */
+    imageSha256?: string;
     /** text after the patient/caregiver checked or corrected it */
     editedText?: string;
     /** the patient/caregiver confirmed this text matches the label */
@@ -180,6 +191,8 @@ export interface YaiSettings {
   role: 'PATIENT' | 'CAREGIVER';
   /** spoken scan guidance; off unless the user turns it on */
   voiceGuide?: boolean;
+  /** agreed to send label photos to the OCR server (and Typhoon); undefined = not asked yet */
+  cloudOcrConsent?: boolean;
 }
 
 export interface YaiState {

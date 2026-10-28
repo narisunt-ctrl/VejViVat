@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<title>Render synthetic labels</title>
+<style>body{font-family:sans-serif;margin:16px} canvas{max-width:240px;margin:4px;border:1px solid #ccc}</style>
+</head>
+<body>
+<h1>Synthetic medication labels (benchmark only)</h1>
+<p id="status">rendering…</p>
+<div id="out"></div>
+<script>
+// Renders each label twice: "clean" (flat print) and "photo" (coloured pack, small text, uneven light,
+// blur, noise, rotation, JPEG). Bottles/jars also get a cylinder-like squeeze. A seeded RNG keeps runs repeatable.
+const FONTS = ['"Leelawadee UI"', 'Tahoma', '"TH Sarabun New"', 'Leelawadee'];
+let seed = 20261028;
+const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const PALETTE = [['#c62828','#fff6d5'],['#1b5e20','#f1f8e9'],['#0d47a1','#e3f2fd'],['#6a1b9a','#f3e5f5'],['#e65100','#fff3e0'],['#004d40','#e0f2f1']];
+
+function drawLabel(spec, variant, i) {
+  const W = 1400, H = 1000;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  const font = FONTS[i % FONTS.length];
+  if (variant === 'clean') {
+    x.fillStyle = '#fff'; x.fillRect(0, 0, W, H); x.fillStyle = '#111';
+    spec.lines.forEach((t, k) => { x.font = `${k === 0 ? 'bold 78px' : '52px'} ${font}`; x.fillText(t, 70, 150 + k * 140); });
+    return c;
+  }
+  const [band, paper] = PALETTE[i % PALETTE.length];
+  x.fillStyle = paper; x.fillRect(0, 0, W, H);
+  x.fillStyle = band; x.fillRect(0, 90, W, 190);
+  x.save(); x.translate(W / 2, H / 2); x.rotate((rnd() - 0.5) * 0.08); x.translate(-W / 2, -H / 2);
+  x.fillStyle = '#fff'; x.font = `bold 70px ${font}`; x.fillText(spec.lines[0], 70, 210);
+  x.fillStyle = '#222';
+  spec.lines.slice(1).forEach((t, k) => { x.font = `${36 + Math.round(rnd() * 6)}px ${font}`; x.fillText(t, 70, 390 + k * 105); });
+  x.restore();
+  const g = x.createLinearGradient(0, 0, W, H * 0.3);
+  g.addColorStop(0, 'rgba(255,255,255,0.15)'); g.addColorStop(1, `rgba(0,0,0,${0.25 + rnd() * 0.25})`);
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  let src = c;
+  if (['bottle', 'jar'].includes(spec.kind)) {
+    // cylinder-like squeeze: columns near the edges are compressed and darker
+    const cy = document.createElement('canvas'); cy.width = W; cy.height = H; const y = cy.getContext('2d');
+    y.fillStyle = '#333'; y.fillRect(0, 0, W, H);
+    for (let col = 0; col < W; col += 2) {
+      const t = (col / W) * 2 - 1, theta = Math.asin(Math.max(-0.999, Math.min(0.999, t)));
+      const sx = ((theta / (Math.PI / 2)) + 1) / 2 * W;
+      y.drawImage(src, sx, 0, 2, H, col, 0, 2, H);
+    }
+    src = cy;
+  }
+  const out = document.createElement('canvas'); out.width = W; out.height = H; const o = out.getContext('2d');
+  o.filter = `blur(${1 + rnd() * 0.9}px)`; o.drawImage(src, 0, 0); o.filter = 'none';
+  const d = o.getImageData(0, 0, W, H);
+  for (let p = 0; p < d.data.length; p += 4) { const n = (rnd() - 0.5) * 36; d.data[p] += n; d.data[p + 1] += n; d.data[p + 2] += n; }
+  o.putImageData(d, 0, 0);
+  return out;
+}
+
+(async () => {
+  await document.fonts.ready;
+  const specs = await (await fetch('/data/synthetic/labels.json')).json();
+  let n = 0;
+  for (const [i, spec] of specs.entries()) {
+    for (const variant of ['clean', 'photo']) {
+      const canvas = drawLabel(spec, variant, i);
+      document.getElementById('out').appendChild(canvas);
+      const dataUrl = canvas.toDataURL('image/jpeg', variant === 'photo' ? 0.6 : 0.92);
+      await fetch('/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: `${spec.id}_${variant}.jpg`, dataUrl }) });
+      n++;
+    }
+  }
+  document.getElementById('status').textContent = `done: ${n} images`;
+  window.__done = n;
+})();
+</script>
+</body>
+</html>

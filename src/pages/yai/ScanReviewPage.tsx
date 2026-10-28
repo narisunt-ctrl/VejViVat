@@ -9,7 +9,8 @@ import { missingFields } from '../../domain/yai/policies';
 import { BigButton, Card, Field, inputCls, Notice, PageTitle, SourceChip } from '../../components/yai/ui';
 import { CompletenessGrid } from '../../components/yai/CompletenessGrid';
 import { FORM_LABEL } from '../../components/yai/labels';
-import { recognizeThai, OCR_STATUS_TH } from '../../services/yai/thaiOcr';
+import { OCR_STATUS_TH } from '../../services/yai/thaiOcr';
+import { readLabel } from '../../services/yai/ocrPipeline';
 import { parsePhotos, draftFromParsed } from '../../services/yai/scanGuidance';
 
 type Step = 'EXTRACT' | 'EDIT' | 'ASK_MISSING' | 'ONLY_THIS';
@@ -52,8 +53,24 @@ export const ScanReviewPage: React.FC = () => {
     let failedCount = 0;
     for (const p of unread) {
       try {
-        const res = await recognizeThai(p.dataUrl, (progress, status) => setOcrStatus(`${OCR_STATUS_TH[status] ?? 'กำลังอ่าน'} ${Math.round(progress * 100)}%`));
-        yaiStore.setPhotoOcr(p.id, { status: 'DONE', text: res.text, lines: res.lines, confidence: res.confidence, engine: res.engine, at: demoNow().toISOString() });
+        const res = await readLabel(p.dataUrl, {
+          thorough: false,
+          allowCloud: state.settings.cloudOcrConsent === true,
+          onProgress: (progress, status) => setOcrStatus(`${OCR_STATUS_TH[status] ?? 'กำลังอ่าน'} ${Math.round(progress * 100)}%`),
+        });
+        yaiStore.setPhotoOcr(p.id, {
+          status: 'DONE',
+          text: res.text,
+          lines: res.lines,
+          confidence: res.confidence,
+          engine: res.engine,
+          at: demoNow().toISOString(),
+          provider: res.provider,
+          model: res.model,
+          preprocess: res.preprocess,
+          fallbackReason: res.fallbackReason,
+          imageSha256: res.imageSha256,
+        });
       } catch {
         failedCount++;
         yaiStore.setPhotoOcr(p.id, { status: 'FAILED', text: '', lines: [], confidence: 0, engine: '', at: demoNow().toISOString() });

@@ -49,14 +49,16 @@ export function scanGuidance(captured: CaptureSide[], parsed: ParsedLabel | null
 }
 
 /** Merge OCR lines from several photos into one parse */
-export function parsePhotos(photos: { side?: CaptureSide; ocr?: { lines: OcrLine[]; confidence: number; editedText?: string; verified?: boolean } }[]): ParsedLabel | null {
+export function parsePhotos(
+  photos: { id?: string; side?: CaptureSide; ocr?: { lines: OcrLine[]; confidence: number | null; engine?: string; model?: string; editedText?: string; verified?: boolean } }[]
+): ParsedLabel | null {
   // Read the front first so name and strength come from the side that is meant to show them
   const rank = (s?: CaptureSide) => (s ? SIDE_ORDER.indexOf(s) : SIDE_ORDER.length);
   // Text the patient checked or corrected replaces the raw OCR lines of that photo
   const linesOf = (p: (typeof photos)[number]): OcrLine[] =>
     p.ocr?.editedText !== undefined
-      ? p.ocr.editedText.split('\n').map((text) => ({ text, confidence: p.ocr!.confidence, verified: !!p.ocr!.verified }))
-      : p.ocr?.lines ?? [];
+      ? p.ocr.editedText.split('\n').map((text) => ({ text, confidence: p.ocr!.confidence, verified: !!p.ocr!.verified, photoId: p.id, engine: p.ocr!.model ?? p.ocr!.engine }))
+      : (p.ocr?.lines ?? []).map((l) => ({ ...l, photoId: p.id, engine: p.ocr!.model ?? p.ocr!.engine }));
   const lines = [...photos].sort((a, b) => rank(a.side) - rank(b.side)).flatMap(linesOf);
   return lines.length ? parseLabel(lines) : null;
 }
@@ -68,9 +70,11 @@ export function draftFromParsed(parsed: ParsedLabel, patientId: string, photoIds
       isSynthetic: false,
       // Checked text is the patient's statement about the label, not an OCR guess
       verification: p?.verified ? 'PATIENT_REPORTED' : 'UNVERIFIED',
-      extractionConfidence: p && !p.verified ? p.confidence : undefined,
+      extractionConfidence: p && !p.verified && p.confidence !== null ? p.confidence : undefined,
       rawText: p?.line,
-      evidencePhotoIds: photoIds,
+      // Point at the exact photo the value was read from, not just every photo in the session
+      evidencePhotoIds: p?.photoId ? [p.photoId] : photoIds,
+      ocrEngine: p?.engine,
       capturedAt: nowIso,
     });
   return {

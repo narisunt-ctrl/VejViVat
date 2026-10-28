@@ -1,0 +1,102 @@
+{
+  "meta": {
+    "started": "20261028T152213Z",
+    "n_images": 24,
+    "sources": "synthetic",
+    "engines": [
+      "paddleocr",
+      "typhoon-local"
+    ],
+    "preprocess": [
+      "raw"
+    ],
+    "skipped": {},
+    "typhoon_usd_per_page": null
+  },
+  "summary": {
+    "paddleocr|raw|all": {
+      "engine": "paddleocr",
+      "preprocess": "raw",
+      "variant": "all",
+      "n": 24,
+      "cer_mean": 0.035641513972926524,
+      "name_exact": 0.875,
+      "ingredient_acc": 0.9236111111111112,
+      "strength_acc": 1.0,
+      "latency_p50_ms": 5298.3910500770435,
+      "latency_p95_ms": 7973.446964949831,
+      "api_cost_usd": 0.0,
+      "api_cost_per_1000_usd": 0.0
+    },
+    "paddleocr|raw|clean": {
+      "engine": "paddleocr",
+      "preprocess": "raw",
+      "variant": "clean",
+      "n": 12,
+      "cer_mean": 0.0036816121840438456,
+      "name_exact": 0.9166666666666666,
+      "ingredient_acc": 1.0,
+      "strength_acc": 1.0,
+      "latency_p50_ms": 5488.883349928074,
+      "latency_p95_ms": 11613.97807003231,
+      "api_cost_usd": 0.0,
+      "api_cost_per_1000_usd": 0.0
+    },
+    "paddleocr|raw|photo": {
+      "engine": "paddleocr",
+      "preprocess": "raw",
+      "variant": "photo",
+      "n": 12,
+      "cer_mean": 0.0676014157618092,
+      "name_exact": 0.8333333333333334,
+      "ingredient_acc": 0.8472222222222222,
+      "strength_acc": 1.0,
+      "latency_p50_ms": 5119.622700032778,
+      "latency_p95_ms": 6828.780280018689,
+      "api_cost_usd": 0.0,
+      "api_cost_per_1000_usd": 0.0
+    },
+    "typhoon-local|raw|all": {
+      "engine": "typhoon-local",
+      "preprocess": "raw",
+      "variant": "all",
+      "n": 24,
+      "cer_mean": 0.021311052144502268,
+      "name_exact": 0.9166666666666666,
+      "ingredient_acc": 0.9791666666666666,
+      "strength_acc": 1.0,
+      "latency_p50_ms": 58275.75375000015,
+      "latency_p95_ms": 61407.89938501547,
+      "api_cost_usd": 0.0,
+      "api_cost_per_1000_usd": 0.0
+    },
+    "typhoon-local|raw|clean": {
+      "engine": "typhoon-local",
+      "preprocess": "raw",
+      "variant": "clean",
+      "n": 12,
+      "cer_mean": 0.0,
+      "name_exact": 1.0,
+      "ingredient_acc": 1.0,
+      "strength_acc": 1.0,
+      "latency_p50_ms": 57766.06569997966,
+      "latency_p95_ms": 70733.25440000043,
+      "api_cost_usd": 0.0,
+      "api_cost_per_1000_usd": 0.0
+    },
+    "typhoon-local|raw|photo": {
+      "engine": "typhoon-local",
+      "preprocess": "raw",
+      "variant": "photo",
+      "n": 12,
+      "cer_mean": 0.042622104289004537,
+      "name_exact": 0.8333333333333334,
+      "ingredient_acc": 0.9583333333333334,
+      "strength_acc": 1.0,
+      "latency_p50_ms": 58565.74769993313,
+      "latency_p95_ms": 60671.63134503644,
+      "api_cost_usd": 0.0,
+      "api_cost_per_1000_usd": 0.0
+    }
+  }
+}

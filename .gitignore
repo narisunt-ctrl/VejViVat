@@ -44,3 +44,15 @@ ENV/
 # Recorded video temp files
 /videos/
 .vercel
+
+# OCR server / benchmark
+ocr-server/.venv/
+ocr-server/__pycache__/
+ocr-bench/__pycache__/
+ocr-bench/results/*/predictions.jsonl
+ocr-bench/data/real/*
+!ocr-bench/data/real/README.md
+!ocr-bench/data/real/manifest.example.jsonl
+
+# OpenCV.js is copied from node_modules at dev/build time
+public/vendor/
