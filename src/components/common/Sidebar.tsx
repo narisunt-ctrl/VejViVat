@@ -18,6 +18,8 @@ import {
   X,
   Smartphone,
   ClipboardList,
+  HeartPulse,
+  BookOpen,
 } from 'lucide-react';
 import teamLogo from '@/assets/team-logo.png';
 
@@ -44,6 +46,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const menuItems = [
     { to: '/', label: 'หน้าแรก & วิสัยทัศน์', icon: Sparkles, badge: '' },
     { to: '/patients', label: `เคสผู้ป่วย (${casesCount} เคส)`, icon: Users, badge: `${casesCount}` },
+    { to: '/clinician/followup', label: 'ติดตามผู้ป่วย (ยายพร้อม)', icon: HeartPulse, badge: 'ใหม่' },
+    { to: '/research', label: 'คลังงานวิจัย', icon: BookOpen, badge: 'ใหม่' },
     { to: '/smutthan', label: '1. Smutthan Engine', icon: Compass, badge: 'AI' },
     { to: '/prescribe', label: '2. สั่งยาแผนไทย & ตรวจ HDI', icon: Pill, badge: 'Core' },
     { to: '/prescription-print', label: 'ใบสั่งยา & ฉลากยา', icon: FileText, badge: 'Print' },

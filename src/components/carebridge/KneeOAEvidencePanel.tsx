@@ -3,63 +3,15 @@ import { BookOpenCheck, CheckCircle2, XCircle } from 'lucide-react';
 import type { SyntheticCase } from '../../types/patient';
 import { linkForCase } from '../../data/yai/demoLinks';
 import { yaiStore } from '../../services/yai/yaiStore';
+import { TEAM_REFERENCES } from '../../data/carebridge/research';
+import { Link } from 'react-router-dom';
 
 // Optional clinician card for knee osteoarthritis, from the teammate's adoption strategy (docs/handoff/04).
 // Every study figure below was supplied by the teammate and has NOT been checked against a primary source:
 // display_state stays RESEARCH_REVIEW_PENDING and no DOI/PMID is shown until someone verifies one.
 // The card never selects a herb, a dose or an interaction verdict; the clinician decides.
 
-interface EvidenceRef {
-  reference_id: string;
-  original_claim: string;
-  bibliographic_details: string | null;
-  doi_or_pmid: string | null;
-  full_text_checked: boolean;
-  citation_verified: boolean;
-  reviewer: string | null;
-  clinical_limitations: string;
-  date: string;
-  display_state: 'RESEARCH_REVIEW_PENDING' | 'VERIFIED';
-}
-
-const REFERENCES: EvidenceRef[] = [
-  {
-    reference_id: 'TEAM-01',
-    original_claim: 'ครีมตำรับ Thai Medicinal Plant-4 ทาเข่า 4 สัปดาห์ ผู้เข้าร่วมราว 199 คน ไม่ด้อยกว่า diclofenac ชนิดทา (ตามที่เพื่อนร่วมทีมสรุป)',
-    bibliographic_details: null,
-    doi_or_pmid: null,
-    full_text_checked: false,
-    citation_verified: false,
-    reviewer: null,
-    clinical_limitations: 'ต้องตรวจเกณฑ์ไม่ด้อยกว่า ตัวชี้วัด และอาการไม่พึงประสงค์จากต้นฉบับ',
-    date: '2026-10-28',
-    display_state: 'RESEARCH_REVIEW_PENDING',
-  },
-  {
-    reference_id: 'TEAM-03',
-    original_claim: 'ยาสหัศธาราแบบไมโครอิมัลชันในข้อเข่าเสื่อม ผู้เข้าร่วมราว 84 คน 28 วัน (ตามที่เพื่อนร่วมทีมสรุป)',
-    bibliographic_details: null,
-    doi_or_pmid: null,
-    full_text_checked: false,
-    citation_verified: false,
-    reviewer: null,
-    clinical_limitations: 'ต้องตรวจรูปแบบการศึกษา กลุ่มเปรียบเทียบ ช่วงความเชื่อมั่น และสถานะทะเบียนตำรับ',
-    date: '2026-10-28',
-    display_state: 'RESEARCH_REVIEW_PENDING',
-  },
-  {
-    reference_id: 'TEAM-04',
-    original_claim: 'รายงานโรงพยาบาลในไทยว่ามีการสั่งยาสหัศธาราเพิ่มขึ้นราว 104% (ตามที่เพื่อนร่วมทีมสรุป)',
-    bibliographic_details: null,
-    doi_or_pmid: null,
-    full_text_checked: false,
-    citation_verified: false,
-    reviewer: null,
-    clinical_limitations: 'เป็นปริมาณการสั่งยา ไม่ใช่ผลการรักษา และไม่บอกความเป็นเหตุเป็นผล',
-    date: '2026-10-28',
-    display_state: 'RESEARCH_REVIEW_PENDING',
-  },
-];
+const REFERENCES = TEAM_REFERENCES.filter((r) => r.topic === 'KNEE_OA' || r.reference_id === 'TEAM-04');
 
 const FIVE_C = [
   ['Clinical relevance', 'ปัญหาข้อเข่าเสื่อมของผู้ป่วยรายนี้ และเหตุผลที่พิจารณาการรักษาเสริม'],
@@ -123,6 +75,9 @@ export const KneeOAEvidencePanel: React.FC<{ currentCase: SyntheticCase }> = ({ 
           </tbody>
         </table>
       </div>
+      <Link to="/research" className="inline-block text-xs font-semibold text-brand-700 underline">
+        เปิดคลังงานวิจัย: ค้นงานใหม่จาก PubMed / ClinicalTrials.gov และบันทึกงานที่อ่านแล้ว
+      </Link>
 
       <div className="space-y-1 rounded-xl border border-slate-200 p-3 text-sm">
         <p className="font-bold text-slate-800">การติดตามจากผู้ป่วย</p>

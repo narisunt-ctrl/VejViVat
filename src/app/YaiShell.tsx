@@ -32,7 +32,7 @@ export const YaiShell: React.FC = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-yai-mint/60 text-yai-ink">
+    <div className="min-h-screen bg-yai-sky text-yai-ink">
       <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col bg-yai-paper shadow-none sm:shadow-xl">
         <a href="#yai-main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-white focus:p-2">
           ข้ามไปเนื้อหา

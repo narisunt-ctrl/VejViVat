@@ -126,3 +126,17 @@ creates a schedule), Playwright E2E (not installed).
 - Added CareBridge → ยายพร้อม order sync with explicit approval, dispense and schedule gate; versioned, idempotent, consent-gated.
 - Added optional knee-OA evidence & follow-up card for clinicians.
 - Clinician-order reminders can no longer be created by hand; patient-set reminders no longer pre-fill 08:00.
+
+## Care network update (branch `feat/yai-care-network`, 2026-10-29)
+
+| Feature | What it does | Files |
+|---|---|---|
+| Nearest hospital / clinic | 16 fictional facilities (hospitals with a Thai traditional medicine service, clinics). Patient picks province/district or uses the device location (kept in the browser). Ranked by zone first (same district → province → region → further), then straight-line distance. Filters: hospital/clinic, TTM practitioner only. | `src/domain/yai/facilityRanking.ts`, `src/data/yai/thaiAreas.ts`, `src/data/yai/fixtures.ts`, `src/pages/yai/ClinicsPage.tsx` |
+| Doctor follow-up per patient | `#/clinician/followup`: summary tiles, "ต้องดูก่อน" interaction flags from the existing HDI database (journal food/medicine statements + medicine list + clinician orders), 14-day symptom timeline, medicines and dose self-reports, sent messages with acknowledgement. Consent-gated (MEDICINES), every read audited. | `src/pages/clinician/FollowUpPage.tsx`, `src/domain/yai/interactionCheck.ts` |
+| Alert grandma | Doctor presses "แจ้งเตือนยาย", edits a neutral draft and sends; ยายพร้อม home shows "ข้อความจากคุณหมอ" with read-aloud and "รับทราบแล้ว"; the doctor sees when it was acknowledged. Same-browser demo channel, no push/SMS. | `src/services/yai/clinicianMessages.ts`, `src/components/yai/DoctorMessagesCard.tsx` |
+| Research library | `#/research`: topics from the teammate strategy, live search links (PubMed newest first, Google Scholar last 3 years, ClinicalTrials.gov), teammate claims kept "รอตรวจแหล่งอ้างอิง", and a form to record papers a clinician has read (link or DOI required). | `src/data/carebridge/research.ts`, `src/pages/clinician/ResearchLibraryPage.tsx` |
+| Patient UI style | Public-health-app pattern: profile card, round service tiles, pale sky background; voice journal stays the main action. No third-party logo or name. | `src/pages/yai/YaiHomePage.tsx`, `src/app/YaiShell.tsx`, `tailwind.config.js` |
+
+Checked in the in-app browser: facility ranking for อ.สันทราย (same-district hospital 1.5 km first; Chom Thong 62 km before Lamphun 30 km because Lamphun is another province), follow-up page flags HDI-001 (ขมิ้นชัน + warfarin) and HDI-013 (ยาสหัศธารา order + warfarin), message → acknowledge → doctor sees acknowledgement, research links open the real databases. Tests: 14 files, 107 pass (`src/tests/yai/yai-care-network.test.ts` adds 11).
+
+Limits: facility data, coordinates and opening hours are fictional; distance is straight-line; HDI database has 14 sample pairs and no food–drug rules beyond herbs in it; "no flag" never means safe. The research page does not fetch or summarise papers itself.
