@@ -20,6 +20,23 @@ from typing import Optional
 import cv2
 import numpy as np
 
+def _load_dotenv() -> None:
+    """Read ocr-server/.env (git-ignored) so the Typhoon key never has to be typed into a shell or committed.
+    Real environment variables win over the file."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    if not os.path.exists(path):
+        return
+    with open(path, encoding="utf-8") as fh:
+        for raw in fh:
+            line = raw.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+_load_dotenv()
+
 PADDLE_DET_MODEL = os.environ.get("PADDLE_DET_MODEL", "PP-OCRv5_mobile_det")
 PADDLE_REC_MODEL = os.environ.get("PADDLE_REC_MODEL", "th_PP-OCRv5_mobile_rec")
 TYPHOON_MODEL = os.environ.get("TYPHOON_MODEL", "typhoon-ocr")
