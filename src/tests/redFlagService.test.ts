@@ -163,4 +163,33 @@ describe('RedFlagService', () => {
     expect(res.hasWarnings).toBe(true);
     expect(res.alerts.some((a) => a.id === 'RF-MED-WARFARIN')).toBe(true);
   });
+
+  it('does not treat missing vitals as normal readings', () => {
+    const missingCase: SyntheticCase = {
+      ...baseCase,
+      current_encounter: {
+        ...baseCase.current_encounter,
+        vitals: { ...baseCase.current_encounter.vitals, sbp: undefined as unknown as number, dbp: undefined as unknown as number, pr: 0 },
+      },
+    };
+    const res = RedFlagService.evaluatePatientSafety(missingCase);
+    expect(res.overallStatus).not.toBe('SAFE_FOR_TTM');
+    const missing = res.alerts.find((a) => a.id === 'RF-VITALS-MISSING');
+    expect(missing?.title).toContain('ความดันโลหิต');
+    expect(missing?.title).toContain('ชีพจร');
+    expect(res.sbarSummary.background).toContain('ไม่ได้วัด');
+    expect(res.sbarSummary.background).not.toContain('120/80');
+  });
+
+  it('still flags a measured crisis when another vital is missing', () => {
+    const res = RedFlagService.evaluatePatientSafety({
+      ...baseCase,
+      current_encounter: {
+        ...baseCase.current_encounter,
+        vitals: { ...baseCase.current_encounter.vitals, sbp: 185, dbp: undefined as unknown as number },
+      },
+    });
+    expect(res.alerts.some((a) => a.id === 'RF-BP-CRISIS')).toBe(true);
+    expect(res.hasCriticalRedFlags).toBe(true);
+  });
 });

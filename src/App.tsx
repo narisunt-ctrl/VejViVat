@@ -20,6 +20,7 @@ import { AnalyticsPage } from './pages/AnalyticsPage';
 import { InterRaterPage } from './pages/InterRaterPage';
 import { AdminHdiPage } from './pages/AdminHdiPage';
 import { SystemStatusPage } from './pages/SystemStatusPage';
+import { PreVisitQueuePage, PreVisitDetailPage } from './pages/clinician/PreVisitQueuePage';
 
 export const App: React.FC = () => {
   const navigate = useNavigate();
@@ -143,6 +144,16 @@ export const App: React.FC = () => {
               <Route path="/inter-rater" element={<InterRaterPage />} />
               <Route path="/admin-hdi" element={<AdminHdiPage />} />
               <Route path="/status" element={<SystemStatusPage />} />
+              <Route path="/clinician/previsit" element={<PreVisitQueuePage />} />
+              <Route path="/clinician/previsit/:clinicId" element={<PreVisitDetailPage />} />
+              <Route
+                path="*"
+                element={
+                  <div className="py-16 text-center text-slate-600">
+                    <p className="text-lg font-bold">ไม่พบหน้านี้</p>
+                  </div>
+                }
+              />
             </Routes>
           </main>
         </div>

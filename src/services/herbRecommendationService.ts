@@ -12,7 +12,8 @@ export interface HerbRecommendationResult {
   matchedElement: string;
   elementRationale: string;
   symptomRationale: string;
-  hdiRisk: 'HIGH' | 'MODERATE' | 'SAFE';
+  // NO_MATCH_IN_COVERED_PAIRS: no pair found in the limited sample HDI dataset; it is not proof of safety
+  hdiRisk: 'HIGH' | 'MODERATE' | 'NO_MATCH_IN_COVERED_PAIRS';
   hdiInteractions: MatchedInteractionResult[];
   hdiSummary: string;
   isTopRecommendation: boolean;
@@ -150,8 +151,8 @@ export class HerbRecommendationService {
       const hasHighHdi = liveHdi.some((h) => h.interaction.severity_code === 'HIGH');
       const hasModHdi = liveHdi.some((h) => h.interaction.severity_code === 'MODERATE');
 
-      let hdiRisk: 'HIGH' | 'MODERATE' | 'SAFE' = 'SAFE';
-      let hdiSummary = '🟢 ปลอดภัย ไม่พบอันตรกิริยากับยาแผนปัจจุบันที่ใช้อยู่';
+      let hdiRisk: 'HIGH' | 'MODERATE' | 'NO_MATCH_IN_COVERED_PAIRS' = 'NO_MATCH_IN_COVERED_PAIRS';
+      let hdiSummary = '⚪ ไม่พบคู่อันตรกิริยาในฐานข้อมูลตัวอย่าง (ครอบคลุมจำกัด) — ยังยืนยันว่าปลอดภัยไม่ได้ ควรให้เภสัชกรตรวจสอบ';
 
       if (hasHighHdi) {
         hdiRisk = 'HIGH';

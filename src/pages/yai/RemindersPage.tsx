@@ -1,0 +1,161 @@
+import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useYai, yaiStore, demoNow } from '../../services/yai/yaiStore';
+import { todaysOccurrences, bangkokNowLabel } from '../../services/yai/reminderSchedule';
+import { canCreateReminder, isValidTime } from '../../domain/yai/policies';
+import { DoseSelfReport } from '../../domain/yai/models';
+import { BigButton, Card, Field, inputCls, Notice, PageTitle, formatThaiDateTime } from '../../components/yai/ui';
+
+const RESPONSES: { value: DoseSelfReport; label: string }[] = [
+  { value: 'TAKEN_REPORTED', label: 'กินแล้ว' },
+  { value: 'NOT_YET_REPORTED', label: 'ยังไม่ได้กิน' },
+  { value: 'UNCERTAIN', label: 'ไม่แน่ใจ' },
+];
+const RESPONSE_LABEL: Record<DoseSelfReport, string> = { TAKEN_REPORTED: 'บอกว่ากินแล้ว', NOT_YET_REPORTED: 'บอกว่ายังไม่ได้กิน', UNCERTAIN: 'ไม่แน่ใจ' };
+
+export const RemindersPage: React.FC = () => {
+  const state = useYai((s) => s);
+  const [params] = useSearchParams();
+  const now = demoNow(state);
+  const occurrences = todaysOccurrences(state, now);
+  const eligible = state.medicines.filter((m) => canCreateReminder(m, 'PATIENT_CONFIRMED').ok);
+  const [medId, setMedId] = useState(params.get('medicine') ?? eligible[0]?.id ?? '');
+  const [times, setTimes] = useState<string[]>(['08:00']);
+  const [confirmed, setConfirmed] = useState(false);
+  const [msg, setMsg] = useState<{ tone: 'info' | 'alert'; text: string } | null>(null);
+  const [notifyState, setNotifyState] = useState<string>(() =>
+    typeof Notification === 'undefined' ? 'unsupported' : Notification.permission
+  );
+  const medName = (id: string) => state.medicines.find((m) => m.id === id)?.displayName.value ?? 'ยา';
+  const logFor = (key: string, planId: string) => state.doseLogs.find((l) => l.id === `${planId}@${key}`);
+
+  return (
+    <div className="space-y-5">
+      <PageTitle title="เตือนกินยา" subtitle="เตือนเฉพาะยาที่ยืนยันแล้ว ตามเวลาที่คุณยายเลือก" />
+
+      <Card className="space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-lg">
+            เวลาตอนนี้ <b>{bangkokNowLabel(now).time} น.</b>
+          </p>
+          {state.demoClockOffsetMinutes !== 0 && <span className="rounded-full bg-amber-50 px-2 py-0.5 text-sm font-semibold text-yai-warn">จำลองเวลา</span>}
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <BigButton variant="secondary" onClick={() => yaiStore.shiftDemoClock(60)}>
+            เลื่อนเวลา +1 ชม.
+          </BigButton>
+          <BigButton variant="ghost" onClick={() => yaiStore.shiftDemoClock(0)}>
+            เวลาจริง
+          </BigButton>
+        </div>
+        <p className="text-sm text-yai-ink/70">ปุ่มเลื่อนเวลาใช้สำหรับการสาธิตเท่านั้น</p>
+      </Card>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-bold">วันนี้</h2>
+        {occurrences.length === 0 && <p className="text-lg text-yai-ink/70">ยังไม่มีการเตือนที่ตั้งไว้</p>}
+        {occurrences.map((o) => {
+          const log = logFor(o.key, o.plan.id);
+          return (
+            <Card key={o.key + o.plan.id} className={o.isPast && !log ? 'border-yai-teal' : ''}>
+              <p className="text-2xl font-bold">{o.time} น.</p>
+              <p className="text-lg">{medName(o.plan.medicineId)}</p>
+              <p className="text-sm text-yai-ink/70">
+                ตั้งตาม: {o.plan.source === 'CLINICIAN_ORDER' ? 'คำสั่งแพทย์' : 'คุณยายยืนยันเอง'} · ยืนยันเมื่อ {formatThaiDateTime(o.plan.verifiedAt)}
+              </p>
+              {o.isPast ? (
+                <>
+                  <p className="mt-3 text-lg font-semibold">ยายรับประทานยาแล้วหรือยัง?</p>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    {RESPONSES.map((r) => (
+                      <button
+                        key={r.value}
+                        type="button"
+                        aria-pressed={log?.response === r.value}
+                        onClick={() => yaiStore.reportDose(o.plan.id, o.key, r.value)}
+                        className={`min-h-[56px] rounded-2xl border-2 text-base font-bold ${log?.response === r.value ? 'border-yai-deep bg-yai-mint' : 'border-yai-ink/15 bg-white'}`}
+                      >
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
+                  {log && <p className="mt-2 text-sm text-yai-ink/70">บันทึกว่า "{RESPONSE_LABEL[log.response]}" แล้ว (เป็นสิ่งที่บอกเอง ไม่ใช่การยืนยันว่ากลืนยาจริง)</p>}
+                  {log?.response === 'NOT_YET_REPORTED' && <Notice tone="warn" title="ถ้าลืมกิน อย่ากินเพิ่มเป็นสองเท่า ถามเภสัชกรหรือคุณหมอก่อนนะคะ" />}
+                </>
+              ) : (
+                <p className="mt-2 text-base text-yai-deep">จะเตือนเมื่อถึงเวลา</p>
+              )}
+            </Card>
+          );
+        })}
+      </section>
+
+      <Card className="space-y-4">
+        <h2 className="text-xl font-bold">ตั้งเตือนใหม่</h2>
+        {eligible.length === 0 ? (
+          <p className="text-lg">ยังไม่มียาที่ยืนยันแล้ว ต้องยืนยันรายการยาก่อนจึงจะตั้งเตือนได้</p>
+        ) : (
+          <>
+            <Field label="ยา" hint="แสดงเฉพาะยาที่ยืนยันแล้ว ระบบไม่ตั้งเตือนจากข้อความบนฉลากเอง">
+              <select className={inputCls} value={medId} onChange={(e) => setMedId(e.target.value)}>
+                {eligible.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.displayName.value}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            {times.map((t, i) => (
+              <div key={i} className="flex items-end gap-2">
+                <Field label={`เวลาที่ ${i + 1}`}>
+                  <input type="time" className={inputCls} value={t} onChange={(e) => setTimes(times.map((x, j) => (j === i ? e.target.value : x)))} />
+                </Field>
+                {times.length > 1 && (
+                  <button type="button" className="min-h-[52px] px-3 text-base font-bold text-yai-alert" onClick={() => setTimes(times.filter((_, j) => j !== i))}>
+                    ลบ
+                  </button>
+                )}
+              </div>
+            ))}
+            {times.length < 4 && (
+              <button type="button" className="min-h-[44px] text-lg font-bold text-yai-deep underline" onClick={() => setTimes([...times, '20:00'])}>
+                + เพิ่มเวลา
+              </button>
+            )}
+            <label className="flex min-h-[56px] items-start gap-3 text-lg">
+              <input type="checkbox" className="mt-1 h-7 w-7 shrink-0 accent-yai-deep" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
+              ยืนยันว่าเวลานี้ตรงกับที่คุณหมอสั่งหรือที่คุณยายใช้อยู่จริง
+            </label>
+            <BigButton
+              disabled={!confirmed || !times.every(isValidTime)}
+              onClick={() => {
+                const res = yaiStore.createReminder(medId, times, 'PATIENT_CONFIRMED');
+                setMsg(res.ok ? { tone: 'info', text: 'เริ่มเตือนแล้ว' } : { tone: 'alert', text: res.reason ?? 'ตั้งเตือนไม่สำเร็จ' });
+                if (res.ok) setConfirmed(false);
+              }}
+            >
+              เริ่มเตือน
+            </BigButton>
+            {msg && <Notice tone={msg.tone} title={msg.text} />}
+          </>
+        )}
+      </Card>
+
+      <Card className="space-y-2">
+        <h2 className="text-xl font-bold">แจ้งเตือนบนเครื่อง</h2>
+        {notifyState === 'unsupported' ? (
+          <p className="text-base">เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน จะเห็นการเตือนเมื่อเปิดแอปนี้อยู่เท่านั้น</p>
+        ) : notifyState === 'granted' ? (
+          <p className="text-base">อนุญาตแล้ว แต่ต้นแบบนี้ยังเตือนเฉพาะตอนเปิดแอปอยู่ ยังไม่มีระบบส่งแจ้งเตือนเบื้องหลัง</p>
+        ) : (
+          <>
+            <p className="text-base">ต้นแบบนี้เตือนเมื่อเปิดแอปอยู่ เบราว์เซอร์บนมือถือบางรุ่นอาจไม่แจ้งเตือนเมื่อปิดแอป</p>
+            <BigButton variant="secondary" onClick={() => Notification.requestPermission().then(setNotifyState)}>
+              อนุญาตการแจ้งเตือน
+            </BigButton>
+          </>
+        )}
+      </Card>
+    </div>
+  );
+};

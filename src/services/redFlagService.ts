@@ -49,30 +49,53 @@ export class RedFlagService {
     const alerts: RedFlagAlert[] = [];
 
     // 1. Vitals Red Flags
-    const sbp = vitals.sbp || 120;
-    const dbp = vitals.dbp || 80;
-    const btemp = vitals.btemp || 36.6;
-    const pr = vitals.pr || 74;
-    const rr = vitals.rr || 18;
+    // Missing vitals stay null: an unmeasured value must never be treated as a normal reading
+    const vital = (v?: number | null) => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : null);
+    const ge = (v: number | null, threshold: number) => v !== null && v >= threshold;
+    const le = (v: number | null, threshold: number) => v !== null && v <= threshold;
+    const fmtV = (v: number | null) => (v === null ? 'ไม่ได้วัด' : `${v}`);
+    const sbp = vital(vitals?.sbp);
+    const dbp = vital(vitals?.dbp);
+    const btemp = vital(vitals?.btemp);
+    const pr = vital(vitals?.pr);
+    const rr = vital(vitals?.rr);
+    const missingVitals = [
+      sbp === null || dbp === null ? 'ความดันโลหิต' : null,
+      btemp === null ? 'อุณหภูมิกาย' : null,
+      pr === null ? 'ชีพจร' : null,
+      rr === null ? 'อัตราการหายใจ' : null,
+    ].filter((v): v is string => v !== null);
+    if (missingVitals.length > 0) {
+      alerts.push({
+        id: 'RF-VITALS-MISSING',
+        category: 'VITALS',
+        severity: 'WARNING',
+        title: `สัญญาณชีพยังไม่ครบ: ${missingVitals.join(', ')}`,
+        description: 'ระบบไม่สามารถประเมินข้อห้ามจากค่าที่ยังไม่ได้วัด และไม่ได้ถือว่าค่าที่ขาดเป็นค่าปกติ',
+        actionRequired: 'วัดสัญญาณชีพให้ครบก่อนตัดสินใจนวดไทยหรือทำหัตถการ',
+        procedureRestriction: 'PRECAUTION_AREA',
+        suggestedDepartment: 'อายุรกรรม (OPD)',
+      });
+    }
 
     // 1.1 Hypertensive Crisis / Severe Hypertension
-    if (sbp >= 180 || dbp >= 110) {
+    if (ge(sbp, 180) || ge(dbp, 110)) {
       alerts.push({
         id: 'RF-BP-CRISIS',
         category: 'VITALS',
         severity: 'CRITICAL',
-        title: `ความดันโลหิตวิกฤต (Hypertensive Crisis): ${sbp}/${dbp} mmHg`,
+        title: `ความดันโลหิตวิกฤต (Hypertensive Crisis): ${fmtV(sbp)}/${fmtV(dbp)} mmHg`,
         description: 'ความดันโลหิตสูงในระดับวิกฤต เสี่ยงต่อภาวะเส้นเลือดในสมองแตก (Hemorrhagic Stroke) หรือกล้ามเนื้อหัวใจขาดเลือดเฉียบพลัน',
         actionRequired: 'ห้ามนวดไทยและห้ามทำหัตถการทุกชนิดเด็ดขาด! ส่งต่อห้องฉุกเฉิน (ER) ทันทีเพื่อรับยาลดความดัน',
         procedureRestriction: 'PROHIBIT_ALL_PROCEDURES',
         suggestedDepartment: 'ห้องฉุกเฉิน (ER)',
       });
-    } else if (sbp >= 160 || dbp >= 100) {
+    } else if (ge(sbp, 160) || ge(dbp, 100)) {
       alerts.push({
         id: 'RF-BP-STAGE2',
         category: 'VITALS',
         severity: 'CRITICAL',
-        title: `ความดันโลหิตสูงระดับ 2 เกินเกณฑ์ปลอดภัย: ${sbp}/${dbp} mmHg`,
+        title: `ความดันโลหิตสูงระดับ 2 เกินเกณฑ์ปลอดภัย: ${fmtV(sbp)}/${fmtV(dbp)} mmHg`,
         description: 'ตามมาตรฐานกรมการแพทย์แผนไทยฯ ห้ามนวดไทยหากความดันโลหิตสูงเกิน 160/100 mmHg เนื่องจากแรงกดจุดจะกระตุ้น sympathetic tone ทำให้ความดันพุ่งสูงขึ้น',
         actionRequired: 'งดการนวดไทย/หัตถการดัดดึง ส่งพบแพทย์แผนปัจจุบันเพื่อประเมินและปรับยา',
         procedureRestriction: 'PROHIBIT_ALL_PROCEDURES',
@@ -81,23 +104,23 @@ export class RedFlagService {
     }
 
     // 1.2 High Fever (ไข้สูงเกิน 38.5 C)
-    if (btemp >= 38.5) {
+    if (ge(btemp, 38.5)) {
       alerts.push({
         id: 'RF-TEMP-HIGH',
         category: 'VITALS',
         severity: 'CRITICAL',
-        title: `มีไข้สูงเกินเกณฑ์ปลอดภัย: ${btemp}°C`,
+        title: `มีไข้สูงเกินเกณฑ์ปลอดภัย: ${fmtV(btemp)}°C`,
         description: 'อุณหภูมิกายสูงเกิน 38.5°C เป็นข้อห้ามเด็ดขาดในการนวดไทยและหัตถการประคบสมุนไพร เพราะจะเร่งการไหลเวียนและกระตุ้นการติดเชื้อรุนแรง',
         actionRequired: 'ห้ามนวดเด็ดขาด ให้ยาลดไข้ เช็ดตัวลดไข้ และส่งตรวจหาสาเหตุการติดเชื้อ',
         procedureRestriction: 'PROHIBIT_ALL_PROCEDURES',
         suggestedDepartment: 'อายุรกรรม (OPD)',
       });
-    } else if (btemp >= 37.8) {
+    } else if (ge(btemp, 37.8)) {
       alerts.push({
         id: 'RF-TEMP-MODERATE',
         category: 'VITALS',
         severity: 'WARNING',
-        title: `มีไข้ต่ำ/ปานกลาง: ${btemp}°C`,
+        title: `มีไข้ต่ำ/ปานกลาง: ${fmtV(btemp)}°C`,
         description: 'ผู้ป่วยมีภาวะตัวร้อนรุมๆ ควรหลีกเลี่ยงการนวดหนักและการอบประคบร้อนจัด',
         actionRequired: 'เฝ้าระวังอาการไข้ หากไข้สูงขึ้นเกิน 38.5°C ให้งดหัตถการทันที',
         procedureRestriction: 'PRECAUTION_AREA',
@@ -106,23 +129,23 @@ export class RedFlagService {
     }
 
     // 1.3 Abnormal Pulse (Tachycardia / Bradycardia)
-    if (pr >= 120) {
+    if (ge(pr, 120)) {
       alerts.push({
         id: 'RF-PR-TACHY',
         category: 'VITALS',
         severity: 'CRITICAL',
-        title: `หัวใจเต้นเร็วผิดปกติ (Tachycardia): ${pr} ครั้ง/นาที`,
+        title: `หัวใจเต้นเร็วผิดปกติ (Tachycardia): ${fmtV(pr)} ครั้ง/นาที`,
         description: 'ชีพจรเต้นเร็วเกิน 120 bpm อาจเกิดจากภาวะหัวใจเต้นผิดจังหวะ ภาวะขาดน้ำ หรือการติดเชื้อในกระแสเลือด',
         actionRequired: 'งดหัตถการกระตุ้นหัวใจ ให้ผู้ป่วยพักสงบ และส่งตรวจคลื่นไฟฟ้าหัวใจ (EKG)',
         procedureRestriction: 'PROHIBIT_ALL_PROCEDURES',
         suggestedDepartment: 'ห้องฉุกเฉิน (ER)',
       });
-    } else if (pr <= 45) {
+    } else if (le(pr, 45)) {
       alerts.push({
         id: 'RF-PR-BRADY',
         category: 'VITALS',
         severity: 'CRITICAL',
-        title: `หัวใจเต้นช้าผิดปกติ (Severe Bradycardia): ${pr} ครั้ง/นาที`,
+        title: `หัวใจเต้นช้าผิดปกติ (Severe Bradycardia): ${fmtV(pr)} ครั้ง/นาที`,
         description: 'ชีพจรต่ำกว่า 45 bpm เสี่ยงต่อภาวะ Heart Block หรือการไหลเวียนเลือดไปสมองไม่เพียงพอ (วูบ/หมดสติ)',
         actionRequired: 'งดหัตถการและส่งพบแพทย์เพื่อประเมินการนำกระแสหัวใจ',
         procedureRestriction: 'PROHIBIT_ALL_PROCEDURES',
@@ -131,12 +154,12 @@ export class RedFlagService {
     }
 
     // 1.4 Respiratory Distress
-    if (rr >= 28) {
+    if (ge(rr, 28)) {
       alerts.push({
         id: 'RF-RR-TACHYPNEA',
         category: 'VITALS',
         severity: 'CRITICAL',
-        title: `หายใจหอบเหนื่อยผิดปกติ (Tachypnea): ${rr} ครั้ง/นาที`,
+        title: `หายใจหอบเหนื่อยผิดปกติ (Tachypnea): ${fmtV(rr)} ครั้ง/นาที`,
         description: 'อัตราการหายใจเร็วผิดปกติ เสี่ยงต่อภาวะหอบหืดเฉียบพลัน ปอดอักเสบ หรือภาวะน้ำท่วมปอด',
         actionRequired: 'ให้ออกซิเจน จัดท่านั่งศีรษะสูง และส่งต่อห้องฉุกเฉินทันที',
         procedureRestriction: 'PROHIBIT_ALL_PROCEDURES',
@@ -316,12 +339,12 @@ export class RedFlagService {
       ? '❌ ห้ามนวดไทยและหัตถการทุกชนิดเด็ดขาด เนื่องจากตรวจพบภาวะอันตราย/ข้อห้ามทางการแพทย์'
       : hasWarnings
       ? '⚠️ นวดไทยได้ด้วยความระมัดระวังเป็นพิเศษ (หลีกเลี่ยงการกดจุดลึกหรือดัดรุนแรง)'
-      : '✓ สามารถให้บริการนวดไทยและหัตถการได้ตามมาตรฐานปกติ';
+      : '✓ ไม่พบข้อห้ามจากกฎคัดกรองที่มีอยู่ — พิจารณาให้บริการตามดุลยพินิจของแพทย์';
 
     // Formulate Standard SBAR Summary for Emergency Referral
     const criticalTitles = alerts.map((a) => a.title).join(', ');
     const sbarSituation = `ผู้ป่วย ${patientCase.patient_info.name} (HN: ${patientCase.patient_info.hn}, อายุ ${patientCase.patient_info.age} ปี) มาด้วยอาการ "${chiefComplaint}" ตรวจพบสัญญาณอันตราย/ข้อห้ามทางการแพทย์: ${criticalTitles || 'มีอาการรุนแรงเกินขอบเขตบริการแผนไทย'}`;
-    const sbarBackground = `สัญญาณชีพแรกรับ: BTEMP ${btemp}°C, BP ${sbp}/${dbp} mmHg, PR ${pr} bpm, RR ${rr} ครั้ง/นาที. โรคประจำตัว: ${chronic.map((c) => c.name).join(', ') || 'ไม่มี'}. ยาแผนปัจจุบันที่กำลังใช้อยู่: ${meds.map((m) => `${m.generic_name} (${m.brand_name})`).join(', ') || 'ไม่มี'}`;
+    const sbarBackground = `สัญญาณชีพแรกรับ: BTEMP ${fmtV(btemp)}°C, BP ${fmtV(sbp)}/${fmtV(dbp)} mmHg, PR ${fmtV(pr)} bpm, RR ${fmtV(rr)} ครั้ง/นาที. โรคประจำตัว: ${chronic.map((c) => c.name).join(', ') || 'ไม่มี'}. ยาแผนปัจจุบันที่กำลังใช้อยู่: ${meds.map((m) => `${m.generic_name} (${m.brand_name})`).join(', ') || 'ไม่มี'}`;
     const sbarAssessment = `แพทย์แผนไทยประเมินพบข้อห้ามการนวดไทย/หัตถการ และสงสัยภาวะอันตรายที่ต้องได้รับการตรวจวินิจฉัยและรักษาโดยแพทย์แผนปัจจุบันอย่างเร่งด่วน ได้แก่ ${alerts.map((a) => `[${a.title}] - ${a.description}`).join(' | ')}`;
     const sbarRecommendation = `ขอส่งต่อผู้ป่วยเข้ารับการตรวจรักษาที่ ${alerts[0]?.suggestedDepartment || 'ห้องฉุกเฉิน (ER)'} เพื่อประเมินทางคลินิก ตรวจทางห้องปฏิบัติการ และให้การรักษาอย่างปลอดภัยต่อไป`;
 
