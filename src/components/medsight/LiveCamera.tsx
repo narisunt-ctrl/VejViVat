@@ -35,7 +35,7 @@ function qualityOf(source: CanvasImageSource, w: number, h: number) {
   return q;
 }
 
-export const LiveCamera: React.FC<{ onCapture: (r: CaptureResult) => void; busy?: boolean }> = ({ onCapture, busy }) => {
+export const LiveCamera: React.FC<{ onCapture: (r: CaptureResult) => void; busy?: boolean; overlay?: React.ReactNode }> = ({ onCapture, busy, overlay }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -101,6 +101,8 @@ export const LiveCamera: React.FC<{ onCapture: (r: CaptureResult) => void; busy?
     const { canvas } = drawScaled(v, v.videoWidth, v.videoHeight, MAX_SIDE);
     setFlash(true);
     setTimeout(() => setFlash(false), 150);
+    // Short buzz so the user knows the photo was taken without looking at the screen
+    navigator.vibrate?.(60);
     stableRef.current = 0;
     onCapture({ dataUrl: canvas.toDataURL('image/jpeg', 0.82), source: 'CAMERA', quality: { brightness: q.brightness, sharpness: q.sharpness, glare: q.glare } });
   }, [onCapture]);
@@ -158,6 +160,7 @@ export const LiveCamera: React.FC<{ onCapture: (r: CaptureResult) => void; busy?
               className={`pointer-events-none absolute inset-[12%] rounded-3xl border-4 ${quality?.status === 'OK' ? 'border-yai-leaf' : 'border-white/70'} transition-colors`}
               aria-hidden="true"
             />
+            {overlay && <div className="absolute inset-x-0 top-0 p-2">{overlay}</div>}
             {flash && <div className="absolute inset-0 bg-white/70" aria-hidden="true" />}
           </>
         ) : (
