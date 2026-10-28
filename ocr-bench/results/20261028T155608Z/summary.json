@@ -1,0 +1,74 @@
+{
+  "meta": {
+    "started": "20261028T155608Z",
+    "n_images": 4,
+    "sources": "real",
+    "engines": [
+      "paddleocr",
+      "typhoon-local"
+    ],
+    "preprocess": [
+      "raw"
+    ],
+    "skipped": {},
+    "typhoon_usd_per_page": null
+  },
+  "summary": {
+    "paddleocr|raw|all": {
+      "engine": "paddleocr",
+      "preprocess": "raw",
+      "variant": "all",
+      "n": 4,
+      "cer_mean": 0.35583892018152496,
+      "name_exact": 0.0,
+      "ingredient_acc": 0.25,
+      "strength_acc": 0.5,
+      "latency_p50_ms": 9983.779450063594,
+      "latency_p95_ms": 20730.703690042716,
+      "api_cost_usd": 0.0,
+      "api_cost_per_1000_usd": 0.0
+    },
+    "paddleocr|raw|real": {
+      "engine": "paddleocr",
+      "preprocess": "raw",
+      "variant": "real",
+      "n": 4,
+      "cer_mean": 0.35583892018152496,
+      "name_exact": 0.0,
+      "ingredient_acc": 0.25,
+      "strength_acc": 0.5,
+      "latency_p50_ms": 9983.779450063594,
+      "latency_p95_ms": 20730.703690042716,
+      "api_cost_usd": 0.0,
+      "api_cost_per_1000_usd": 0.0
+    },
+    "typhoon-local|raw|all": {
+      "engine": "typhoon-local",
+      "preprocess": "raw",
+      "variant": "all",
+      "n": 4,
+      "cer_mean": 0.31158878258879275,
+      "name_exact": 1.0,
+      "ingredient_acc": 0.75,
+      "strength_acc": 1.0,
+      "latency_p50_ms": 111079.05709999613,
+      "latency_p95_ms": 133921.37934999773,
+      "api_cost_usd": 0.0,
+      "api_cost_per_1000_usd": 0.0
+    },
+    "typhoon-local|raw|real": {
+      "engine": "typhoon-local",
+      "preprocess": "raw",
+      "variant": "real",
+      "n": 4,
+      "cer_mean": 0.31158878258879275,
+      "name_exact": 1.0,
+      "ingredient_acc": 0.75,
+      "strength_acc": 1.0,
+      "latency_p50_ms": 111079.05709999613,
+      "latency_p95_ms": 133921.37934999773,
+      "api_cost_usd": 0.0,
+      "api_cost_per_1000_usd": 0.0
+    }
+  }
+}

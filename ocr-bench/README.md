@@ -54,3 +54,17 @@ On photo-like images both reach 83.3% name accuracy and both miss the name on th
 Typhoon's misses are fluent, plausible Thai: it dropped the leading ยา / ยาธ (`น้ำแก้ไอมะขามป้อม`, `ชาตุอบเชย`) and
 wrote `ประเภทเครื่องละ` for a line it could not read. Such text looks right at a glance, which is why OCR output is
 always a draft that the patient or pharmacist must check. Synthetic data only: confirm with real photos.
+
+### Real package images (2026-10-28, 4 labels, raw)
+
+`--source real` on 4 turmeric products (box, capsule boxes, sachet; mostly shop/product photos, not phone shots).
+Ground truth was drafted from the images and is waiting for the owner's check. Strength is scored only where a strength is printed.
+
+| Engine | CER ↓ | Name exact | Ingredients | Strength+unit | p50 |
+|---|---|---|---|---|---|
+| PaddleOCR PP-OCRv5 Thai | 0.356 | 0/4 | 25% | 1/2 | 10 s |
+| Typhoon OCR 1.5 local | 0.312 | 4/4 | 75% | 2/2 | 111 s |
+
+PaddleOCR drops or swaps Thai vowels and tone marks in large display fonts (`ขมินซิน`, `ขมิ้นผJ`, `oโรก`). Typhoon gets
+the names but invents fluent text where print is small (`ไข่โภค` for the brand, `รูปถังหมดไม่ใช่เพื่อประกอบ`, which
+reverses the meaning) and skipped ขมิ้นชัน on one box. Report: `results/20261028T155608Z/report.md`.

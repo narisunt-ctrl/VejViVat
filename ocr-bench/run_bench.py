@@ -71,7 +71,8 @@ def summarize(rows: list[dict], usd_per_page: float | None) -> dict:
             "cer_mean": sum(r["cer"] for r in rs) / len(rs),
             "name_exact": sum(r["name_exact"] for r in rs) / len(rs),
             "ingredient_acc": sum(r["ingredient_acc"] for r in rs) / len(rs),
-            "strength_acc": sum(r["strength_ok"] for r in rs) / len(rs),
+            # labels without a printed strength (spices, some herbal boxes) are left out of this score
+            "strength_acc": (lambda xs: sum(xs) / len(xs) if xs else None)([r["strength_ok"] for r in rs if r["strength_ok"] is not None]),
             "latency_p50_ms": percentile(lat, 0.5),
             "latency_p95_ms": percentile(lat, 0.95),
             "api_cost_usd": cost,
@@ -101,7 +102,7 @@ def write_report(path: Path, meta: dict, summary: dict, skipped: dict) -> None:
     for s in summary.values():
         lines.append(
             f"| {s['engine']} | {s['preprocess']} | {s['variant']} | {s['n']} | {s['cer_mean']:.3f} | {pct(s['name_exact'])} | "
-            f"{pct(s['ingredient_acc'])} | {pct(s['strength_acc'])} | {s['latency_p50_ms']:.0f} | {s['latency_p95_ms']:.0f} | {money(s['api_cost_per_1000_usd'])} |"
+            f"{pct(s['ingredient_acc'])} | {'n/a' if s['strength_acc'] is None else pct(s['strength_acc'])} | {s['latency_p50_ms']:.0f} | {s['latency_p95_ms']:.0f} | {money(s['api_cost_per_1000_usd'])} |"
         )
     lines += [
         "",
@@ -119,11 +120,12 @@ def main() -> None:
     ap.add_argument("--engines", default="paddleocr,typhoon-ocr")
     ap.add_argument("--preprocess", default="raw,clahe")
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--source", default="all", choices=["all", "synthetic", "real"])
     args = ap.parse_args()
 
     engines = [e for e in args.engines.split(",") if e]
     preps = [p for p in args.preprocess.split(",") if p]
-    data = load_dataset()[: args.limit or None]
+    data = [d for d in load_dataset() if args.source in ("all", d["source"])][: args.limit or None]
     usd = os.environ.get("TYPHOON_USD_PER_PAGE")
     usd_per_page = float(usd) if usd else None
 
@@ -169,7 +171,7 @@ def main() -> None:
                             cer=cer(res.text, item["text"]),
                             name_exact=name_exact(res.text, item["name"]),
                             ingredient_acc=ingredient_accuracy(res.text, item["ingredients"]),
-                            strength_ok=strength_correct(res.text, item["strength"]),
+                            strength_ok=strength_correct(res.text, item["strength"]) if item.get("strength") else None,
                         )
                     except Exception as exc:
                         row["error"] = f"{type(exc).__name__}: {exc}"
