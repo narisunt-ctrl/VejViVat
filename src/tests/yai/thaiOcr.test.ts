@@ -70,10 +70,41 @@ describe('scan guidance', () => {
 describe('parsePhotos', () => {
   it('reads the front photo first even if it was taken last', () => {
     const p = parsePhotos([
-      { side: 'BACK', ocr: { lines: [L('ส่วนประกอบ: ผงขมิ้นชัน 250 มก.')] } },
-      { side: 'FRONT', ocr: { lines: [L('ขมิ้นชันแคปซูล'), L('500 mg / แคปซูล')] } },
+      { side: 'BACK', ocr: { confidence: 80, lines: [L('ส่วนประกอบ: ผงขมิ้นชัน 250 มก.')] } },
+      { side: 'FRONT', ocr: { confidence: 80, lines: [L('ขมิ้นชันแคปซูล'), L('500 mg / แคปซูล')] } },
     ]);
     expect(p?.strength?.value).toMatch(/^500 mg/);
     expect(p?.displayName?.value).toBe('ขมิ้นชันแคปซูล');
+  });
+});
+
+describe('checked text', () => {
+  it('uses the corrected text instead of raw OCR and marks fields as patient-checked', () => {
+    const parsed = parsePhotos([
+      { side: 'FRONT', ocr: { confidence: 40, lines: [L('ขมินซั้นแคปซูล', 40)], editedText: 'ขมิ้นชันแคปซูล\n500 mg', verified: true } },
+    ]);
+    expect(parsed?.displayName?.value).toBe('ขมิ้นชันแคปซูล');
+    const d = draftFromParsed(parsed!, 'p', [], new Date().toISOString(), 'd');
+    expect(d.displayName.verification).toBe('PATIENT_REPORTED');
+    expect(d.displayName.extractionConfidence).toBeUndefined();
+  });
+
+  it('keeps unchecked OCR text unverified with its OCR confidence', () => {
+    const d = draftFromParsed(parsePhotos([{ side: 'FRONT', ocr: { confidence: 70, lines: [L('ยาแก้ไอ', 70), L('10 ml', 70)] } }])!, 'p', [], new Date().toISOString(), 'd');
+    expect(d.labelStrength.verification).toBe('UNVERIFIED');
+    expect(d.labelStrength.extractionConfidence).toBeCloseTo(0.7);
+  });
+});
+
+describe('real-photo OCR slips', () => {
+  it('finds ingredients despite a misspelled keyword and strips stray edge marks', () => {
+    const p = parseLabel([
+      L('ฟ้าทะลายโจร แคปซูล'),
+      L('ส่วนประกถอบ: ผงฟ้าทะลายโจร 400 มก.'),
+      L('| รับประทานครั้งละ 2 แคปซูล วันละ 4 ครั้ง'),
+      L('07 @ผลิตโดย บริษัทสมุนไพรไทย จำกัด el'),
+    ]);
+    expect(p.ingredients?.value).toContain('ผงฟ้าทะลายโจร');
+    expect(p.directions?.value.startsWith('รับประทาน')).toBe(true);
   });
 });

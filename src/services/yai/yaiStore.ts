@@ -92,6 +92,22 @@ export const yaiStore = {
     set({ ...state, photos: state.photos.map((p) => (p.id === photoId ? { ...p, ocr } : p)) });
   },
 
+  /** Patient/caregiver checked or corrected the text read from one photo */
+  updatePhotoText(photoId: string, text: string, verified: boolean) {
+    set({
+      ...state,
+      photos: state.photos.map((p) =>
+        p.id === photoId
+          ? { ...p, ocr: { ...(p.ocr ?? { status: 'DONE' as const, text: '', lines: [], confidence: 0, engine: 'manual', at: demoNow().toISOString() }), status: 'DONE' as const, editedText: text, verified } }
+          : p
+      ),
+    });
+  },
+
+  removePhoto(photoId: string) {
+    set({ ...state, photos: state.photos.filter((p) => p.id !== photoId) });
+  },
+
   saveMedicine(medicine: MedicationPassport) {
     const exists = state.medicines.some((m) => m.id === medicine.id);
     const now = demoNow().toISOString();

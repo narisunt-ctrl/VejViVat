@@ -36,7 +36,7 @@ export const ScanReviewPage: React.FC = () => {
 
   const readable = photos.filter((p) => p.ocr?.status === 'DONE');
   const unread = photos.filter((p) => p.ocr?.status !== 'DONE');
-  const rawText = readable.map((p) => p.ocr!.text.trim()).filter(Boolean).join('\n---\n');
+  const rawText = readable.map((p) => (p.ocr!.editedText ?? p.ocr!.text).trim()).filter(Boolean).join('\n---\n');
   const [ocrStatus, setOcrStatus] = useState('');
 
   const useRealOcr = () => {
@@ -314,7 +314,7 @@ const EditableField: React.FC<{ label: string; hint?: string; f: EvidenceField<s
       <input className={inputCls} value={f.value ?? ''} placeholder="ยังไม่ทราบ" onChange={(e) => onChange(e.target.value)} />
     </Field>
     {f.value ? (
-      <SourceChip origin={f.origin} synthetic={f.isSynthetic} confidence={f.extractionConfidence} />
+      <SourceChip origin={f.origin} synthetic={f.isSynthetic} confidence={f.extractionConfidence} verification={f.verification} />
     ) : (
       <span className="text-sm font-semibold text-yai-warn">ข้อมูลยังไม่ครบ</span>
     )}

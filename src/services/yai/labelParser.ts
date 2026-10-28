@@ -7,6 +7,8 @@ export interface OcrLine {
   text: string;
   /** 0..100 from the OCR engine */
   confidence: number;
+  /** the patient/caregiver checked this line against the label */
+  verified?: boolean;
 }
 
 export interface ParsedValue {
@@ -14,6 +16,7 @@ export interface ParsedValue {
   line: string;
   /** 0..1, taken from the OCR line confidence */
   confidence: number;
+  verified: boolean;
 }
 
 export interface ParsedLabel {
@@ -38,6 +41,9 @@ export function normalizeLine(s: string): string {
     .replace(/ํา/g, 'ำ')
     .replace(/([฀-๿])\s+(?=[฀-๿])/g, '$1')
     .replace(/\s+/g, ' ')
+    // Stray marks from package edges and shadows, e.g. "| รับประทาน…" or "… จำกัด el"
+    .replace(/^[^\p{L}\p{N}]+/u, '')
+    .replace(/[^\p{L}\p{N}\p{M}.)%/]+$/u, '')
     .trim();
 }
 
@@ -46,7 +52,8 @@ const REG_LABELLED = /(?:เลขทะเบียน(?:ยา)?|ทะเบ�
 const REG_DRUG = /\b(\d{1,2}[A-Z]|[A-Z])\s?\d{1,5}\/\d{2,4}\b/;
 const REG_FOOD = /\b\d{2}-\d-\d{5}-\d-\d{4}\b/;
 const DIRECTIONS = /(วันละ|ครั้งละ|รับประทาน|หลังอาหาร|ก่อนอาหาร|ก่อนนอน|take\s+\d|times?\s+(a|per)\s+day|daily)/i;
-const INGREDIENTS = /(ส่วนประกอบ|ประกอบด้วย|สารสำคัญ|ตัวยาสำคัญ|ingredients?|each\s+(capsule|tablet)\s+contains|composition)/i;
+// "ส่วนประ…" also catches common OCR slips such as "ส่วนประกถอบ"
+const INGREDIENTS = /(ส่วนประ[฀-๿]{0,6}|ประกอบด้วย|สารสำคัญ|ตัวยาสำคัญ|ingredients?|each\s+(capsule|tablet)\s+contains|composition)/i;
 const MANUFACTURER = /(ผลิตโดย|ผู้ผลิต|ผลิตและจัดจำหน่าย|manufactured\s+by|mfd\.?\s+by|บริษัท.+จำกัด|co\.,?\s*ltd)/i;
 const FORMS: [RegExp, NonNullable<MedicationPassport['form']['value']>][] = [
   [/แคปซูล|capsule/i, 'CAPSULE'],
@@ -66,12 +73,12 @@ const afterKeyword = (line: string, re: RegExp) => {
 
 export function parseLabel(rawLines: OcrLine[]): ParsedLabel {
   const lines = rawLines
-    .map((l) => ({ text: normalizeLine(l.text), confidence: Math.max(0, Math.min(100, l.confidence)) / 100 }))
+    .map((l) => ({ text: normalizeLine(l.text), confidence: Math.max(0, Math.min(100, l.confidence)) / 100, verified: !!l.verified }))
     .filter((l) => l.text.length >= 2);
   const pick = (test: (t: string) => string | null): ParsedValue | null => {
     for (const l of lines) {
       const v = test(l.text);
-      if (v) return { value: v.trim(), line: l.text, confidence: l.confidence };
+      if (v) return { value: v.trim(), line: l.text, confidence: l.confidence, verified: l.verified };
     }
     return null;
   };

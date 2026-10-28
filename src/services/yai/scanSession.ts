@@ -18,6 +18,13 @@ export const scanSession = {
       // ignore
     }
   },
+  remove(photoId: string) {
+    try {
+      sessionStorage.setItem(KEY, JSON.stringify(this.get().filter((id) => id !== photoId)));
+    } catch {
+      // ignore
+    }
+  },
   clear() {
     try {
       sessionStorage.removeItem(KEY);
