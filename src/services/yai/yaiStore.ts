@@ -11,8 +11,11 @@ import {
   YaiSettings,
   YaiState,
 } from '../../domain/yai/models';
-import { canCreateReminder, canTransitionAppointment, isValidTime } from '../../domain/yai/policies';
+import { canCreateReminder, canRead, canTransitionAppointment, isValidTime } from '../../domain/yai/policies';
+import { bangkokDate, JournalEntry, SuggestedSegment } from '../../domain/yai/journal';
+import { importOrderSnapshot, ImportOutcome, MedicationOrderSnapshot } from '../../domain/yai/prescriptionSync';
 import { createSeedState, field } from '../../data/yai/fixtures';
+import { linkForPatient } from '../../data/yai/demoLinks';
 import { photoStore } from './photoStore';
 
 // Synthetic, browser-local demo store. Not a health record database:
@@ -227,9 +230,112 @@ export const yaiStore = {
     });
   },
 
+  /**
+   * Save a journal entry the patient (or caregiver) has just confirmed. Drafts are never stored, so a cancelled
+   * review leaves no trace on the calendar. The local date is taken in Asia/Bangkok from the capture time.
+   */
+  saveJournalEntry(draft: Pick<JournalEntry, 'originalText' | 'reviewedText' | 'inputSource' | 'capturedAt' | 'segments' | 'photoIds'> &
+    Partial<Pick<JournalEntry, 'photoTags' | 'ocrEngine' | 'linkedMedicineIds' | 'patientSaidComplete' | 'isSynthetic'>>): string {
+    const id = uid('journal');
+    const entry: JournalEntry = {
+      ...draft,
+      id,
+      patientId: state.patient.id,
+      recordedLocalDate: bangkokDate(draft.capturedAt),
+      reviewedAt: demoNow().toISOString(),
+      status: state.settings.role === 'CAREGIVER' ? 'CAREGIVER_CONFIRMED' : 'PATIENT_CONFIRMED',
+      revision: 1,
+      isSynthetic: draft.isSynthetic ?? false,
+    };
+    set(audit({ ...state, journal: [entry, ...(state.journal ?? [])] }, 'JOURNAL_SAVED', id));
+    return id;
+  },
+
+  /** Edit a saved entry: the previous version goes to history; original text and photos are never changed */
+  editJournalEntry(id: string, reviewedText: string, segments: SuggestedSegment[]) {
+    const now = demoNow().toISOString();
+    set(
+      audit(
+        {
+          ...state,
+          journal: (state.journal ?? []).map((e) =>
+            e.id === id
+              ? {
+                  ...e,
+                  history: [...(e.history ?? []), { revision: e.revision, reviewedText: e.reviewedText, segments: e.segments, editedAt: e.reviewedAt ?? e.capturedAt }],
+                  reviewedText,
+                  segments,
+                  revision: e.revision + 1,
+                  reviewedAt: now,
+                }
+              : e
+          ),
+        },
+        'JOURNAL_EDITED',
+        id
+      )
+    );
+  },
+
+  /**
+   * Import clinician order snapshots from the demo CareBridge adapter. Every snapshot goes through
+   * evaluateReminderSync(); re-importing the same version changes nothing.
+   */
+  syncClinicianOrders(snapshots: MedicationOrderSnapshot[]): { orderKey: string; outcome: ImportOutcome }[] {
+    const link = linkForPatient(state.patient.id);
+    const now = demoNow();
+    const results: { orderKey: string; outcome: ImportOutcome }[] = [];
+    let slice = { medicines: state.medicines, reminders: state.reminders, syncedOrders: state.syncedOrders ?? [], orderNotices: state.orderNotices ?? [] };
+    let next = state;
+    for (const snap of [...snapshots].sort((a, b) => a.sourceVersion - b.sourceVersion)) {
+      const ctx = {
+        expectedPatientId: state.patient.id,
+        mode: 'DEMO' as const,
+        consentActive: !!link && link.sourceSystem === snap.sourceSystem && canRead(state.consents, link.recipientId, 'REMINDER_ALERTS', now),
+        today: bangkokDate(now),
+      };
+      const res = importOrderSnapshot(slice, snap, ctx, now.toISOString());
+      results.push({ orderKey: `${snap.sourceSystem}::${snap.sourceOrderId}`, outcome: res.outcome });
+      if (res.outcome === 'IMPORTED') {
+        slice = res.slice;
+        next = audit(next, 'ORDER_SYNCED', `${snap.sourceOrderId}@v${snap.sourceVersion}:${res.decision.kind}`, 'CareBridge (จำลอง)');
+      } else if (res.outcome === 'REJECTED') {
+        next = audit(next, 'ORDER_SYNC_REJECTED', `${snap.sourceOrderId}@v${snap.sourceVersion}`, 'CareBridge (จำลอง)');
+      }
+    }
+    if (results.some((r) => r.outcome === 'IMPORTED' || r.outcome === 'REJECTED')) set({ ...next, ...slice });
+    return results;
+  },
+
+  /**
+   * Clinician-side read of the patient's dose self-reports. Allowed only with an active consent
+   * (scope MEDICINES) for that recipient; every attempt is audited, denied ones too.
+   */
+  readDoseReportsForClinician(recipientId: string): {
+    allowed: boolean;
+    logs: YaiState['doseLogs'];
+    plans: YaiState['reminders'];
+    journal: JournalEntry[];
+    pendingMedicines: number;
+  } {
+    const allowed = canRead(state.consents, recipientId, 'MEDICINES', demoNow());
+    set(audit(state, allowed ? 'DOSE_REPORTS_READ' : 'DOSE_REPORTS_READ_DENIED', recipientId, recipientId));
+    return allowed
+      ? {
+          allowed,
+          logs: state.doseLogs,
+          plans: state.reminders.filter((r) => r.source === 'CLINICIAN_ORDER'),
+          journal: (state.journal ?? []).filter((e) => e.status !== 'DRAFT'),
+          pendingMedicines: state.medicines.filter((m) => m.pendingIdentification).length,
+        }
+      : { allowed, logs: [], plans: [], journal: [], pendingMedicines: 0 };
+  },
+
   createReminder(medicineId: string, schedule: string[], source: ReminderSource): { ok: boolean; reason?: string } {
     const medicine = state.medicines.find((m) => m.id === medicineId);
     if (!medicine) return { ok: false, reason: 'ไม่พบรายการยา' };
+    // clinician-order reminders come only from syncClinicianOrders(), which applies the stricter order gate
+    if (source === 'CLINICIAN_ORDER') return { ok: false, reason: 'การเตือนตามคำสั่งแพทย์สร้างได้จากคำสั่งยาที่รับรองและจ่ายยาแล้วเท่านั้น' };
     const allowed = canCreateReminder(medicine, source);
     if (!allowed.ok) return allowed;
     const times = Array.from(new Set(schedule.filter(isValidTime))).sort();

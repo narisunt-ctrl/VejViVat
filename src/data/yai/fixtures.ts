@@ -1,4 +1,5 @@
 import { Clinic, EvidenceField, MedicationPassport, YaiState } from '../../domain/yai/models';
+import { bangkokDate, JournalCategory, JournalEntry } from '../../domain/yai/journal';
 
 // All people, clinics and medicine records here are fictional demo data (ข้อมูลจำลอง).
 
@@ -133,6 +134,37 @@ export const DEMO_CLINICS: Clinic[] = [
   },
 ];
 
+/**
+ * Example journal entries a few days before "now", so the calendar is not empty in a demo. Every one is marked
+ * isSynthetic and the UI labels it "ตัวอย่าง"; they are fictional statements, not anyone's health record.
+ */
+export function seedJournal(now: Date = new Date()): JournalEntry[] {
+  const examples: { daysAgo: number; text: string; parts: [JournalCategory, string][] }[] = [
+    { daysAgo: 1, text: 'เช้านี้ปวดเข่าขวานิดหน่อย กินข้าวต้มปลา', parts: [['SYMPTOM', 'เช้านี้ปวดเข่าขวานิดหน่อย'], ['FOOD_CONSUMED', 'กินข้าวต้มปลา']] },
+    { daysAgo: 1, text: 'กินขมิ้นชันหลังอาหารเย็น', parts: [['MEDICINE_USE_REPORT', 'กินขมิ้นชันหลังอาหารเย็น']] },
+    { daysAgo: 3, text: 'นอนไม่ค่อยหลับ ไปวัดกับหลาน', parts: [['SYMPTOM', 'นอนไม่ค่อยหลับ'], ['OTHER', 'ไปวัดกับหลาน']] },
+    { daysAgo: 6, text: 'เดินแล้วเข่าขัด กินแกงจืดผักกาด', parts: [['SYMPTOM', 'เดินแล้วเข่าขัด'], ['FOOD_CONSUMED', 'กินแกงจืดผักกาด']] },
+  ];
+  return examples.map((ex, i) => {
+    const at = new Date(now.getTime() - ex.daysAgo * 86_400_000 - i * 3_600_000).toISOString();
+    return {
+      id: `journal-seed-${i + 1}`,
+      patientId: DEMO_PATIENT_ID,
+      originalText: ex.text,
+      reviewedText: ex.text,
+      inputSource: 'MANUAL_TEXT',
+      capturedAt: at,
+      recordedLocalDate: bangkokDate(at),
+      reviewedAt: at,
+      status: 'PATIENT_CONFIRMED',
+      segments: ex.parts.map(([category, text], j) => ({ id: `seg-seed-${i}-${j}`, category, text, correctedByUser: false })),
+      photoIds: [],
+      revision: 1,
+      isSynthetic: true,
+    };
+  });
+}
+
 export function createSeedState(): YaiState {
   return {
     schemaVersion: 1,
@@ -157,5 +189,8 @@ export function createSeedState(): YaiState {
     audit: [],
     settings: { fontScale: 125, familyName: '', familyPhone: '', onboarded: false, role: 'PATIENT' },
     demoClockOffsetMinutes: 0,
+    journal: seedJournal(),
+    syncedOrders: [],
+    orderNotices: [],
   };
 }
