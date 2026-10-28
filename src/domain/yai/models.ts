@@ -2,6 +2,9 @@
 // Platform-neutral types shared by the patient app, clinician packet and partner portal.
 // Every value that can be unknown is nullable: unknown is never the same as "normal" or "safe".
 
+import type { JournalEntry } from './journal';
+import type { LinkedOrderRef, OrderNotice, SyncedOrderRecord } from './prescriptionSync';
+
 export type PatientId = string;
 
 export type Verification = 'UNVERIFIED' | 'PATIENT_REPORTED' | 'CAREGIVER_REPORTED' | 'CLINICIAN_VERIFIED' | 'DEMO_REVIEW';
@@ -60,6 +63,8 @@ export interface MedicationPassport {
   unresolvedQuestions: string[];
   createdAt: string;
   updatedAt: string;
+  /** set when this record mirrors a clinician order synced from CareBridge (sourceSystem::sourceOrderId) */
+  linkedOrderKey?: string;
 }
 
 /** Package side the user says a photo shows; tagged by the user, not detected automatically */
@@ -135,6 +140,8 @@ export interface ReminderPlan {
   source: ReminderSource;
   verifiedAt: string;
   status: 'ACTIVE' | 'PAUSED' | 'DISCONTINUED';
+  /** for CLINICIAN_ORDER plans: the exact order version this schedule came from */
+  orderRef?: LinkedOrderRef;
 }
 
 export type DoseSelfReport = 'TAKEN_REPORTED' | 'NOT_YET_REPORTED' | 'UNCERTAIN';
@@ -168,7 +175,13 @@ export type AuditAction =
   | 'MEDICINE_SAVED'
   | 'REMINDER_CREATED'
   | 'DOSE_REPORTED'
-  | 'DEMO_RESET';
+  | 'DEMO_RESET'
+  | 'JOURNAL_SAVED'
+  | 'JOURNAL_EDITED'
+  | 'ORDER_SYNCED'
+  | 'ORDER_SYNC_REJECTED'
+  | 'DOSE_REPORTS_READ'
+  | 'DOSE_REPORTS_READ_DENIED';
 export interface AuditEvent {
   id: string;
   at: string;
@@ -210,4 +223,10 @@ export interface YaiState {
   demoClockOffsetMinutes: number;
   /** free-text note the patient adds to the pre-visit packet */
   previsitNote?: string;
+  /** confirmed daily journal entries (optional so stores saved before the journal existed still load) */
+  journal?: JournalEntry[];
+  /** clinician orders received through the demo CareBridge adapter */
+  syncedOrders?: SyncedOrderRecord[];
+  /** in-app notices about order changes (no background push) */
+  orderNotices?: OrderNotice[];
 }
