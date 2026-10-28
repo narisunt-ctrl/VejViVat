@@ -58,7 +58,7 @@ always a draft that the patient or pharmacist must check. Synthetic data only: c
 ### Real package images (2026-10-28, 4 labels, raw)
 
 `--source real` on 4 turmeric products (box, capsule boxes, sachet; mostly shop/product photos, not phone shots).
-Ground truth was drafted from the images and is waiting for the owner's check. Strength is scored only where a strength is printed.
+Ground truth was drafted from the images and checked by the owner (2026-10-28). Strength is scored only where a strength is printed.
 
 | Engine | CER ↓ | Name exact | Ingredients | Strength+unit | p50 |
 |---|---|---|---|---|---|
