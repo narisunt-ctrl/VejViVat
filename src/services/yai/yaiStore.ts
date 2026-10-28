@@ -13,6 +13,7 @@ import {
 } from '../../domain/yai/models';
 import { canCreateReminder, canTransitionAppointment, isValidTime } from '../../domain/yai/policies';
 import { createSeedState, field } from '../../data/yai/fixtures';
+import { photoStore } from './photoStore';
 
 // Synthetic, browser-local demo store. Not a health record database:
 // it holds fictional data only and can be wiped from Settings.
@@ -72,6 +73,7 @@ export const yaiStore = {
 
   reset() {
     set(audit(createSeedState(), 'DEMO_RESET', 'all'));
+    if (photoStore.available()) photoStore.clear().catch(() => undefined);
   },
 
   updateSettings(patch: Partial<YaiSettings>) {
@@ -104,8 +106,13 @@ export const yaiStore = {
     });
   },
 
+  setPhotoMeta(photoId: string, patch: Partial<Pick<CapturedPhoto, 'originalStored'>>) {
+    set({ ...state, photos: state.photos.map((p) => (p.id === photoId ? { ...p, ...patch } : p)) });
+  },
+
   removePhoto(photoId: string) {
     set({ ...state, photos: state.photos.filter((p) => p.id !== photoId) });
+    if (photoStore.available()) photoStore.remove(photoId).catch(() => undefined);
   },
 
   saveMedicine(medicine: MedicationPassport) {

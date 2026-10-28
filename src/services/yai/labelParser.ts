@@ -5,18 +5,23 @@ import { MedicationPassport } from '../../domain/yai/models';
 
 export interface OcrLine {
   text: string;
-  /** 0..100 from the OCR engine */
-  confidence: number;
+  /** 0..100 from the OCR engine, null when not reported */
+  confidence: number | null;
   /** the patient/caregiver checked this line against the label */
   verified?: boolean;
+  /** provenance: which photo and engine the line came from */
+  photoId?: string;
+  engine?: string;
 }
 
 export interface ParsedValue {
   value: string;
   line: string;
-  /** 0..1, taken from the OCR line confidence */
-  confidence: number;
+  /** 0..1, taken from the OCR line confidence; null when the engine reports none */
+  confidence: number | null;
   verified: boolean;
+  photoId?: string;
+  engine?: string;
 }
 
 export interface ParsedLabel {
@@ -73,12 +78,20 @@ const afterKeyword = (line: string, re: RegExp) => {
 
 export function parseLabel(rawLines: OcrLine[]): ParsedLabel {
   const lines = rawLines
-    .map((l) => ({ text: normalizeLine(l.text), confidence: Math.max(0, Math.min(100, l.confidence)) / 100, verified: !!l.verified }))
+    .map((l) => ({
+      text: normalizeLine(l.text),
+      raw: l.text.trim(),
+      confidence: l.confidence === null ? null : Math.max(0, Math.min(100, l.confidence)) / 100,
+      verified: !!l.verified,
+      photoId: l.photoId,
+      engine: l.engine,
+    }))
     .filter((l) => l.text.length >= 2);
   const pick = (test: (t: string) => string | null): ParsedValue | null => {
     for (const l of lines) {
       const v = test(l.text);
-      if (v) return { value: v.trim(), line: l.text, confidence: l.confidence, verified: l.verified };
+      // line keeps the exact OCR text (provenance); value comes from the normalised text
+      if (v) return { value: v.trim(), line: l.raw, confidence: l.confidence, verified: l.verified, photoId: l.photoId, engine: l.engine };
     }
     return null;
   };
@@ -92,14 +105,14 @@ export function parseLabel(rawLines: OcrLine[]): ParsedLabel {
   const ingredients = pick((t) => (INGREDIENTS.test(t) ? afterKeyword(t, INGREDIENTS) : null));
   const manufacturer = pick((t) => (MANUFACTURER.test(t) ? afterKeyword(t, /(ผลิตโดย|ผู้ผลิต|ผลิตและจัดจำหน่าย|manufactured\s+by|mfd\.?\s+by)/i) : null));
 
-  const used = new Set([strength, registration, directions, ingredients, manufacturer].filter(Boolean).map((p) => p!.line));
+  const used = new Set([strength, registration, directions, ingredients, manufacturer].filter(Boolean).map((p) => normalizeLine(p!.line)));
   // Name: first line with real letters that is not one of the other fields; a guess, flagged by its low confidence
   const displayName = pick((t) => {
     if (used.has(t) || DIRECTIONS.test(t) || INGREDIENTS.test(t) || MANUFACTURER.test(t) || REG_LABELLED.test(t)) return null;
     const letters = t.replace(/[^A-Za-z฀-๿]/g, '');
     return letters.length >= 3 ? t : null;
   });
-  if (displayName) displayName.confidence = Math.min(displayName.confidence, 0.6);
+  if (displayName && displayName.confidence !== null) displayName.confidence = Math.min(displayName.confidence, 0.6);
 
   const all = lines.map((l) => l.text).join(' ');
   const form = FORMS.find(([re]) => re.test(all))?.[1] ?? 'UNKNOWN';

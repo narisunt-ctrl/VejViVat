@@ -14,6 +14,8 @@ export interface CaptureResult {
   quality: { brightness: number; sharpness: number; glare: number };
   /** higher-resolution copy used only for OCR, not stored */
   ocrSource: string;
+  /** untouched full-resolution original (camera frame or the uploaded file), kept in IndexedDB */
+  original: Promise<Blob | null>;
 }
 
 const MAX_SIDE = 1600;
@@ -109,7 +111,9 @@ export const LiveCamera: React.FC<{ onCapture: (r: CaptureResult) => void; busy?
     navigator.vibrate?.(60);
     stableRef.current = 0;
     const ocrSource = drawScaled(v, v.videoWidth, v.videoHeight, OCR_MAX_SIDE).canvas.toDataURL('image/jpeg', 0.92);
-    onCapture({ dataUrl: canvas.toDataURL('image/jpeg', 0.82), source: 'CAMERA', quality: { brightness: q.brightness, sharpness: q.sharpness, glare: q.glare }, ocrSource });
+    const full = drawScaled(v, v.videoWidth, v.videoHeight, Number.MAX_SAFE_INTEGER).canvas;
+    const original = new Promise<Blob | null>((resolve) => full.toBlob(resolve, 'image/jpeg', 0.95));
+    onCapture({ dataUrl: canvas.toDataURL('image/jpeg', 0.82), source: 'CAMERA', quality: { brightness: q.brightness, sharpness: q.sharpness, glare: q.glare }, ocrSource, original });
   }, [onCapture]);
 
   // Low-rate quality loop on a tiny frame; auto-capture only after consecutive good frames
@@ -146,7 +150,7 @@ export const LiveCamera: React.FC<{ onCapture: (r: CaptureResult) => void; busy?
       const { canvas } = drawScaled(img, img.naturalWidth, img.naturalHeight, MAX_SIDE);
       const ocrSource = drawScaled(img, img.naturalWidth, img.naturalHeight, OCR_MAX_SIDE).canvas.toDataURL('image/jpeg', 0.92);
       URL.revokeObjectURL(url);
-      onCapture({ dataUrl: canvas.toDataURL('image/jpeg', 0.82), source: 'UPLOAD', quality: { brightness: q.brightness, sharpness: q.sharpness, glare: q.glare }, ocrSource });
+      onCapture({ dataUrl: canvas.toDataURL('image/jpeg', 0.82), source: 'UPLOAD', quality: { brightness: q.brightness, sharpness: q.sharpness, glare: q.glare }, ocrSource, original: Promise.resolve(file) });
       if (fileRef.current) fileRef.current.value = '';
     };
     img.onerror = () => URL.revokeObjectURL(url);
