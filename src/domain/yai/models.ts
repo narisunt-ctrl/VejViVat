@@ -70,6 +70,8 @@ export interface CapturedPhoto {
   dataUrl: string;
   capturedAt: string;
   source: 'CAMERA' | 'UPLOAD';
+  /** label outline was detected and the image flattened before OCR */
+  cropped?: boolean;
   quality?: { brightness: number; sharpness: number; glare: number };
   /** on-device OCR result for this photo, if it has been read */
   ocr?: { status: 'DONE' | 'FAILED'; text: string; lines: { text: string; confidence: number }[]; confidence: number; engine: string; at: string };
