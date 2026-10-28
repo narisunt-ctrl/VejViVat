@@ -15,6 +15,11 @@ import { PreVisitPage } from '../pages/yai/PreVisitPage';
 import { FamilyPage } from '../pages/yai/FamilyPage';
 import { HelpPage } from '../pages/yai/HelpPage';
 import { SettingsPage } from '../pages/yai/SettingsPage';
+import { JournalProcessPage } from '../pages/yai/JournalProcessPage';
+import { JournalReviewPage } from '../pages/yai/JournalReviewPage';
+import { JournalHistoryPage } from '../pages/yai/JournalHistoryPage';
+import { EvidencePassportPage } from '../pages/yai/EvidencePassportPage';
+import { FoodPage } from '../pages/yai/FoodPage';
 
 const NotFound: React.FC = () => (
   <div className="space-y-4 py-10 text-center">
@@ -42,6 +47,11 @@ const YaiRoutes: React.FC = () => (
       <Route path="family" element={<FamilyPage />} />
       <Route path="help" element={<HelpPage />} />
       <Route path="settings" element={<SettingsPage />} />
+      <Route path="journal/process" element={<JournalProcessPage />} />
+      <Route path="journal/review" element={<JournalReviewPage />} />
+      <Route path="journal/history" element={<JournalHistoryPage />} />
+      <Route path="passport" element={<EvidencePassportPage />} />
+      <Route path="food" element={<FoodPage />} />
       <Route path="*" element={<NotFound />} />
     </Route>
   </Routes>

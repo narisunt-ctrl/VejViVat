@@ -2,9 +2,14 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useYai, yaiStore, demoNow } from '../../services/yai/yaiStore';
 import { todaysOccurrences, bangkokNowLabel } from '../../services/yai/reminderSchedule';
-import { canCreateReminder, isValidTime } from '../../domain/yai/policies';
+import { canCreateReminder, canRead, isValidTime } from '../../domain/yai/policies';
 import { DoseSelfReport } from '../../domain/yai/models';
+import { orderStatusLabels } from '../../domain/yai/prescriptionSync';
+import { linkForPatient } from '../../data/yai/demoLinks';
+import { useClinicianOrderSync } from '../../services/yai/useOrderSync';
 import { BigButton, Card, Field, inputCls, Notice, PageTitle, formatThaiDateTime } from '../../components/yai/ui';
+
+const TONE_CLS = { ok: 'bg-emerald-50 text-emerald-900 border-emerald-300', wait: 'bg-amber-50 text-amber-950 border-yai-warn/40', stop: 'bg-red-50 text-red-900 border-red-300' };
 
 const RESPONSES: { value: DoseSelfReport; label: string }[] = [
   { value: 'TAKEN_REPORTED', label: 'กินแล้ว' },
@@ -16,11 +21,19 @@ const RESPONSE_LABEL: Record<DoseSelfReport, string> = { TAKEN_REPORTED: 'บอ
 export const RemindersPage: React.FC = () => {
   const state = useYai((s) => s);
   const [params] = useSearchParams();
+  useClinicianOrderSync();
   const now = demoNow(state);
   const occurrences = todaysOccurrences(state, now);
-  const eligible = state.medicines.filter((m) => canCreateReminder(m, 'PATIENT_CONFIRMED').ok);
+  // clinician-order medicines get reminders only from the synced order, never a second patient-set schedule
+  const eligible = state.medicines.filter((m) => !m.linkedOrderKey && canCreateReminder(m, 'PATIENT_CONFIRMED').ok);
+  const link = linkForPatient(state.patient.id);
+  const linkGrants = link ? state.consents.filter((c) => c.recipientId === link.recipientId && !c.revokedAt) : [];
+  const linked = !!link && canRead(state.consents, link.recipientId, 'REMINDER_ALERTS', now);
+  const orders = state.syncedOrders ?? [];
+  const [showHistory, setShowHistory] = useState<string | null>(null);
   const [medId, setMedId] = useState(params.get('medicine') ?? eligible[0]?.id ?? '');
-  const [times, setTimes] = useState<string[]>(['08:00']);
+  // no pre-filled clock time: the patient picks the time she actually uses
+  const [times, setTimes] = useState<string[]>(['']);
   const [confirmed, setConfirmed] = useState(false);
   const [msg, setMsg] = useState<{ tone: 'info' | 'alert'; text: string } | null>(null);
   const [notifyState, setNotifyState] = useState<string>(() =>
@@ -61,7 +74,11 @@ export const RemindersPage: React.FC = () => {
               <p className="text-2xl font-bold">{o.time} น.</p>
               <p className="text-lg">{medName(o.plan.medicineId)}</p>
               <p className="text-sm text-yai-ink/70">
-                ตั้งตาม: {o.plan.source === 'CLINICIAN_ORDER' ? 'คำสั่งแพทย์' : 'คุณยายยืนยันเอง'} · ยืนยันเมื่อ {formatThaiDateTime(o.plan.verifiedAt)}
+                ตั้งตาม:{' '}
+                {o.plan.source === 'CLINICIAN_ORDER'
+                  ? `คำสั่งที่ผู้สั่งใช้ยารับรอง (ข้อมูลจำลอง) ฉบับที่ ${o.plan.orderRef?.sourceVersion ?? '-'}`
+                  : 'เวลาที่คุณยายตั้งเอง (ไม่ใช่คำสั่งแพทย์)'}{' '}
+                · ยืนยันเวลาเมื่อ {formatThaiDateTime(o.plan.verifiedAt)}
               </p>
               {o.isPast ? (
                 <>
@@ -90,8 +107,79 @@ export const RemindersPage: React.FC = () => {
         })}
       </section>
 
+      <Card className="space-y-3">
+        <h2 className="text-xl font-bold">ยาตามคำสั่งแพทย์</h2>
+        <p className="text-sm font-semibold text-yai-warn">เชื่อมข้อมูลจำลองภายในแอป ไม่ได้เชื่อมกับระบบโรงพยาบาลจริง และไม่มีแจ้งเตือนเบื้องหลัง</p>
+        {!link ? (
+          <p className="text-base">ผู้ป่วยนี้ยังไม่ได้เชื่อมกับคลินิกใด</p>
+        ) : linked ? (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-yai-mint p-3">
+            <span className="text-base">
+              รับคำสั่งยาจาก <b>{link.recipientName}</b> และแชร์รายงานการกินยาให้คลินิกนี้
+            </span>
+            <button type="button" className="min-h-[44px] text-base font-bold text-yai-alert underline" onClick={() => linkGrants.forEach((c) => yaiStore.revokeConsent(c.id))}>
+              ยกเลิกการเชื่อม
+            </button>
+          </div>
+        ) : (
+          <>
+            <p className="text-base">
+              ยังไม่ได้อนุญาตให้ <b>{link.recipientName}</b> ส่งคำสั่งยามาตั้งเตือน และดูว่ายายรายงานว่ากินยาแล้วหรือยัง
+            </p>
+            <BigButton variant="secondary" onClick={() => yaiStore.grantConsent(link.recipientId, link.recipientName, ['REMINDER_ALERTS', 'MEDICINES'], 90)}>
+              อนุญาต 90 วัน (ยกเลิกได้ทุกเมื่อ)
+            </BigButton>
+          </>
+        )}
+        {orders.length === 0 && <p className="text-base text-yai-ink/70">ยังไม่มีคำสั่งยาจากคลินิก</p>}
+        {orders.map((r) => {
+          const s = r.snapshot;
+          return (
+            <div key={r.key} className="space-y-2 rounded-2xl border border-yai-ink/10 p-3">
+              <p className="text-lg font-bold">{s.medicineName ?? 'ยังไม่ระบุชื่อยา'}</p>
+              <p className="text-base">
+                {s.dosePerAdministration ?? '-'} · {s.directions ?? 'ไม่มีวิธีใช้'}
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {orderStatusLabels(r).map((l) => (
+                  <span key={l.key} className={`inline-flex rounded-full border px-2.5 py-0.5 text-sm font-semibold ${TONE_CLS[l.tone]}`}>
+                    {l.label}
+                  </span>
+                ))}
+              </div>
+              {r.decision.kind === 'ACTIVE' ? (
+                <p className="text-base">
+                  เวลาเตือน: <b>{r.decision.times.join(', ')} น.</b> (เภสัชกรตกลงเวลากับยายแล้ว)
+                </p>
+              ) : (
+                <p className="text-base text-amber-950">{r.decision.reason}</p>
+              )}
+              <p className="text-sm text-yai-ink/70">
+                ฉบับที่ {s.sourceVersion} · อัปเดต {formatThaiDateTime(s.lastChangedAt)} · ที่มา: {s.sourceSystem} (ข้อมูลจำลอง)
+              </p>
+              <button type="button" className="min-h-[40px] text-sm font-bold text-yai-deep underline" onClick={() => setShowHistory(showHistory === r.key ? null : r.key)}>
+                {showHistory === r.key ? 'ซ่อนประวัติ' : 'ดูประวัติคำสั่งยา'}
+              </button>
+              {showHistory === r.key && (
+                <ul className="space-y-1 text-sm">
+                  {r.history.map((h) => (
+                    <li key={h.version}>
+                      ฉบับที่ {h.version}: {h.status === 'ACTIVE' ? 'เตือนตามเวลา' : h.status === 'PENDING_SCHEDULE_REVIEW' ? 'รอทบทวน' : 'หยุดเตือน'}
+                      {h.reason ? ` (${h.reason})` : ''} · {formatThaiDateTime(h.importedAt)}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+        {(state.orderNotices ?? []).slice(0, 3).map((n) => (
+          <Notice key={n.id} title={n.text} />
+        ))}
+      </Card>
+
       <Card className="space-y-4">
-        <h2 className="text-xl font-bold">ตั้งเตือนใหม่</h2>
+        <h2 className="text-xl font-bold">ตั้งเตือนเอง (ไม่ใช่คำสั่งแพทย์)</h2>
         {eligible.length === 0 ? (
           <p className="text-lg">ยังไม่มียาที่ยืนยันแล้ว ต้องยืนยันรายการยาก่อนจึงจะตั้งเตือนได้</p>
         ) : (
@@ -118,7 +206,7 @@ export const RemindersPage: React.FC = () => {
               </div>
             ))}
             {times.length < 4 && (
-              <button type="button" className="min-h-[44px] text-lg font-bold text-yai-deep underline" onClick={() => setTimes([...times, '20:00'])}>
+              <button type="button" className="min-h-[44px] text-lg font-bold text-yai-deep underline" onClick={() => setTimes([...times, ''])}>
                 + เพิ่มเวลา
               </button>
             )}
