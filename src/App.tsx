@@ -21,6 +21,8 @@ import { InterRaterPage } from './pages/InterRaterPage';
 import { AdminHdiPage } from './pages/AdminHdiPage';
 import { SystemStatusPage } from './pages/SystemStatusPage';
 import { PreVisitQueuePage, PreVisitDetailPage } from './pages/clinician/PreVisitQueuePage';
+import { FollowUpPage } from './pages/clinician/FollowUpPage';
+import { ResearchLibraryPage } from './pages/clinician/ResearchLibraryPage';
 
 export const App: React.FC = () => {
   const navigate = useNavigate();
@@ -146,6 +148,8 @@ export const App: React.FC = () => {
               <Route path="/status" element={<SystemStatusPage />} />
               <Route path="/clinician/previsit" element={<PreVisitQueuePage />} />
               <Route path="/clinician/previsit/:clinicId" element={<PreVisitDetailPage />} />
+              <Route path="/clinician/followup" element={<FollowUpPage />} />
+              <Route path="/research" element={<ResearchLibraryPage />} />
               <Route
                 path="*"
                 element={

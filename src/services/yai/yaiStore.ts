@@ -317,12 +317,18 @@ export const yaiStore = {
     plans: YaiState['reminders'];
     journal: JournalEntry[];
     pendingMedicines: number;
+    medicines?: YaiState['medicines'];
+    syncedOrders?: NonNullable<YaiState['syncedOrders']>;
+    patient?: YaiState['patient'];
   } {
     const allowed = canRead(state.consents, recipientId, 'MEDICINES', demoNow());
     set(audit(state, allowed ? 'DOSE_REPORTS_READ' : 'DOSE_REPORTS_READ_DENIED', recipientId, recipientId));
     return allowed
       ? {
           allowed,
+          medicines: state.medicines,
+          syncedOrders: state.syncedOrders ?? [],
+          patient: state.patient,
           logs: state.doseLogs,
           plans: state.reminders.filter((r) => r.source === 'CLINICIAN_ORDER'),
           journal: (state.journal ?? []).filter((e) => e.status !== 'DRAFT'),
