@@ -16,6 +16,8 @@ import { PrescriptionForm } from '../components/prescribing/PrescriptionForm';
 import { InteractionAlerts } from '../components/prescribing/InteractionAlerts';
 import { PrescriptionCart } from '../components/prescribing/PrescriptionCart';
 import { NlemFormularyCatalog } from '../components/prescribing/NlemFormularyCatalog';
+import { CareBridgePrescriptionSyncPanel } from '../components/carebridge/CareBridgePrescriptionSyncPanel';
+import { KneeOAEvidencePanel } from '../components/carebridge/KneeOAEvidencePanel';
 import {
   ArrowLeft,
   ArrowRight,
@@ -568,6 +570,12 @@ export const PrescribePage: React.FC<PrescribePageProps> = ({ currentCase }) => 
         </div>
       </div>
       )}
+
+      {/* CareBridge → ยายพร้อม: explicit approval, dispense and schedule steps (synthetic demo) */}
+      <div className="grid gap-4 xl:grid-cols-2">
+        <CareBridgePrescriptionSyncPanel currentCase={currentCase} cartItems={cartItems} />
+        <KneeOAEvidencePanel currentCase={currentCase} />
+      </div>
 
       {/* Emergency Referral Modal */}
       <EmergencyReferralModal
