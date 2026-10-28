@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { HerbEvidenceSearch } from '../../components/carebridge/HerbEvidenceSearch';
 import { BookOpen, ExternalLink, Plus, Search, Trash2 } from 'lucide-react';
 import { isCitationLink, RESEARCH_TOPICS, ResearchTopicId, reviewedPapers, ReviewedPaper, searchLinks, TEAM_REFERENCES } from '../../data/carebridge/research';
 
@@ -8,6 +10,7 @@ import { isCitationLink, RESEARCH_TOPICS, ResearchTopicId, reviewedPapers, Revie
 const EMPTY = { title: '', year: '', link: '', design: '', sampleSize: '', finding: '', limitations: '', reviewer: '' };
 
 export const ResearchLibraryPage: React.FC = () => {
+  const [params] = useSearchParams();
   const [topic, setTopic] = useState<ResearchTopicId>('KNEE_OA');
   const [papers, setPapers] = useState<ReviewedPaper[]>(() => reviewedPapers.list());
   const [form, setForm] = useState(EMPTY);
@@ -25,6 +28,8 @@ export const ResearchLibraryPage: React.FC = () => {
         </h1>
         <p className="text-sm text-slate-600">ค้นงานวิจัยใหม่จากฐานข้อมูลจริง ดูข้อความที่ยังรอตรวจ และบันทึกงานที่แพทย์อ่านแล้ว · ระบบไม่สรุปผลการรักษาหรือแนะนำยาเอง</p>
       </header>
+
+      <HerbEvidenceSearch initialHerb={params.get('herb')} initialCondition={params.get('condition')} />
 
       <div className="flex flex-wrap gap-2" role="tablist">
         {RESEARCH_TOPICS.map((x) => (

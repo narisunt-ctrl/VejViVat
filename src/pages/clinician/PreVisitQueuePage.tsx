@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { ShieldAlert, FileText, Pill, Compass, BookOpen, CalendarPlus } from 'lucide-react';
 import { useYai, yaiStore, demoNow } from '../../services/yai/yaiStore';
 import { DEMO_CLINICS } from '../../data/yai/fixtures';
+import { herbForName } from '../../services/carebridge/herbEvidence';
 import { canRead, isConsentActive } from '../../domain/yai/policies';
 import {
   PatientHeader,
@@ -136,13 +137,15 @@ export const PreVisitDetailPage: React.FC = () => {
             <Link to="/smutthan" className={actionCls}>
               <Compass className="h-4 w-4" /> ประเมินสมุฏฐาน
             </Link>
-            <button
-              disabled
-              title="ยังไม่เปิดใช้ในต้นแบบนี้"
-              className="inline-flex min-h-[40px] cursor-not-allowed items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-sm font-semibold text-slate-400"
-            >
-              <BookOpen className="h-4 w-4" /> หลักฐานวิจัย (ยังไม่เปิดใช้)
-            </button>
+            {(() => {
+              // first herbal product the patient uses that maps to a formulary herb; otherwise open the library
+              const herb = state.medicines.map((m) => m.displayName.value ?? '').map(herbForName).find(Boolean);
+              return (
+                <Link to={herb ? `/research?herb=${encodeURIComponent(herb.thaiName)}` : '/research'} className={actionCls}>
+                  <BookOpen className="h-4 w-4" /> หลักฐานวิจัย{herb ? `: ${herb.thaiName.replace(/^ยา(แคปซูล)?/, '')}` : ''}
+                </Link>
+              );
+            })()}
             <Link to="/partner" className={actionCls}>
               <CalendarPlus className="h-4 w-4" /> จัดการนัด (พอร์ทัลคลินิก)
             </Link>
