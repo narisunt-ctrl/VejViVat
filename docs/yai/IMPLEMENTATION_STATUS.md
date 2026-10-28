@@ -25,6 +25,16 @@ All original clinician routes are unchanged (`/`, `/patients`, `/smutthan`, `/pr
 | Help | `tel:` to family number if entered; separate `tel:1669`. No dispatch is claimed. |
 | Storage | `localStorage` key `yai-demo-v1` (synthetic data only, max 12 photos), wipeable in Settings. |
 
+## MEDSIGHT mockup gaps (branch `feat/medsight-gaps`)
+| Mockup item | State |
+|---|---|
+| Step 3 next view + side checklist (front / back / directions / reg. no.) | Implemented as a **user-tagged** checklist with a fixed-priority suggestion (`nextRecommendedSide`). Not image recognition. |
+| Step 4 fields: form, registration no., manufacturer + completeness grid | Implemented (`fieldCompleteness`, 7 fields). Sample OCR never fills a registration number. |
+| Step 5 edit after saving | Every label field on the passport is editable; edits are recorded as `MANUAL_ENTRY` and bump the version. |
+| Step 6 summary tiles + extra note | Count tiles (medicines / incomplete / questions) and a patient note included in the packet. |
+| Clinician packet tabs, label photos, HN, appointment, actions | Tabs สรุปก่อนนัด / รายการยา / ความเสี่ยง / คำถามแนะนำ / ภาพฉลาก; links to HDI admin, Smutthan and partner portal; research evidence button visibly disabled. |
+| Auto label-edge detection, real OCR, AI-generated questions | Still not built. Questions come from rules, and the UI says so. |
+
 ## Sprint 0 safety fixes in the existing app
 - `InteractionAlerts`: an empty match list now reads "ไม่พบคู่อันตรกิริยาในฐานข้อมูลตัวอย่าง … ยืนยันว่าปลอดภัยไม่ได้" in neutral colours, not green.
 - `herbRecommendationService`: `hdiRisk: 'SAFE'` renamed to `NO_MATCH_IN_COVERED_PAIRS` with coverage-limited wording; herb cards no longer show "ปลอดภัย ไม่พบ HDI".
@@ -33,7 +43,7 @@ All original clinician routes are unchanged (`/`, `/patients`, `/smutthan`, `/pr
 
 ## Tests run
 - `npx tsc --noEmit`: clean.
-- `npm test`: **49/49 passed** (35 original + 2 red-flag regressions + 12 YaiPrompt policy/store/frame-quality tests mapped to T05–T09, T11, T14–T16, T22).
+- `npm test`: **52/52 passed** after the mockup gaps (was 49/49) (35 original + 2 red-flag regressions + 12 YaiPrompt policy/store/frame-quality tests mapped to T05–T09, T11, T14–T16, T22).
 - `npm run build`: succeeds; the patient app is a separate lazy chunk (~60 kB, ~19 kB gzip).
 - Manual browser checks (dev server, in-app browser): full scan → review → save → "มีแค่นี้" flow; clinic request → partner confirm → clinician packet → revoke → denied; reminders with demo clock; no horizontal overflow on all 19 routes at 390px; `/smutthan` and `/prescribe` still render. Screenshots were inspected during the session but **not saved** to the repo.
 

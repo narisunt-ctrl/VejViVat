@@ -1,4 +1,5 @@
 import {
+  CaptureSide,
   AppointmentRequest,
   AppointmentStatus,
   ConsentGrant,
@@ -116,4 +117,34 @@ export function missingFields(medicine: MedicationPassport): string[] {
 
 export function isValidTime(hhmm: string): boolean {
   return /^([01]\d|2[0-3]):[0-5]\d$/.test(hhmm);
+}
+
+/** Label fields the pre-visit packet tries to cover, in the order shown to the patient */
+export function fieldCompleteness(m: MedicationPassport): { key: string; label: string; done: boolean }[] {
+  const has = (v: string | null | undefined) => !!v && v.trim().length > 0;
+  return [
+    { key: 'name', label: 'ชื่อผลิตภัณฑ์', done: has(m.displayName.value) },
+    { key: 'form', label: 'รูปแบบ', done: !!m.form.value && m.form.value !== 'UNKNOWN' },
+    { key: 'strength', label: 'ความแรง', done: has(m.labelStrength.value) },
+    { key: 'ingredients', label: 'ส่วนประกอบ', done: m.ingredients.some((i) => has(i.value)) },
+    { key: 'directions', label: 'วิธีใช้', done: has(m.labelDirections.value) },
+    { key: 'registration', label: 'เลข อย.', done: has(m.registrationNumber.value) },
+    { key: 'manufacturer', label: 'ผู้ผลิต', done: has(m.manufacturer?.value) },
+  ];
+}
+
+export const SIDE_INFO: Record<CaptureSide, { label: string; why: string }> = {
+  FRONT: { label: 'ด้านหน้า', why: 'เพื่อให้เห็นชื่อยาและความแรง' },
+  BACK: { label: 'ด้านหลัง', why: 'เพื่อให้เห็นส่วนประกอบ เภสัชกรจะตรวจได้ครบขึ้น' },
+  DIRECTIONS: { label: 'วิธีใช้', why: 'เพื่อเทียบกับวิธีที่คุณยายใช้อยู่จริง' },
+  REGISTRATION: { label: 'เลข อย./บาร์โค้ด', why: 'เพื่อช่วยยืนยันว่าเป็นผลิตภัณฑ์ใด' },
+};
+export const SIDE_ORDER: CaptureSide[] = ['FRONT', 'BACK', 'DIRECTIONS', 'REGISTRATION'];
+
+/**
+ * Advisory next view: the first side not yet photographed, in a fixed priority order.
+ * It is a checklist helper, not image recognition, and it never blocks stopping early.
+ */
+export function nextRecommendedSide(captured: CaptureSide[]): CaptureSide | null {
+  return SIDE_ORDER.find((s) => !captured.includes(s)) ?? null;
 }

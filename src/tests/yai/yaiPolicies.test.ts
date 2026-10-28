@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { canCreateReminder, canRead, canTransitionAppointment, screenInteractions, useDiscrepancy, missingFields } from '../../domain/yai/policies';
+import { canCreateReminder, canRead, canTransitionAppointment, screenInteractions, useDiscrepancy, missingFields, fieldCompleteness, nextRecommendedSide } from '../../domain/yai/policies';
 import { SEED_MEDICINES } from '../../data/yai/fixtures';
 import { yaiStore } from '../../services/yai/yaiStore';
 import { measureFrame } from '../../services/yai/frameQuality';
@@ -131,5 +131,36 @@ describe('frame quality', () => {
     expect(measureFrame(frame(() => 128)).status).toBe('BLURRY');
     expect(measureFrame(frame((x) => (x % 2 ? 60 : 200))).status).toBe('OK');
     expect(measureFrame(frame(() => 255)).status).toBe('GLARE');
+  });
+});
+
+describe('MEDSIGHT gaps', () => {
+  beforeEach(() => yaiStore.reset());
+
+  it('next recommended side follows the checklist and stops when all are captured', () => {
+    expect(nextRecommendedSide([])).toBe('FRONT');
+    expect(nextRecommendedSide(['FRONT'])).toBe('BACK');
+    expect(nextRecommendedSide(['FRONT', 'BACK', 'DIRECTIONS'])).toBe('REGISTRATION');
+    expect(nextRecommendedSide(['FRONT', 'BACK', 'DIRECTIONS', 'REGISTRATION'])).toBeNull();
+  });
+
+  it('completeness lists registration and manufacturer, and never invents a registration number', async () => {
+    const draft = draftFromOcr(await new MockOCRAdapter().extract(), 'p', [], new Date().toISOString(), 'd');
+    const items = fieldCompleteness(draft);
+    expect(items.map((i) => i.label)).toEqual(['ชื่อผลิตภัณฑ์', 'รูปแบบ', 'ความแรง', 'ส่วนประกอบ', 'วิธีใช้', 'เลข อย.', 'ผู้ผลิต']);
+    expect(items.find((i) => i.key === 'registration')?.done).toBe(false);
+    expect(draft.registrationNumber.value).toBeNull();
+    expect(fieldCompleteness(decoction).filter((i) => i.done).map((i) => i.key)).toEqual(['form']);
+  });
+
+  it('editing a field after saving records a manual entry and naming a pending item still needs review', () => {
+    const id = yaiStore.addPendingMedicine('ยาต้มไม่มีฉลาก');
+    yaiStore.updateLabelField(id, 'displayName', 'ยาต้มเถาวัลย์เปรียง');
+    const m = yaiStore.getState().medicines.find((x) => x.id === id)!;
+    expect(m.displayName.origin).toBe('MANUAL_ENTRY');
+    expect(m.pendingIdentification).toBe(false);
+    expect(m.status).toBe('REQUIRES_CLINICIAN_REVIEW');
+    yaiStore.updateLabelField('med-warfarin', 'registrationNumber', '');
+    expect(yaiStore.getState().medicines.find((x) => x.id === 'med-warfarin')!.registrationNumber.value).toBeNull();
   });
 });

@@ -51,6 +51,7 @@ export const SEED_MEDICINES: MedicationPassport[] = [
       { origin: 'CAREGIVER_VOICE', value: 'เห็นกินบ้างไม่กินบ้าง', reportedAt: T0 },
     ],
     registrationNumber: field(null, 'PHOTO_LABEL'),
+    manufacturer: field('บริษัทสมุนไพรตัวอย่าง จำกัด (สมมุติ)', 'PHOTO_LABEL', { isSynthetic: true, extractionConfidence: 0.6 }),
     photoIds: [],
     status: 'REQUIRES_CLINICIAN_REVIEW',
     pendingIdentification: false,
@@ -135,7 +136,7 @@ export const DEMO_CLINICS: Clinic[] = [
 export function createSeedState(): YaiState {
   return {
     schemaVersion: 1,
-    patient: { id: DEMO_PATIENT_ID, displayName: 'คุณยายสมศรี (ข้อมูลจำลอง)', age: 68, province: 'เชียงใหม่' },
+    patient: { id: DEMO_PATIENT_ID, displayName: 'คุณยายสมศรี (ข้อมูลจำลอง)', age: 68, province: 'เชียงใหม่', hn: 'DEMO-0001' },
     medicines: structuredClone(SEED_MEDICINES),
     photos: [],
     consents: [],

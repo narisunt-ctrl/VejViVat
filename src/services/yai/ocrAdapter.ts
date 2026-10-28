@@ -14,6 +14,7 @@ export interface OCRExtractionResult {
     strength: string | null;
     directions: string | null;
     form: MedicationPassport['form']['value'];
+    manufacturer: string | null;
     confidence: number;
   };
 }
@@ -30,6 +31,7 @@ export const SAMPLE_LABELS: OCRExtractionResult['fields'][] = [
     strength: '400 mg / แคปซูล',
     directions: 'ครั้งละ 2 แคปซูล วันละ 4 ครั้ง',
     form: 'CAPSULE',
+    manufacturer: 'บริษัทยาสมุนไพรตัวอย่าง จำกัด (สมมุติ)',
     confidence: 0.62,
   },
   {
@@ -38,6 +40,7 @@ export const SAMPLE_LABELS: OCRExtractionResult['fields'][] = [
     strength: null,
     directions: 'วันละ 1 ครั้ง หลังอาหารเช้า',
     form: 'TABLET',
+    manufacturer: null,
     confidence: 0.55,
   },
 ];
@@ -75,7 +78,9 @@ export function draftFromOcr(result: OCRExtractionResult, patientId: string, pho
     labelStrength: field(result.fields.strength, 'PHOTO_LABEL', extra),
     labelDirections: field(result.fields.directions, 'PHOTO_LABEL', extra),
     useReports: [],
+    // Sample labels never carry a registration number: we do not invent regulatory IDs
     registrationNumber: field(null, 'PHOTO_LABEL', extra),
+    manufacturer: field(result.fields.manufacturer, 'PHOTO_LABEL', extra),
     photoIds,
     status: 'DRAFT',
     pendingIdentification: false,

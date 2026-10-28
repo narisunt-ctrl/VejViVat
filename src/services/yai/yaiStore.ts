@@ -137,6 +137,38 @@ export const yaiStore = {
     });
   },
 
+  /** Correct a label field after saving; the value becomes a manual entry by the current user */
+  updateLabelField(
+    medicineId: string,
+    key: 'displayName' | 'labelStrength' | 'labelDirections' | 'registrationNumber' | 'manufacturer' | 'ingredient' | 'form',
+    value: string
+  ) {
+    const now = demoNow().toISOString();
+    const verification = state.settings.role === 'CAREGIVER' ? ('CAREGIVER_REPORTED' as const) : ('PATIENT_REPORTED' as const);
+    const v = value.trim() ? value.trim() : null;
+    set({
+      ...state,
+      medicines: state.medicines.map((m) => {
+        if (m.id !== medicineId) return m;
+        const manual = <T,>(val: T | null) => ({ value: val, origin: 'MANUAL_ENTRY' as const, capturedAt: now, verification });
+        const next = { ...m, version: m.version + 1, updatedAt: now };
+        if (key === 'ingredient') next.ingredients = v ? [manual(v)] : [];
+        else if (key === 'form') next.form = manual((v ?? 'UNKNOWN') as MedicationPassport['form']['value']);
+        else next[key] = manual(v);
+        // A medicine that now has a name can leave "pending identification" but still needs review
+        if (key === 'displayName' && v && m.pendingIdentification) {
+          next.pendingIdentification = false;
+          next.status = 'REQUIRES_CLINICIAN_REVIEW';
+        }
+        return next;
+      }),
+    });
+  },
+
+  setPrevisitNote(note: string) {
+    set({ ...state, previsitNote: note });
+  },
+
   confirmMedicine(medicineId: string) {
     set({
       ...state,
