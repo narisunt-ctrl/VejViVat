@@ -2,8 +2,8 @@
 **โครงการ:** TTM Smutthan Engine Platform — Hackathon 2026  
 **ทีมพัฒนา:** **ทีม VejVivat (เวชวิวัฒน์) — Thai Medicine AI Innovation**  
 **ระดับความพร้อม (Maturity Level):** **Maturity Level 1.5 — Advanced Clinical Hub & Dual Formulary Engine (MVP-Ready)**  
-**ลิงก์ระบบ Live Production:** [https://ttm-hackathon-2026.vercel.app](https://ttm-hackathon-2026.vercel.app)  
-**คลังรหัสต้นฉบับ GitHub:** [https://github.com/ClangxCL/TTM_Hackathon_2026](https://github.com/ClangxCL/TTM_Hackathon_2026)  
+**ลิงก์ระบบ Live Production:** [https://narisunt-ctrl.github.io/VejViVat/](https://narisunt-ctrl.github.io/VejViVat/)  
+**คลังรหัสต้นฉบับ GitHub:** [https://github.com/narisunt-ctrl/VejViVat](https://github.com/narisunt-ctrl/VejViVat)  
 **ข้อความปฏิเสธความรับผิดชอบ:** *เอกสารนี้ใช้สำหรับข้อมูลสังเคราะห์เพื่อการสาธิตการแข่งขัน Hackathon 2026 เท่านั้น มิใช่ข้อมูลผู้ป่วยจริง*
 
 ---
@@ -74,4 +74,4 @@
 - [x] **Safety & Emergency Referral:** มีระบบคัดกรองข้อห้ามทำหัตถการนวดไทย และออกใบส่งต่อ SBAR แก่แผนกฉุกเฉิน/แพทย์แผนปัจจุบัน
 - [x] **Dual Diagnosis Interoperability:** เชื่อมโยงรหัสโรคสองศาสตร์ ICD-10 แผนปัจจุบันคู่กับ ICD-10-TM กลุ่ม U
 - [x] **Clinician Autonomy:** ไม่มีการตัดสินใจแทนแพทย์ มีกลไก Override และมี Decision Support Disclaimer กำกับทุกหน้าจอ
-- [x] **Zero-Downtime Live Production:** Deploy สดบน Vercel Production (`https://ttm-hackathon-2026.vercel.app`) พร้อมใช้งานจริง
+- [x] **Zero-Downtime Live Production:** Deploy สดบน GitHub Pages (`https://narisunt-ctrl.github.io/VejViVat/`) พร้อมใช้งานจริง

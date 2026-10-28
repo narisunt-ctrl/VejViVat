@@ -1,7 +1,7 @@
 # ความเป็นไปได้ทางเทคนิคและการบริหารความเสี่ยง (Technical Feasibility & Risk Management)
 **โครงการ:** TTM Smutthan Engine Platform — Hackathon 2026  
 **ทีมพัฒนา:** **ทีม VejVivat (เวชวิวัฒน์) — Thai Medicine AI Innovation**  
-**ลิงก์ระบบ Live Production:** [https://ttm-hackathon-2026.vercel.app](https://ttm-hackathon-2026.vercel.app)  
+**ลิงก์ระบบ Live Production:** [https://narisunt-ctrl.github.io/VejViVat/](https://narisunt-ctrl.github.io/VejViVat/)  
 **ข้อความปฏิเสธความรับผิดชอบ:** *เอกสารนี้ใช้สำหรับข้อมูลสังเคราะห์เพื่อการสาธิตการแข่งขัน Hackathon 2026 เท่านั้น มิใช่ข้อมูลผู้ป่วยจริง*
 
 ---
@@ -27,7 +27,7 @@
   - `carePlanService.test.ts` (4 tests): การสร้างตารางนัดรายเดือน (Monthly Cadence) และกราฟ Trajectory
 - **การจัดการประสิทธิภาพฐานข้อมูลยา 1,080 รายการ (Formulary Catalog Optimization):**
   - ใช้กลยุทธ์ **Slice-based Virtualized Rendering** (`slice(0, 30)` พร้อมปุ่มแสดงเพิ่มเติม) ทำให้การพิมพ์ค้นหาแบบ Real-time และการเลื่อนหน้าจอตอบสนองลื่นไหลระดับ 60 FPS แม้มีรายการยาแผนปัจจุบันกว่า 1,080 รายการ
-- **Live Production Deployment:** ระบบ Deploy สดบน **Vercel Production Platform** (`https://ttm-hackathon-2026.vercel.app`) มี Global Edge CDN, HTTPS อัตโนมัติ, พร้อมใช้งานได้จริง 24/7
+- **Live Production Deployment:** ระบบ Deploy สดบน **GitHub Pages** (Deploy อัตโนมัติด้วย GitHub Actions ทุกครั้งที่ push เข้า main) (`https://narisunt-ctrl.github.io/VejViVat/`) มี CDN, HTTPS อัตโนมัติ, พร้อมใช้งานได้จริง 24/7
 
 ### 1.3 ข้อจำกัดด้านโครงสร้างพื้นฐานระดับ รพ.สต. (Primary Care Infrastructure Constraints)
 1. **สัญญาณอินเทอร์เน็ตไม่เสถียร (Intermittent Connectivity):**

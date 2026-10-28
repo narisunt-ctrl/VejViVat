@@ -16,18 +16,18 @@
 [![Dual Diagnosis](https://img.shields.io/badge/Dual%20Diagnosis-ICD--10%20%E2%86%94%20ICD--10--TM-purple.svg)](docs/04-ai-explainability.md)
 [![Voice AI](https://img.shields.io/badge/Voice%20AI-Speech--to--Text%20Symptom%20Model-rose.svg)](docs/04-ai-explainability.md)
 [![Cohort Size](https://img.shields.io/badge/Cohort-30%20Synthetic%20Cases-amber.svg)](data/synthetic/cases.json)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20Production-success.svg)](https://ttm-hackathon-2026.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-success.svg)](https://narisunt-ctrl.github.io/VejViVat/)
 
 ---
 
 ## 🎬 วิดีโอจำลองการทำงานจริงของระบบ (Program Simulation Video)
 
 <p align="center">
-  <a href="https://clangxcl.github.io/TTM_Hackathon_2026/videos/ttm-vejvivat-demo.mp4">
+  <a href="https://narisunt-ctrl.github.io/VejViVat/videos/ttm-vejvivat-demo.mp4">
     <img src="public/videos/demo-preview.gif" alt="TTM Smutthan Engine Simulation Walkthrough" width="720" style="border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.2);" />
   </a>
   <br />
-  <b>▶️ <a href="https://clangxcl.github.io/TTM_Hackathon_2026/videos/ttm-vejvivat-demo.mp4">คลิกที่นี่เพื่อรับชมหรือดาวน์โหลดวิดีโอตัวเต็ม (.mp4 720p HD ความยาว 1:11 นาที)</a></b> | <b><a href="https://clangxcl.github.io/TTM_Hackathon_2026/">เข้าสู่ระบบ Live Web App</a></b><br />
+  <b>▶️ <a href="https://narisunt-ctrl.github.io/VejViVat/videos/ttm-vejvivat-demo.mp4">คลิกที่นี่เพื่อรับชมหรือดาวน์โหลดวิดีโอตัวเต็ม (.mp4 720p HD ความยาว 1:11 นาที)</a></b> | <b><a href="https://narisunt-ctrl.github.io/VejViVat/">เข้าสู่ระบบ Live Web App</a></b><br />
   <i>วิดีโอบันทึกสาธิตการทำงานครบ 5 ขั้นตอน: 1. ลงทะเบียนผู้ป่วยใหม่ (Intake) → 2. ประเมินสมุฏฐานธาตุ AI & Override → 3. สั่งยาสมุนไพรและตรวจจับอันตรกิริยา HDI → 4. พิมพ์ใบสั่งยาอิเล็กทรอนิกส์ & FHIR → 5. แผนการรักษาและแดชบอร์ดแนวโน้มการฟื้นฟูรายบุคคล</i>
 </p>
 
@@ -165,6 +165,6 @@ npm run build
 - **ทีมพัฒนา:** ทีม VejVivat (เวชวิวัฒน์) — Thai Medicine AI Innovation
 - **โครงการ:** TTM Smutthan Engine Platform
 - **เวที:** TTM Hackathon 2026
-- **Repository:** [https://github.com/ClangxCL/TTM_Hackathon_2026](https://github.com/ClangxCL/TTM_Hackathon_2026)
-- **Live Production Website:** [https://ttm-hackathon-2026.vercel.app](https://ttm-hackathon-2026.vercel.app)
+- **Repository:** [https://github.com/narisunt-ctrl/VejViVat](https://github.com/narisunt-ctrl/VejViVat)
+- **Live Production Website:** [https://narisunt-ctrl.github.io/VejViVat/](https://narisunt-ctrl.github.io/VejViVat/)
 

@@ -2,7 +2,7 @@
 **โครงการ:** TTM Smutthan Engine Platform — Hackathon 2026  
 **ทีมพัฒนา:** **ทีม VejVivat (เวชวิวัฒน์) — Thai Medicine AI Innovation**  
 **ระดับความพร้อม:** **Maturity Level 1.5 — Advanced Clinical Hub & Dual Formulary Engine**  
-**ลิงก์ระบบ Live Production:** [https://ttm-hackathon-2026.vercel.app](https://ttm-hackathon-2026.vercel.app)  
+**ลิงก์ระบบ Live Production:** [https://narisunt-ctrl.github.io/VejViVat/](https://narisunt-ctrl.github.io/VejViVat/)  
 **ข้อความปฏิเสธความรับผิดชอบ:** *เอกสารนี้ใช้สำหรับข้อมูลสังเคราะห์เพื่อการสาธิตการแข่งขัน Hackathon 2026 เท่านั้น มิใช่ข้อมูลผู้ป่วยจริง*
 
 ---
@@ -38,7 +38,7 @@
 
 ```mermaid
 flowchart TD
-    V1["เวอร์ชัน 1.5 Advanced Clinical Hub (ปัจจุบัน - VejVivat)<br/>• 30 เคสจำลอง (C01-C30) + Patient Intake Modal<br/>• การแยกเมนู 1 (ตรวจวินิจฉัย) และเมนู 2 (สั่งยา & บัญชียาหลัก) ชัดเจน<br/>• โมเดล AI Speech-to-Text รับเสียงคนไข้บอกอาการ<br/>• ระบบวินิจฉัยคู่ขนาน Dual Diagnosis (ICD-10 ↔ TM) + Override<br/>• คัดกรอง Red Flags ฉุกเฉิน & ข้อห้ามนวดไทย พร้อมออกใบส่งต่อ SBAR<br/>• บัญชียาหลักแห่งชาติแผนปัจจุบัน 1,080 รายการ ใน 17 กลุ่มโรค<br/>• Vitest 35/35 Tests Passing (100%) & Live บน Vercel Production"]
+    V1["เวอร์ชัน 1.5 Advanced Clinical Hub (ปัจจุบัน - VejVivat)<br/>• 30 เคสจำลอง (C01-C30) + Patient Intake Modal<br/>• การแยกเมนู 1 (ตรวจวินิจฉัย) และเมนู 2 (สั่งยา & บัญชียาหลัก) ชัดเจน<br/>• โมเดล AI Speech-to-Text รับเสียงคนไข้บอกอาการ<br/>• ระบบวินิจฉัยคู่ขนาน Dual Diagnosis (ICD-10 ↔ TM) + Override<br/>• คัดกรอง Red Flags ฉุกเฉิน & ข้อห้ามนวดไทย พร้อมออกใบส่งต่อ SBAR<br/>• บัญชียาหลักแห่งชาติแผนปัจจุบัน 1,080 รายการ ใน 17 กลุ่มโรค<br/>• Vitest 35/35 Tests Passing (100%) & Live บน GitHub Pages"]
     V2["เวอร์ชัน 2.0 (ปลายปี 2569)<br/>• เชื่อมต่อ API Gateway แบบ Real-time กับ HOSxP_PCU และ EHP<br/>• รองรับ Local Speech Recognition Model (Whisper Thai ONNX Offline)<br/>• ขยายกฎอันตรกิริยา HDI ครอบคลุม 100+ คู่ยาสมุนไพรและยาแผนปัจจุบัน<br/>• รับรองความปลอดภัยโดยคณะกรรมการ PTC ระดับเขตสุขภาพ"]
     V3["เวอร์ชัน 3.0 (ปี 2570)<br/>• Federated Machine Learning ทำนายผลการรักษาเฉพาะบุคคลจากข้อมูลจริง<br/>• ระบบแจ้งเตือน Real-time ข้ามสถานพยาบาล (MOPH Central Cloud)<br/>• การวิเคราะห์ Health Economics ระดับประเทศเพื่อสนับสนุนนโยบาย 30 บาทรักษาทุกที่"]
 

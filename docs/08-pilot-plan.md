@@ -1,7 +1,7 @@
 # แผนการนำร่องในพื้นที่จริง (Pilot Implementation Plan)
 **โครงการ:** TTM Smutthan Engine Platform — Hackathon 2026  
 **ทีมพัฒนา:** **ทีม VejVivat (เวชวิวัฒน์) — Thai Medicine AI Innovation**  
-**ลิงก์ระบบ Live Production:** [https://ttm-hackathon-2026.vercel.app](https://ttm-hackathon-2026.vercel.app)  
+**ลิงก์ระบบ Live Production:** [https://narisunt-ctrl.github.io/VejViVat/](https://narisunt-ctrl.github.io/VejViVat/)  
 **ข้อความปฏิเสธความรับผิดชอบ:** *เอกสารนี้ใช้สำหรับข้อมูลสังเคราะห์เพื่อการสาธิตการแข่งขัน Hackathon 2026 เท่านั้น มิใช่ข้อมูลผู้ป่วยจริง*
 
 ---
@@ -29,7 +29,7 @@ flowchart TD
 
 ### รายละเอียดในแต่ละระยะ:
 1. **ระยะที่ 1: เตรียมความพร้อมและการติดตั้ง (Preparation & Onboarding - 1 เดือน):**
-   - เข้าถึงระบบผ่าน Web Portal Live Production (`https://ttm-hackathon-2026.vercel.app`) หรือติดตั้งบน Local Web Server
+   - เข้าถึงระบบผ่าน Web Portal Live Production (`https://narisunt-ctrl.github.io/VejViVat/`) หรือติดตั้งบน Local Web Server
    - ทดสอบการทำงานของไมโครโฟน AI Speech-to-Text ในห้องตรวจโรคจริง และทดสอบการค้นหาฐานข้อมูลยา NLEM 1,080 รายการ
    - จัดอบรมแพทย์แผนไทย พยาบาล และเภสัชกรประจำเครือข่าย 1 วัน
 2. **ระยะที่ 2: ทดลองใช้งานแบบคู่ขนาน (Shadow Running - 1.5 เดือน):**
