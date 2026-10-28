@@ -16,6 +16,8 @@ import {
   CalendarClock,
   FileText,
   X,
+  Smartphone,
+  ClipboardList,
 } from 'lucide-react';
 import teamLogo from '@/assets/team-logo.png';
 
@@ -50,6 +52,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { to: '/inter-rater', label: 'ความสอดคล้องแพทย์', icon: GitCompare, badge: '' },
     { to: '/admin-hdi', label: 'ฐานข้อมูลกลาง HDI', icon: Database, badge: 'MOPH' },
     { to: '/status', label: 'สถานะระบบต้นแบบ', icon: Info, badge: 'MVP' },
+    { to: '/clinician/previsit', label: 'สรุปก่อนพบแพทย์ (ยายพร้อม)', icon: ClipboardList, badge: 'ใหม่' },
+    { to: '/yai', label: 'แอปผู้ป่วย ยายพร้อม', icon: Smartphone, badge: 'ใหม่' },
   ];
 
   return (

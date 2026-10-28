@@ -8,6 +8,17 @@ export default {
   theme: {
     extend: {
       colors: {
+        // ยายพร้อม patient app palette
+        yai: {
+          deep: '#0A625B',
+          teal: '#0E8B81',
+          leaf: '#6EAB73',
+          mint: '#E8F5EF',
+          paper: '#FAFCFA',
+          ink: '#15312E',
+          warn: '#A75C16',
+          alert: '#B42318',
+        },
         brand: {
           50: '#F0FDF4',
           100: '#DCFCE7',

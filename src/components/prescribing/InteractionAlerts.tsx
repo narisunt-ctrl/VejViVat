@@ -8,15 +8,16 @@ interface InteractionAlertsProps {
 
 export const InteractionAlerts: React.FC<InteractionAlertsProps> = ({ interactions }) => {
   if (interactions.length === 0) {
+    // Zero matches in a small sample dataset is not proof that the combination is safe
     return (
-      <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 text-xs text-emerald-900 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 text-emerald-700">
-          ✓
+      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs text-slate-800 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0 text-slate-600">
+          <Info className="w-4 h-4" />
         </div>
         <div>
-          <div className="font-bold">ไม่พบอันตรกิริยาระหว่างยาที่มีความเสี่ยง</div>
-          <div className="text-[11px] text-emerald-700 mt-0.5">
-            ระบบตรวจสอบรายการยากับฐานข้อมูลกลาง Herb-Drug Interaction (14 คู่ยามาตรฐาน) ไม่พบปฏิกิริยารุนแรง
+          <div className="font-bold">ไม่พบคู่อันตรกิริยาในฐานข้อมูลตัวอย่าง</div>
+          <div className="text-[11px] text-slate-600 mt-0.5">
+            ฐานข้อมูล Herb-Drug Interaction ตัวอย่างมีเพียง 14 คู่ยา และยังไม่ได้ประเมินทุกคู่ยา จึงยืนยันว่าปลอดภัยไม่ได้ — ควรให้เภสัชกรตรวจสอบ
           </div>
         </div>
       </div>

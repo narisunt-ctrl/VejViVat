@@ -322,7 +322,7 @@ export const PrescribePage: React.FC<PrescribePageProps> = ({ currentCase }) => 
             ) : (
               <span className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>✓ ปลอดภัยต่อการนวดและสั่งยา</span>
+                <span>✓ ไม่พบข้อห้ามจากกฎคัดกรอง</span>
               </span>
             )}
           </div>
@@ -500,8 +500,8 @@ export const PrescribePage: React.FC<PrescribePageProps> = ({ currentCase }) => 
                           <ShieldAlert className="w-3 h-3 text-amber-400" /> เฝ้าระวัง HDI
                         </span>
                       ) : (
-                        <span className="text-emerald-300 font-bold flex items-center gap-1">
-                          <ShieldCheck className="w-3 h-3 text-emerald-400" /> ปลอดภัย ไม่พบ HDI
+                        <span className="text-slate-300 font-bold flex items-center gap-1" title="ฐานข้อมูล HDI ตัวอย่างครอบคลุมจำกัด ไม่ใช่การยืนยันความปลอดภัย">
+                          <ShieldCheck className="w-3 h-3 text-slate-400" /> ไม่พบในฐานข้อมูลตัวอย่าง
                         </span>
                       )}
 

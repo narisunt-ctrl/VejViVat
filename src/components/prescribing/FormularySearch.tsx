@@ -206,9 +206,9 @@ export const FormularySearch: React.FC<FormularySearchProps> = ({
                           <span>เฝ้าระวัง HDI</span>
                         </span>
                       ) : (
-                        <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.2 rounded font-bold flex items-center gap-1">
-                          <ShieldCheck className="w-2.5 h-2.5 text-emerald-600" />
-                          <span>ปลอดภัย ไม่มี HDI</span>
+                        <span className="bg-slate-100 text-slate-700 border border-slate-300 px-1.5 py-0.2 rounded font-bold flex items-center gap-1" title="ฐานข้อมูล HDI ตัวอย่างครอบคลุมจำกัด ไม่ใช่การยืนยันความปลอดภัย">
+                          <ShieldCheck className="w-2.5 h-2.5 text-slate-500" />
+                          <span>ไม่พบในฐานข้อมูลตัวอย่าง</span>
                         </span>
                       )}
                     </div>
