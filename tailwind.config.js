@@ -21,6 +21,10 @@ export default {
           // public-health-app accents: calm blue header and pale sky background
           blue: '#0B6FB8',
           sky: '#EAF4FB',
+          // green public-health-app theme
+          green: '#2A8763',
+          greendeep: '#1D6B4C',
+          lime: '#B6EFC6',
         },
         brand: {
           50: '#F0FDF4',
