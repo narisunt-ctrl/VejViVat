@@ -13,6 +13,9 @@ All original clinician routes are unchanged (`/`, `/patients`, `/smutthan`, `/pr
 ## Real / mocked / planned
 | Capability | State |
 |---|---|
+| Nearest facility finder | **Real ranking, fictional data**: zone-first then distance from the patient's district or device location (stays in the browser); hospitals with Thai traditional medicine and clinics. |
+| Doctor follow-up + alert | **Real code, demo channel**: consent-gated per-patient view (symptoms, medicines, self-reports), HDI-based interaction flags, doctor-written alert with patient acknowledgement. Same-browser only. |
+| Research library | Live links to PubMed / Google Scholar / ClinicalTrials.gov; teammate claims unverified; clinician-recorded papers stored in the browser. |
 | Daily health journal + heatmap | **Real code, synthetic data** (branch `feat/yai-journal-prescription-sync`): voice-first home, Thai speech-to-text when the browser supports it (honest typing fallback), keyword category suggestions (not AI diagnosis), patient review before saving, version history, square-cell heatmap counting distinct confirmed Asia/Bangkok days. See `JOURNAL_PRESCRIPTION_AUDIT.md`. |
 | CareBridge → ยายพร้อม order sync | **Simulated approval/dispense, real gate**: `evaluateReminderSync()` requires demo approval, demo dispense, confirmed explicit clock times, right patient and patient consent; versioned and idempotent; cancel/change stops old reminders and keeps history. Same-browser demo adapter only, no HIS/FHIR, no push. |
 | Evidence Passport, food by element | Passport lists orders, medicines, statements and self-reports with sources. Food page reads the existing `calculateSmutthan()` for the linked synthetic case only; unknown when inputs are missing; menu examples unreviewed. |
