@@ -108,7 +108,8 @@ def write_report(path: Path, meta: dict, summary: dict, skipped: dict) -> None:
         "Synthetic images are rendered labels (clean print and a photo-like variant with coloured packaging, uneven light,",
         "blur, noise, rotation and cylinder distortion for bottles/jars). They are a smoke test, not evidence of real-world",
         "accuracy. Add real photos with ground truth to data/real/ (see data/real/README.md) before drawing conclusions.",
-        "PaddleOCR latency is CPU time on the machine that ran this benchmark; Typhoon latency includes network time.",
+        "Latency is measured on the machine that ran this benchmark: PaddleOCR on CPU, typhoon-local through Ollama on that",
+        "machine (GPU if it fits), typhoon-ocr (API) including network time.",
     ]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 

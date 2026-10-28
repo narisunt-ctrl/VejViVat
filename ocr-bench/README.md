@@ -1,7 +1,7 @@
 # Thai medication-label OCR benchmark
 
 Compares **PaddleOCR PP-OCRv5** (`PP-OCRv5_mobile_det` + `th_PP-OCRv5_mobile_rec`) and **Typhoon OCR 1.5**
-(`typhoon-ocr`) on the same labelled images, each with and without preprocessing (`raw`, `clahe`).
+(`typhoon-ocr` via the API, or `typhoon-local` = `scb10x/typhoon-ocr1.5-3b` via Ollama, no key) on the same labelled images, each with and without preprocessing (`raw`, `clahe`).
 
 ## Metrics
 
@@ -11,8 +11,8 @@ Compares **PaddleOCR PP-OCRv5** (`PP-OCRv5_mobile_det` + `th_PP-OCRv5_mobile_rec
 | Name exact | The full medication name appears verbatim in the OCR text (after normalisation) |
 | Ingredients | Share of the listed ingredients that appear verbatim |
 | Strength + unit | Number and unit both correct; Thai and English units are equivalent (500 มก. = 500 mg, 10 มล. = 10 ml) |
-| Latency | p50 / p95 per image. PaddleOCR: CPU of the benchmark machine. Typhoon: includes network |
-| Cost | PaddleOCR: no API fee (your own compute). Typhoon: `TYPHOON_USD_PER_PAGE` × pages (rate not published here) |
+| Latency | p50 / p95 per image. PaddleOCR: CPU of the benchmark machine. typhoon-local: Ollama on this machine. typhoon-ocr: includes network |
+| Cost | PaddleOCR and typhoon-local: no API fee (your own compute). Typhoon: `TYPHOON_USD_PER_PAGE` × pages (rate not published here) |
 
 Normalisation: Unicode NFC, Thai digits → Arabic, split sara am → ำ, lower-case.
 
@@ -35,7 +35,22 @@ set PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True
 set TYPHOON_OCR_API_KEY=...          # optional; Typhoon is skipped without it
 set TYPHOON_USD_PER_PAGE=...         # optional; enables Typhoon cost estimates
 ocr-server/.venv/Scripts/python ocr-bench/run_bench.py --engines paddleocr,typhoon-ocr --preprocess raw,clahe
+# no key: run Typhoon locally (ollama pull scb10x/typhoon-ocr1.5-3b, ~3 GB download)
+ocr-server/.venv/Scripts/python ocr-bench/run_bench.py --engines paddleocr,typhoon-local --preprocess raw
 python -m unittest discover ocr-bench    # metric unit tests
 ```
 
 Results: `results/<run>/report.md` and `summary.json`.
+
+## Latest results (2026-10-28, 24 synthetic images, raw)
+
+| Engine | CER ↓ | Name exact | Ingredients | Strength+unit | p50 / p95 |
+|---|---|---|---|---|---|
+| PaddleOCR PP-OCRv5 Thai | 0.036 | 87.5% | 92.4% | 100% | 5.3 s / 8.0 s (CPU) |
+| Typhoon OCR 1.5 local (Ollama, 1024 px) | 0.021 | 91.7% | 97.9% | 100% | 58 s / 61 s (Quadro M1200 4 GB, 76% GPU) |
+
+Full report: `results/20261028T152213Z/report.md`. Clean labels: Typhoon 12/12 perfect (CER 0), PaddleOCR CER 0.004.
+On photo-like images both reach 83.3% name accuracy and both miss the name on the curved bottles (s04, s08).
+Typhoon's misses are fluent, plausible Thai: it dropped the leading ยา / ยาธ (`น้ำแก้ไอมะขามป้อม`, `ชาตุอบเชย`) and
+wrote `ประเภทเครื่องละ` for a line it could not read. Such text looks right at a glance, which is why OCR output is
+always a draft that the patient or pharmacist must check. Synthetic data only: confirm with real photos.
