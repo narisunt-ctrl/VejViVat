@@ -7,6 +7,8 @@ import { field } from '../../data/yai/fixtures';
 import { EvidenceField, MedicationPassport } from '../../domain/yai/models';
 import { missingFields } from '../../domain/yai/policies';
 import { BigButton, Card, Field, inputCls, Notice, PageTitle, SourceChip } from '../../components/yai/ui';
+import { CompletenessGrid } from '../../components/yai/CompletenessGrid';
+import { FORM_LABEL } from '../../components/yai/labels';
 
 type Step = 'EXTRACT' | 'EDIT' | 'ASK_MISSING' | 'ONLY_THIS';
 
@@ -58,6 +60,7 @@ export const ScanReviewPage: React.FC = () => {
       labelDirections: field(null, 'MANUAL_ENTRY'),
       useReports: [],
       registrationNumber: field(null, 'MANUAL_ENTRY'),
+      manufacturer: field(null, 'MANUAL_ENTRY'),
       photoIds,
       status: 'DRAFT',
       pendingIdentification: false,
@@ -153,6 +156,42 @@ export const ScanReviewPage: React.FC = () => {
               onChange={(v) => setDraft({ ...draft, labelStrength: edit(draft.labelStrength, v) })}
             />
             <EditableField label="วิธีใช้ตามฉลาก" f={draft.labelDirections} onChange={(v) => setDraft({ ...draft, labelDirections: edit(draft.labelDirections, v) })} />
+            <div className="space-y-1">
+              <Field label="รูปแบบ">
+                <select
+                  className={inputCls}
+                  value={draft.form.value ?? 'UNKNOWN'}
+                  onChange={(e) =>
+                    setDraft({
+                      ...draft,
+                      form: { ...draft.form, value: e.target.value as MedicationPassport['form']['value'], origin: 'MANUAL_ENTRY', isSynthetic: false, extractionConfidence: undefined },
+                    })
+                  }
+                >
+                  {Object.entries(FORM_LABEL).map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              {draft.form.value && draft.form.value !== 'UNKNOWN' && <SourceChip origin={draft.form.origin} synthetic={draft.form.isSynthetic} confidence={draft.form.extractionConfidence} />}
+            </div>
+            <EditableField
+              label="เลข อย. / เลขทะเบียน"
+              hint="ถ้าไม่เห็นบนกล่อง ปล่อยว่างได้ ระบบไม่เดาเลขทะเบียน"
+              f={draft.registrationNumber}
+              onChange={(v) => setDraft({ ...draft, registrationNumber: edit(draft.registrationNumber, v) })}
+            />
+            <EditableField
+              label="ผู้ผลิต"
+              f={draft.manufacturer ?? field<string>(null, 'MANUAL_ENTRY')}
+              onChange={(v) => setDraft({ ...draft, manufacturer: edit(draft.manufacturer ?? field<string>(null, 'MANUAL_ENTRY'), v) })}
+            />
+          </Card>
+
+          <Card>
+            <CompletenessGrid medicine={draft} />
           </Card>
 
           <Card className="space-y-4">

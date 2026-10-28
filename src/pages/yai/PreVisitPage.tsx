@@ -9,6 +9,8 @@ export const PreVisitPage: React.FC = () => {
   const state = useYai((s) => s);
   const [clinicId, setClinicId] = useState(DEMO_CLINICS[0].id);
   const [days, setDays] = useState(7);
+  const [note, setNote] = useState(state.previsitNote ?? '');
+  const [noteSaved, setNoteSaved] = useState(false);
   const now = demoNow(state);
   const shares = state.consents.filter((c) => c.scope.includes('PREVISIT_REPORT') && DEMO_CLINICS.some((k) => k.id === c.recipientId));
 
@@ -18,6 +20,30 @@ export const PreVisitPage: React.FC = () => {
 
       <Card className="print:border-0 print:shadow-none">
         <PreVisitReport state={state} audience="patient" />
+      </Card>
+
+      <Card className="space-y-3 print:hidden">
+        <h2 className="text-xl font-bold">บันทึกเพิ่มเติม</h2>
+        <Field label="อยากบอกคุณหมออะไรเพิ่ม" hint="เช่น อาการที่เป็นอยู่ หรือยาที่หยุดไปแล้ว">
+          <textarea
+            className={`${inputCls} min-h-[120px] py-3`}
+            value={note}
+            onChange={(e) => {
+              setNote(e.target.value);
+              setNoteSaved(false);
+            }}
+          />
+        </Field>
+        <BigButton
+          variant="secondary"
+          onClick={() => {
+            yaiStore.setPrevisitNote(note);
+            setNoteSaved(true);
+          }}
+        >
+          บันทึกข้อความ
+        </BigButton>
+        {noteSaved && <p className="text-base font-semibold text-yai-deep" role="status">บันทึกแล้ว จะแสดงในสรุปที่ส่งให้คุณหมอ</p>}
       </Card>
 
       <BigButton variant="ghost" onClick={() => window.print()} className="print:hidden">

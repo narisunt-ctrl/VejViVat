@@ -50,6 +50,8 @@ export interface MedicationPassport {
   /** What each source says about real-world use; never merged automatically */
   useReports: UseReport[];
   registrationNumber: EvidenceField<string>;
+  /** optional for records saved before this field existed */
+  manufacturer?: EvidenceField<string>;
   photoIds: string[];
   status: MedicationStatus;
   pendingIdentification: boolean;
@@ -58,8 +60,12 @@ export interface MedicationPassport {
   updatedAt: string;
 }
 
+/** Package side the user says a photo shows; tagged by the user, not detected automatically */
+export type CaptureSide = 'FRONT' | 'BACK' | 'DIRECTIONS' | 'REGISTRATION';
+
 export interface CapturedPhoto {
   id: string;
+  side?: CaptureSide;
   /** data URL kept only in this browser for the demo */
   dataUrl: string;
   capturedAt: string;
@@ -163,7 +169,7 @@ export interface YaiSettings {
 
 export interface YaiState {
   schemaVersion: 1;
-  patient: { id: PatientId; displayName: string; age: number; province: string };
+  patient: { id: PatientId; displayName: string; age: number; province: string; hn?: string };
   medicines: MedicationPassport[];
   photos: CapturedPhoto[];
   consents: ConsentGrant[];
@@ -174,4 +180,6 @@ export interface YaiState {
   settings: YaiSettings;
   /** demo clock offset so a presenter can jump to the next reminder; labelled in the UI */
   demoClockOffsetMinutes: number;
+  /** free-text note the patient adds to the pre-visit packet */
+  previsitNote?: string;
 }

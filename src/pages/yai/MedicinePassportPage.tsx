@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useYai, yaiStore } from '../../services/yai/yaiStore';
 import { EvidenceField } from '../../domain/yai/models';
-import { missingFields, useDiscrepancy } from '../../domain/yai/policies';
+import { useDiscrepancy } from '../../domain/yai/policies';
+import { CompletenessGrid } from '../../components/yai/CompletenessGrid';
+import { FORM_LABEL } from '../../components/yai/labels';
+import { field } from '../../data/yai/fixtures';
 import { BigButton, Card, Field, inputCls, MedStatusChip, Notice, PageTitle, SourceChip, originLabel, formatThaiDateTime } from '../../components/yai/ui';
 
 /** Evidence Passport: every field shows where it came from and how sure we are. */
@@ -23,7 +26,6 @@ export const MedicinePassportPage: React.FC = () => {
     );
   }
   const photos = state.photos.filter((p) => m.photoIds.includes(p.id));
-  const missing = missingFields(m);
   const discrepancy = useDiscrepancy(m);
   const hasReminder = state.reminders.some((r) => r.medicineId === m.id && r.status === 'ACTIVE');
 
@@ -48,11 +50,26 @@ export const MedicinePassportPage: React.FC = () => {
 
       <Card className="space-y-4">
         <h2 className="text-xl font-bold">ข้อมูลบนฉลาก</h2>
-        <Row label="ชื่อยา" f={m.displayName} />
-        {m.ingredients.length > 0 ? m.ingredients.map((f, i) => <Row key={i} label="ส่วนประกอบ" f={f} />) : <Row label="ส่วนประกอบ" f={{ ...m.displayName, value: null }} />}
-        <Row label="ความแรงที่พิมพ์บนฉลาก" f={m.labelStrength} note="ไม่ใช่ปริมาณที่กินจริง" />
-        <Row label="วิธีใช้ตามฉลาก" f={m.labelDirections} />
-        <Row label="เลขทะเบียน" f={m.registrationNumber} />
+        <p className="text-sm text-yai-ink/70">กด "แก้ไข" ถ้าข้อมูลไม่ถูก ค่าที่แก้จะบันทึกว่าเป็นข้อมูลที่พิมพ์เอง</p>
+        <Row id={m.id} k="displayName" label="ชื่อผลิตภัณฑ์" f={m.displayName} />
+        <Row
+          id={m.id}
+          k="form"
+          label="รูปแบบ"
+          f={{ ...m.form, value: m.form.value && m.form.value !== 'UNKNOWN' ? FORM_LABEL[m.form.value] : null } as EvidenceField<string>}
+          options={FORM_LABEL}
+          raw={m.form.value ?? 'UNKNOWN'}
+        />
+        <Row id={m.id} k="labelStrength" label="ความแรงที่พิมพ์บนฉลาก" f={m.labelStrength} note="ไม่ใช่ปริมาณที่กินจริง" />
+        <Row id={m.id} k="ingredient" label="ส่วนประกอบ" f={m.ingredients[0] ?? field<string>(null, 'MANUAL_ENTRY')} />
+        <Row id={m.id} k="labelDirections" label="วิธีใช้ตามฉลาก" f={m.labelDirections} />
+        <Row id={m.id} k="registrationNumber" label="เลข อย. / เลขทะเบียน" f={m.registrationNumber} />
+        <Row id={m.id} k="manufacturer" label="ผู้ผลิต" f={m.manufacturer ?? field<string>(null, 'MANUAL_ENTRY')} />
+      </Card>
+
+      <Card>
+        <CompletenessGrid medicine={m} />
+        <p className="mt-2 text-base text-yai-ink/70">ไม่ต้องหาให้ครบก็ได้ค่ะ คุณหมอจะช่วยดูต่อ</p>
       </Card>
 
       <Card className="space-y-3">
@@ -109,14 +126,6 @@ export const MedicinePassportPage: React.FC = () => {
         </div>
       </Card>
 
-      {missing.length > 0 && (
-        <Card>
-          <h2 className="text-xl font-bold">ยังไม่ทราบ</h2>
-          <p className="mt-1 text-lg">{missing.join(' · ')}</p>
-          <p className="mt-1 text-base text-yai-ink/70">ไม่ต้องหาให้ครบก็ได้ค่ะ คุณหมอจะช่วยดูต่อ</p>
-        </Card>
-      )}
-
       <div className="grid gap-3">
         {m.status !== 'PATIENT_CONFIRMED' && m.status !== 'CLINICIAN_VERIFIED' && !m.pendingIdentification && (
           <BigButton onClick={() => yaiStore.confirmMedicine(m.id)}>ยืนยันว่าคุณยายใช้ยานี้อยู่</BigButton>
@@ -151,17 +160,69 @@ export const MedicinePassportPage: React.FC = () => {
   );
 };
 
-const Row: React.FC<{ label: string; f: EvidenceField<string>; note?: string }> = ({ label, f, note }) => (
-  <div className="border-b border-yai-ink/5 pb-3">
-    <p className="text-sm font-semibold text-yai-ink/70">{label}</p>
-    {f.value ? (
-      <>
-        <p className="text-lg font-semibold">{f.value}</p>
-        {note && <p className="text-sm text-yai-warn">{note}</p>}
-        <SourceChip origin={f.origin} synthetic={f.isSynthetic} confidence={f.extractionConfidence} verification={f.verification} />
-      </>
-    ) : (
-      <p className="text-lg font-semibold text-yai-warn">ยังไม่ทราบ</p>
-    )}
-  </div>
-);
+type EditableKey = Parameters<typeof yaiStore.updateLabelField>[1];
+
+const Row: React.FC<{
+  id: string;
+  k: EditableKey;
+  label: string;
+  f: EvidenceField<string>;
+  note?: string;
+  options?: Record<string, string>;
+  raw?: string;
+}> = ({ id, k, label, f, note, options, raw }) => {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState('');
+  const start = () => {
+    setValue(options ? raw ?? '' : f.value ?? '');
+    setEditing(true);
+  };
+  return (
+    <div className="border-b border-yai-ink/5 pb-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-semibold text-yai-ink/70">{label}</p>
+        {!editing && (
+          <button type="button" onClick={start} className="min-h-[44px] px-2 text-base font-semibold text-yai-deep underline" aria-label={`แก้ไข${label}`}>
+            ✎ แก้ไข
+          </button>
+        )}
+      </div>
+      {editing ? (
+        <div className="mt-1 space-y-2">
+          {options ? (
+            <select className={inputCls} value={value} onChange={(e) => setValue(e.target.value)} aria-label={label}>
+              {Object.entries(options).map(([ok, ov]) => (
+                <option key={ok} value={ok}>
+                  {ov}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input className={inputCls} value={value} onChange={(e) => setValue(e.target.value)} placeholder="ยังไม่ทราบ" aria-label={label} />
+          )}
+          <div className="grid grid-cols-2 gap-2">
+            <BigButton variant="ghost" onClick={() => setEditing(false)}>
+              ยกเลิก
+            </BigButton>
+            <BigButton
+              onClick={() => {
+                yaiStore.updateLabelField(id, k, value);
+                setEditing(false);
+              }}
+            >
+              บันทึก
+            </BigButton>
+          </div>
+        </div>
+      ) : f.value ? (
+        <>
+          <p className="text-lg font-semibold">{f.value}</p>
+          {note && <p className="text-sm text-yai-warn">{note}</p>}
+          <SourceChip origin={f.origin} synthetic={f.isSynthetic} confidence={f.extractionConfidence} verification={f.verification} />
+        </>
+      ) : (
+        <p className="text-lg font-semibold text-yai-warn">ยังไม่ทราบ</p>
+      )}
+    </div>
+  );
+};
