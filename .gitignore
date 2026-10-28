@@ -56,3 +56,4 @@ ocr-bench/data/real/*
 
 # OpenCV.js is copied from node_modules at dev/build time
 public/vendor/
+ocr-bench/.tess-cache/

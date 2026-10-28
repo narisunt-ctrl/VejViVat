@@ -71,11 +71,17 @@ def name_exact(prediction: str, name: str) -> bool:
     return compact(name) in compact(prediction)
 
 
+def aliases(ingredient: str) -> list[str]:
+    """Ground truth may list names for one ingredient as 'ขมิ้นชัน|Curcuma longa'; any of them counts."""
+    return [a for a in (compact(x) for x in ingredient.split("|")) if a]
+
+
 def ingredient_accuracy(prediction: str, ingredients: list[str]) -> float:
+    """Recall: share of the label's ingredients found. Extra, invented ingredients do not lower it."""
     if not ingredients:
         return 1.0
     pred = compact(prediction)
-    return sum(compact(i) in pred for i in ingredients) / len(ingredients)
+    return sum(any(a in pred for a in aliases(i)) for i in ingredients) / len(ingredients)
 
 
 def strength_correct(prediction: str, strength: str) -> bool:
@@ -91,3 +97,105 @@ def percentile(values: list[float], p: float) -> float:
     k = (len(s) - 1) * p
     lo, hi = int(k), min(int(k) + 1, len(s) - 1)
     return s[lo] + (s[hi] - s[lo]) * (k - lo)
+
+
+# --- Invented text (hallucination) ---------------------------------------------------------------------------
+# A vision-language OCR model can write fluent text that is not on the package. Recall-style scores above do not
+# see it, so these measure it separately.
+
+
+def edit_ops(prediction: str, reference: str) -> tuple[int, int, int]:
+    """(insertions, deletions, substitutions) turning the reference into the prediction, on compact text.
+    Insertions are characters the OCR wrote that are not on the label; deletions are label text it left out."""
+    a, b = compact(reference), compact(prediction)
+    prev = [(j, (j, 0, 0)) for j in range(len(b) + 1)]  # (cost, (ins, del, sub))
+    for i in range(1, len(a) + 1):
+        cur = [(i, (0, i, 0))]
+        for j in range(1, len(b) + 1):
+            same = a[i - 1] == b[j - 1]
+            c_sub, o_sub = prev[j - 1]
+            c_del, o_del = prev[j]
+            c_ins, o_ins = cur[j - 1]
+            cur.append(min(
+                (c_sub + (not same), (o_sub[0], o_sub[1], o_sub[2] + (not same))),
+                (c_del + 1, (o_del[0], o_del[1] + 1, o_del[2])),
+                (c_ins + 1, (o_ins[0] + 1, o_ins[1], o_ins[2])),
+            ))
+        prev = cur
+    return prev[-1][1]
+
+
+def insertion_rate(prediction: str, reference: str) -> float:
+    """Characters written that are not on the label, per label character (0 = nothing extra)."""
+    return edit_ops(prediction, reference)[0] / max(1, len(compact(reference)))
+
+
+def deletion_rate(prediction: str, reference: str) -> float:
+    """Label characters the OCR left out, per label character (0 = nothing missed)."""
+    return edit_ops(prediction, reference)[1] / max(1, len(compact(reference)))
+
+
+INGREDIENT_HEAD_RE = re.compile(r"(ส่วนประ[฀-๿]{0,6}|active\s+ingredients?|ingredients?|composition)\s*[:：]?", re.I)
+# where an ingredient list usually ends on Thai and English labels
+FIELD_STOP_RE = re.compile(r"(ขนาด|บรรจุ|น้ำหนัก|ปริมาณ|รับประทาน|ครั้งละ|วันละ|วิธีใช้|ข้อบ่งใช้|สรรพคุณ|คำเตือน|net\s*weight|dosage|directions?|indications?|warning)", re.I)
+# words that describe the form of an ingredient rather than naming one
+FORM_WORDS = {"สารสกัด", "ผง", "ผงละเอียด", "แห้ง", "powder", "extract", "linn", "linn.", "dried"}
+
+
+THAI_MARKS_RE = re.compile(r"[ัิ-ฺ็-๎]")
+
+
+def _close(token: str, alias: str) -> bool:
+    """Same word, allowing misreads (โกรูซอ for โกฐสอ); short words must be nearly exact (ขิง is not ข่า)."""
+    if token in alias or alias in token:
+        return True
+    x, y = THAI_MARKS_RE.sub("", token), THAI_MARKS_RE.sub("", alias)
+    if y in x or x in y:  # ผงเหง่าขมิ้นชั้น still names ขมิ้นชัน
+        return True
+    longest = max(len(x), len(y))
+    return levenshtein(x, y) <= (0.5 if longest >= 5 else 0.34) * longest
+
+
+def ingredient_items(prediction: str) -> list[str]:
+    """Items the OCR text lists after an ingredient heading ('ส่วนประกอบ:', 'Ingredients:'), strengths removed."""
+    items: list[str] = []
+    lines = [normalize(l) for l in (prediction or "").splitlines()]
+    for i, line in enumerate(lines):
+        m = INGREDIENT_HEAD_RE.search(line)
+        if not m:
+            continue
+        rest = line[m.end():].strip()
+        part = rest if rest else (lines[i + 1] if i + 1 < len(lines) else "")
+        stop = FIELD_STOP_RE.search(part)
+        if stop:
+            part = part[: stop.start()]
+        part = STRENGTH_RE.sub(" ", part)
+        for piece in re.split(r"[,;/、]|\sและ\s|\band\b", part):
+            piece = piece.strip(" .:-()[]")
+            if piece:
+                items.append(piece)
+    return items
+
+
+def invented_ingredients(prediction: str, ingredients: list[str]) -> tuple[list[str], int]:
+    """(invented, matched): words in the OCR's ingredient list that match none of the label's ingredients,
+    and how many matched. A misread such as โกรูซอ for โกฐสอ still counts as matched."""
+    names = [a for i in ingredients for a in aliases(i)]
+    invented: list[str] = []
+    matched = 0
+    for item in ingredient_items(prediction):
+        # word by word, so one real ingredient cannot hide an invented one next to it ("อบเชย วิตามินซี")
+        for tok in item.split():
+            t = tok.strip(" .:-()")
+            if len(t) < 2 or t in FORM_WORDS or t.isdigit():
+                continue
+            if any(_close(t, a) for a in names):
+                matched += 1
+            else:
+                invented.append(t)
+    return invented, matched
+
+
+def invented_strengths(prediction: str, reference_text: str) -> list[str]:
+    """Number+unit pairs the OCR wrote that appear nowhere on the label (e.g. 50mg when the box says 500 mg)."""
+    return sorted(strengths_in(prediction) - strengths_in(reference_text))

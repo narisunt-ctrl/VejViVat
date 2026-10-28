@@ -4,16 +4,21 @@
 - Engines: paddleocr, typhoon-local · preprocessing: raw
 - CER: character error rate on normalised text without spaces (lower is better). Name: full name found verbatim.
   Ingredients: share of listed ingredients found. Strength: number and unit both correct (มก. = mg).
+- Invented text: Inserted = characters written that are not on the label, Omitted = label characters left out
+  (both per label character). Ingr. precision = ingredient words the OCR listed that are on the label.
+  Invented field = images where the OCR listed an ingredient or a strength that is not on the label.
 
-| Engine | Prep | Images | n | CER ↓ | Name exact | Ingredients | Strength+unit | p50 ms | p95 ms | API cost / 1000 |
-|---|---|---|---|---|---|---|---|---|---|---|
-| paddleocr | raw | all | 4 | 0.356 | 0.0% | 25.0% | 50.0% | 9984 | 20731 | $0.0000 |
-| paddleocr | raw | real | 4 | 0.356 | 0.0% | 25.0% | 50.0% | 9984 | 20731 | $0.0000 |
-| typhoon-local | raw | all | 4 | 0.312 | 100.0% | 75.0% | 100.0% | 111079 | 133921 | $0.0000 |
-| typhoon-local | raw | real | 4 | 0.312 | 100.0% | 75.0% | 100.0% | 111079 | 133921 | $0.0000 |
+| Engine | Prep | Images | n | CER ↓ | Name exact | Ingredients | Strength+unit | Inserted ↓ | Omitted ↓ | Ingr. precision | Invented field ↓ | p50 ms | p95 ms | API cost / 1000 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| paddleocr | raw | all | 4 | 0.356 | 0.0% | 25.0% | 50.0% | 0.118 | 0.189 | n/a | 0.0% | 9984 | 20731 | $0.0000 |
+| paddleocr | raw | real | 4 | 0.356 | 0.0% | 25.0% | 50.0% | 0.118 | 0.189 | n/a | 0.0% | 9984 | 20731 | $0.0000 |
+| typhoon-local | raw | all | 4 | 0.312 | 100.0% | 75.0% | 100.0% | 0.048 | 0.179 | n/a | 0.0% | 111079 | 133921 | $0.0000 |
+| typhoon-local | raw | real | 4 | 0.312 | 100.0% | 75.0% | 100.0% | 0.048 | 0.179 | n/a | 0.0% | 111079 | 133921 | $0.0000 |
 
 Synthetic images are rendered labels (clean print and a photo-like variant with coloured packaging, uneven light,
 blur, noise, rotation and cylinder distortion for bottles/jars). They are a smoke test, not evidence of real-world
 accuracy. Add real photos with ground truth to data/real/ (see data/real/README.md) before drawing conclusions.
 Latency is measured on the machine that ran this benchmark: PaddleOCR on CPU, typhoon-local through Ollama on that
-machine (GPU if it fits), typhoon-ocr (API) including network time.
+machine (GPU if it fits), typhoon-ocr (API) including network time, tesseract-js under Node on CPU (a phone is slower).
+Invented-ingredient detection is a heuristic on the OCR's 'ส่วนประกอบ / Ingredients' line; see predictions.jsonl
+for the exact words it flagged on each image.

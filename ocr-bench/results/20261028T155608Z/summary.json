@@ -11,7 +11,8 @@
       "raw"
     ],
     "skipped": {},
-    "typhoon_usd_per_page": null
+    "typhoon_usd_per_page": null,
+    "rescored": "20261028T182208Z"
   },
   "summary": {
     "paddleocr|raw|all": {
@@ -23,6 +24,10 @@
       "name_exact": 0.0,
       "ingredient_acc": 0.25,
       "strength_acc": 0.5,
+      "insertion_rate": 0.11800229678866926,
+      "deletion_rate": 0.18918085802442364,
+      "ingredient_precision": null,
+      "invented_field_rate": 0.0,
       "latency_p50_ms": 9983.779450063594,
       "latency_p95_ms": 20730.703690042716,
       "api_cost_usd": 0.0,
@@ -37,6 +42,10 @@
       "name_exact": 0.0,
       "ingredient_acc": 0.25,
       "strength_acc": 0.5,
+      "insertion_rate": 0.11800229678866926,
+      "deletion_rate": 0.18918085802442364,
+      "ingredient_precision": null,
+      "invented_field_rate": 0.0,
       "latency_p50_ms": 9983.779450063594,
       "latency_p95_ms": 20730.703690042716,
       "api_cost_usd": 0.0,
@@ -51,6 +60,10 @@
       "name_exact": 1.0,
       "ingredient_acc": 0.75,
       "strength_acc": 1.0,
+      "insertion_rate": 0.04794520547945205,
+      "deletion_rate": 0.17874062152973494,
+      "ingredient_precision": null,
+      "invented_field_rate": 0.0,
       "latency_p50_ms": 111079.05709999613,
       "latency_p95_ms": 133921.37934999773,
       "api_cost_usd": 0.0,
@@ -65,6 +78,10 @@
       "name_exact": 1.0,
       "ingredient_acc": 0.75,
       "strength_acc": 1.0,
+      "insertion_rate": 0.04794520547945205,
+      "deletion_rate": 0.17874062152973494,
+      "ingredient_precision": null,
+      "invented_field_rate": 0.0,
       "latency_p50_ms": 111079.05709999613,
       "latency_p95_ms": 133921.37934999773,
       "api_cost_usd": 0.0,

@@ -10,7 +10,8 @@
       "raw"
     ],
     "skipped": {},
-    "typhoon_usd_per_page": null
+    "typhoon_usd_per_page": null,
+    "rescored": "20261028T182211Z"
   },
   "summary": {
     "typhoon-local|raw|all": {
@@ -22,6 +23,10 @@
       "name_exact": 0.75,
       "ingredient_acc": 1.0,
       "strength_acc": 1.0,
+      "insertion_rate": 0.20917323226232926,
+      "deletion_rate": 0.14194615021256496,
+      "ingredient_precision": 0.05263157894736842,
+      "invented_field_rate": 0.25,
       "latency_p50_ms": 38275.43349994812,
       "latency_p95_ms": 56850.11204498587,
       "api_cost_usd": 0.0,
@@ -36,6 +41,10 @@
       "name_exact": 0.75,
       "ingredient_acc": 1.0,
       "strength_acc": 1.0,
+      "insertion_rate": 0.20917323226232926,
+      "deletion_rate": 0.14194615021256496,
+      "ingredient_precision": 0.05263157894736842,
+      "invented_field_rate": 0.25,
       "latency_p50_ms": 38275.43349994812,
       "latency_p95_ms": 56850.11204498587,
       "api_cost_usd": 0.0,

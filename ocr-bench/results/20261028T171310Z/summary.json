@@ -10,7 +10,8 @@
       "raw"
     ],
     "skipped": {},
-    "typhoon_usd_per_page": null
+    "typhoon_usd_per_page": null,
+    "rescored": "20261028T182210Z"
   },
   "summary": {
     "typhoon-local|raw|all": {
@@ -22,6 +23,10 @@
       "name_exact": 0.8928571428571429,
       "ingredient_acc": 1.0,
       "strength_acc": 1.0,
+      "insertion_rate": 0.23614910966996602,
+      "deletion_rate": 0.030488182895152222,
+      "ingredient_precision": 0.7916666666666666,
+      "invented_field_rate": 0.03571428571428571,
       "latency_p50_ms": 29337.108400068246,
       "latency_p95_ms": 48703.8777200272,
       "api_cost_usd": 0.0,
@@ -36,6 +41,10 @@
       "name_exact": 1.0,
       "ingredient_acc": 1.0,
       "strength_acc": 1.0,
+      "insertion_rate": 0.0,
+      "deletion_rate": 0.0,
+      "ingredient_precision": 1.0,
+      "invented_field_rate": 0.0,
       "latency_p50_ms": 29113.580250064842,
       "latency_p95_ms": 31160.055845137686,
       "api_cost_usd": 0.0,
@@ -50,6 +59,10 @@
       "name_exact": 0.8333333333333334,
       "ingredient_acc": 1.0,
       "strength_acc": 1.0,
+      "insertion_rate": 0.0011904761904761904,
+      "deletion_rate": 0.014330039131757573,
+      "ingredient_precision": 1.0,
+      "invented_field_rate": 0.0,
       "latency_p50_ms": 29366.21419992298,
       "latency_p95_ms": 30829.110730043612,
       "api_cost_usd": 0.0,
@@ -64,6 +77,10 @@
       "name_exact": 0.75,
       "ingredient_acc": 1.0,
       "strength_acc": 1.0,
+      "insertion_rate": 1.6494723391183337,
+      "deletion_rate": 0.1704271628707928,
+      "ingredient_precision": 0.0,
+      "invented_field_rate": 0.25,
       "latency_p50_ms": 45818.639300065115,
       "latency_p95_ms": 272610.58474996814,
       "api_cost_usd": 0.0,
