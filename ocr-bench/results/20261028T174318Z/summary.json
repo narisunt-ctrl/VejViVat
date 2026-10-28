@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "started": "20261028T174318Z",
+    "n_images": 4,
+    "sources": "real",
+    "engines": [
+      "typhoon-local"
+    ],
+    "preprocess": [
+      "raw"
+    ],
+    "skipped": {},
+    "typhoon_usd_per_page": null
+  },
+  "summary": {
+    "typhoon-local|raw|all": {
+      "engine": "typhoon-local",
+      "preprocess": "raw",
+      "variant": "all",
+      "n": 4,
+      "cer_mean": 0.43565901827217524,
+      "name_exact": 0.75,
+      "ingredient_acc": 1.0,
+      "strength_acc": 1.0,
+      "latency_p50_ms": 38275.43349994812,
+      "latency_p95_ms": 56850.11204498587,
+      "api_cost_usd": 0.0,
+      "api_cost_per_1000_usd": 0.0
+    },
+    "typhoon-local|raw|real": {
+      "engine": "typhoon-local",
+      "preprocess": "raw",
+      "variant": "real",
+      "n": 4,
+      "cer_mean": 0.43565901827217524,
+      "name_exact": 0.75,
+      "ingredient_acc": 1.0,
+      "strength_acc": 1.0,
+      "latency_p50_ms": 38275.43349994812,
+      "latency_p95_ms": 56850.11204498587,
+      "api_cost_usd": 0.0,
+      "api_cost_per_1000_usd": 0.0
+    }
+  }
+}
