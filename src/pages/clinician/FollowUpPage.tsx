@@ -8,6 +8,20 @@ import { draftPatientAlert, InteractionFlag, screenPatientInteractions, SEVERITY
 import { bangkokDate, CATEGORY_LABEL, isConfirmed, recordedDaysInMonth, thaiDateLabel } from '../../domain/yai/journal';
 import { orderStatusLabels } from '../../domain/yai/prescriptionSync';
 import { clinicianMessages, useClinicianMessages } from '../../services/yai/clinicianMessages';
+import { consults, useConsults } from '../../services/carebridge/consults';
+import { herbForName } from '../../services/carebridge/herbEvidence';
+import { getElementSummaryForPatient } from '../../services/yai/elementSummaryAdapter';
+import { ModernDoctorSummary } from '../../components/carebridge/ModernDoctorSummary';
+
+type Role = 'MODERN' | 'TTM';
+const ROLE_KEY = 'carebridge-role';
+const loadRole = (): Role => {
+  try {
+    return globalThis.localStorage?.getItem(ROLE_KEY) === 'TTM' ? 'TTM' : 'MODERN';
+  } catch {
+    return 'MODERN';
+  }
+};
 
 // Doctor's follow-up workspace for patients who use ยายพร้อม. Built to save the doctor's time: things that need
 // attention come first, every item says where it came from, and nothing has to be typed in again.
@@ -24,6 +38,16 @@ export const FollowUpPage: React.FC = () => {
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [readAt, setReadAt] = useState<string | null>(null);
   const messages = useClinicianMessages();
+  const consultList = useConsults();
+  const [role, setRoleState] = useState<Role>(loadRole);
+  const setRole = (r: Role) => {
+    setRoleState(r);
+    try {
+      globalThis.localStorage?.setItem(ROLE_KEY, r);
+    } catch {
+      // remember for this visit only
+    }
+  };
 
   const refresh = useCallback(() => {
     setSnap(yaiStore.readDoseReportsForClinician(link.recipientId));
@@ -66,6 +90,24 @@ export const FollowUpPage: React.FC = () => {
           </button>
         </div>
       </header>
+      <div className="inline-flex rounded-2xl border border-slate-300 bg-white p-1" role="group" aria-label="มุมมองแพทย์">
+        {(
+          [
+            ['MODERN', 'แพทย์แผนปัจจุบัน · สรุปเฉพาะที่จำเป็น'],
+            ['TTM', 'แพทย์แผนไทย · ละเอียด'],
+          ] as [Role, string][]
+        ).map(([r, label]) => (
+          <button
+            key={r}
+            type="button"
+            aria-pressed={role === r}
+            onClick={() => setRole(r)}
+            className={`min-h-[40px] rounded-xl px-4 text-sm font-bold ${role === r ? (r === 'MODERN' ? 'bg-sky-700 text-white' : 'bg-emerald-700 text-white') : 'text-slate-600'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
       <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
         ข้อมูลจำลองทั้งหมด · เชื่อมภายในเบราว์เซอร์นี้เท่านั้น ไม่ใช่เวชระเบียนหรือระบบโรงพยาบาลจริง · ข้อความที่ผู้ป่วยบันทึกเป็นคำบอกเล่า ไม่ใช่การวินิจฉัย
       </p>
@@ -80,8 +122,21 @@ export const FollowUpPage: React.FC = () => {
         </section>
       )}
 
-      {snap?.allowed && screen && (
+      {snap?.allowed && screen && role === 'MODERN' && (
+        <ModernDoctorSummary
+          patientId={link.yaiPatientId}
+          screen={screen}
+          medicines={snap.medicines ?? []}
+          journal={journal}
+          doseSummary={{ taken, due: recentLogs.length }}
+          onOpenDetail={() => setRole('TTM')}
+        />
+      )}
+
+      {snap?.allowed && screen && role === 'TTM' && (
         <>
+          <ConsultInbox list={consultList.filter((c) => c.patientId === link.yaiPatientId)} />
+          <ElementCard patientId={link.yaiPatientId} />
           <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
             <Stat label="ผู้ป่วย" value={snap.patient?.displayName ?? link.yaiPatientId} sub={`อายุ ${snap.patient?.age ?? '-'} ปี · จ.${snap.patient?.province ?? '-'}`} />
             <Stat label="บันทึกใน 14 วัน" value={`${days.length} วัน`} sub={`เดือนนี้ ${recordedDaysInMonth(snap.journal, today.slice(0, 7))} วัน`} />
@@ -234,6 +289,11 @@ const FlagCard: React.FC<{ flag: InteractionFlag; link: (typeof DEMO_PATIENT_LIN
       </p>
       <p className="text-sm text-slate-800">{f.rule.clinical_effects}</p>
       <p className="text-xs text-slate-600">คำแนะนำในฐานข้อมูล: {f.rule.recommendation}</p>
+      {herbForName(f.rule.herb_thai_name) && (
+        <Link to={`/research?herb=${encodeURIComponent(herbForName(f.rule.herb_thai_name)!.thaiName)}`} className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 underline">
+          <BookOpen className="h-3.5 w-3.5" /> ดูหลักฐานวิจัยของ{f.rule.herb_thai_name} (PubMed)
+        </Link>
+      )}
       {sentAt ? (
         <p className="text-sm font-semibold text-emerald-700">ส่งข้อความถึงผู้ป่วยแล้ว ({new Date(sentAt).toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' })})</p>
       ) : open ? (
@@ -271,5 +331,50 @@ const FlagCard: React.FC<{ flag: InteractionFlag; link: (typeof DEMO_PATIENT_LIN
         </button>
       )}
     </div>
+  );
+};
+
+const ConsultInbox: React.FC<{ list: ReturnType<typeof consults.all> }> = ({ list }) =>
+  list.length === 0 ? null : (
+    <section className="space-y-2 rounded-2xl border border-violet-200 bg-violet-50/60 p-4">
+      <h2 className="text-base font-bold text-slate-900">คำขอปรึกษาจากแพทย์แผนปัจจุบัน</h2>
+      {list.map((c) => (
+        <div key={c.id} className="flex flex-wrap items-start justify-between gap-2 rounded-xl bg-white p-3 text-sm">
+          <div>
+            <p className="font-semibold">{c.question}</p>
+            <p className="text-xs text-slate-500">
+              จาก {c.from} · {new Date(c.at).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}
+              {c.ruleIds.length ? ` · แนบคู่ยา ${c.ruleIds.join(', ')}` : ''}
+            </p>
+          </div>
+          {c.acceptedAt ? (
+            <span className="text-xs font-semibold text-emerald-700">รับเรื่องแล้ว</span>
+          ) : (
+            <button type="button" onClick={() => consults.accept(c.id)} className="min-h-[36px] rounded-lg bg-violet-700 px-3 text-xs font-bold text-white">
+              รับเรื่อง
+            </button>
+          )}
+        </div>
+      ))}
+    </section>
+  );
+
+/** Thai traditional medicine view only: birth element and today's Smutthan from the existing engine */
+const ElementCard: React.FC<{ patientId: string }> = ({ patientId }) => {
+  const e = getElementSummaryForPatient(patientId);
+  return (
+    <section className="rounded-2xl border border-emerald-200 bg-white p-4 text-sm">
+      <h2 className="text-base font-bold text-slate-900">ธาตุและสมุฏฐาน (เครื่องมือเดิมของระบบ)</h2>
+      {e.status === 'UNKNOWN' ? (
+        <p className="text-amber-800">รอข้อมูลประเมิน: ขาด {e.missingInputs.join(', ')}</p>
+      ) : (
+        <p>
+          ธาตุเจ้าเรือน: <b>{e.birthElement ?? '-'}</b> · สมุฏฐานวันที่ประเมิน: <b>{e.dynamic.dominantTh}</b> ({e.dynamic.state}) · รสที่ตำราแนะนำ: {e.dynamic.recommendedTaste.join(', ')}
+          <span className="block text-xs text-slate-500">
+            {e.source} · {e.ruleVersion} · ประเมินเมื่อ {new Date(e.assessedAt).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}
+          </span>
+        </p>
+      )}
+    </section>
   );
 };
