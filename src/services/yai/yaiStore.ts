@@ -88,6 +88,10 @@ export const yaiStore = {
     return id;
   },
 
+  setPhotoOcr(photoId: string, ocr: NonNullable<CapturedPhoto['ocr']>) {
+    set({ ...state, photos: state.photos.map((p) => (p.id === photoId ? { ...p, ocr } : p)) });
+  },
+
   saveMedicine(medicine: MedicationPassport) {
     const exists = state.medicines.some((m) => m.id === medicine.id);
     const now = demoNow().toISOString();

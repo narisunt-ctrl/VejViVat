@@ -9,6 +9,8 @@ import { missingFields } from '../../domain/yai/policies';
 import { BigButton, Card, Field, inputCls, Notice, PageTitle, SourceChip } from '../../components/yai/ui';
 import { CompletenessGrid } from '../../components/yai/CompletenessGrid';
 import { FORM_LABEL } from '../../components/yai/labels';
+import { recognizeThai, OCR_STATUS_TH } from '../../services/yai/thaiOcr';
+import { parsePhotos, draftFromParsed } from '../../services/yai/scanGuidance';
 
 type Step = 'EXTRACT' | 'EDIT' | 'ASK_MISSING' | 'ONLY_THIS';
 
@@ -31,6 +33,36 @@ export const ScanReviewPage: React.FC = () => {
 
   const reporter = state.settings.role === 'CAREGIVER' ? 'CAREGIVER_VOICE' : 'PATIENT_VOICE';
   const newId = () => `med-${Date.now().toString(36)}`;
+
+  const readable = photos.filter((p) => p.ocr?.status === 'DONE');
+  const unread = photos.filter((p) => p.ocr?.status !== 'DONE');
+  const rawText = readable.map((p) => p.ocr!.text.trim()).filter(Boolean).join('\n---\n');
+  const [ocrStatus, setOcrStatus] = useState('');
+
+  const useRealOcr = () => {
+    const parsed = parsePhotos(readable);
+    if (!parsed) return;
+    setDraft(draftFromParsed(parsed, state.patient.id, photoIds, demoNow().toISOString(), newId()));
+    setStep('EDIT');
+  };
+
+  const readUnread = async () => {
+    setLoading(true);
+    setError('');
+    let failedCount = 0;
+    for (const p of unread) {
+      try {
+        const res = await recognizeThai(p.dataUrl, (progress, status) => setOcrStatus(`${OCR_STATUS_TH[status] ?? 'กำลังอ่าน'} ${Math.round(progress * 100)}%`));
+        yaiStore.setPhotoOcr(p.id, { status: 'DONE', text: res.text, lines: res.lines, confidence: res.confidence, engine: res.engine, at: demoNow().toISOString() });
+      } catch {
+        failedCount++;
+        yaiStore.setPhotoOcr(p.id, { status: 'FAILED', text: '', lines: [], confidence: 0, engine: '', at: demoNow().toISOString() });
+      }
+    }
+    setOcrStatus('');
+    setLoading(false);
+    if (failedCount) setError('อ่านข้อความไม่สำเร็จ ครั้งแรกต้องต่ออินเทอร์เน็ตเพื่อโหลดระบบอ่านภาษาไทย หรือพิมพ์เองได้ค่ะ');
+  };
 
   const runDemoOcr = async () => {
     setLoading(true);
@@ -122,18 +154,40 @@ export const ScanReviewPage: React.FC = () => {
 
       {step === 'EXTRACT' && (
         <Card className="space-y-3">
-          <Notice tone="warn" title="ยังไม่มีระบบอ่านฉลากภาษาไทยจริง">
-            ปุ่มด้านล่างจะแสดง<b>ข้อมูลตัวอย่างที่เตรียมไว้</b> ไม่ได้อ่านจากรูปของคุณยาย เพื่อสาธิตขั้นตอนเท่านั้น
-          </Notice>
-          <BigButton onClick={runDemoOcr} disabled={loading}>
-            {loading ? 'กำลังเตรียมข้อมูลตัวอย่าง…' : 'สาธิตการอ่านข้อความ (ข้อมูลตัวอย่าง)'}
-          </BigButton>
+          {photos.length > 0 ? (
+            <>
+              <Notice title={`อ่านข้อความจากรูปแล้ว ${readable.length}/${photos.length} รูป`}>
+                อ่านในเครื่องนี้ด้วยระบบอ่านภาษาไทย อาจอ่านผิดหรือไม่ครบ ขั้นถัดไปจะให้ตรวจและแก้ทุกช่อง
+              </Notice>
+              {readable.length > 0 && (
+                <BigButton size="lg" onClick={useRealOcr} disabled={loading}>
+                  ใช้ข้อความที่อ่านได้จากรูป
+                </BigButton>
+              )}
+              {unread.length > 0 && (
+                <BigButton variant={readable.length ? 'secondary' : 'primary'} onClick={readUnread} disabled={loading}>
+                  {loading ? ocrStatus || 'กำลังอ่านข้อความ…' : `อ่านข้อความจากรูป (ภาษาไทย) ${unread.length} รูป`}
+                </BigButton>
+              )}
+              {rawText && (
+                <details className="rounded-2xl border border-yai-ink/10 p-3">
+                  <summary className="min-h-[44px] cursor-pointer text-base font-semibold text-yai-deep">ดูข้อความทั้งหมดที่อ่านได้</summary>
+                  <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-base">{rawText}</pre>
+                </details>
+              )}
+            </>
+          ) : (
+            <Notice title="ยังไม่มีรูป">ถ่ายรูปฉลากก่อนเพื่อให้ระบบอ่านข้อความ หรือพิมพ์ชื่อยาเองได้</Notice>
+          )}
           <BigButton variant="secondary" onClick={startManual}>
             พิมพ์ชื่อยาเอง
           </BigButton>
           <BigButton variant="ghost" onClick={() => setStep('ONLY_THIS')}>
             มีแค่นี้ — ข้อมูลไม่ครบ
           </BigButton>
+          <button type="button" onClick={runDemoOcr} disabled={loading} className="min-h-[44px] w-full text-base font-semibold text-yai-ink/70 underline">
+            ใช้ฉลากตัวอย่างสำหรับสาธิต (ไม่ได้อ่านจากรูป)
+          </button>
           {error && <Notice tone="alert" title={error} />}
         </Card>
       )}

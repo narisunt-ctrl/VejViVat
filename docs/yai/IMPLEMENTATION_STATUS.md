@@ -15,7 +15,8 @@ All original clinician routes are unchanged (`/`, `/patients`, `/smutthan`, `/pr
 |---|---|
 | Camera preview, capture, torch, gallery upload | **Real** browser APIs (`getUserMedia`, file input). Tracks stop on unmount and when the tab is hidden. Not yet tested on physical phones. |
 | Frame quality (brightness, sharpness, glare) | **Real** measurement on a 160px preview; thresholds are uncalibrated initial values. |
-| Thai OCR | **Mocked.** `MockOCRAdapter` returns fixed sample labels, independent of the photo; every field is tagged "อ่านจากตัวอย่าง ไม่ใช่จากรูปจริง". Manual entry works. |
+| Thai OCR | **Real, on-device** (branch `feat/thai-ocr`): Tesseract.js 5.1.1 with `tha+eng`, lazy-loaded; engine and Thai model are downloaded from jsDelivr on first use, images never leave the browser. Each photo is read right after capture. `labelParser` proposes name / strength / ingredients / directions / reg. no. / manufacturer / form with the source line and line confidence; name confidence is capped at 60%. Every field still has to be checked. The old sample-label button remains as a clearly labelled demo option. Measured once in the in-app browser on a rendered Thai label: about 6 s for the first read including model download, 87% confidence, one Thai word misread. Not yet measured on real phone photos. |
+| Live "complete yet?" guidance | Overlay on the camera shows the side being shot, field chips ticked from real OCR, and a next step (`scanGuidance`: go to the side holding a missing field, or retake if that side was shot but not read). Optional Thai voice guidance and a vibration on capture. The overlay only appears with a live camera; the same checklist is shown below for uploads. |
 | Evidence Passport, three voices, "มีแค่นี้" | Implemented. Unknown values stay `null`; disagreements are shown side by side, never auto-resolved. |
 | Interaction screening | Coverage-aware: `MATCHED_UNREVIEWED` / `NO_MATCH_IN_COVERED_PAIRS` / `INSUFFICIENT_INFORMATION`. No "safe" state exists. One sample rule only. |
 | Reminders | In-app only (foreground). Created only from a confirmed medicine plus explicit time confirmation; dose answers are self-reports and idempotent per occurrence. Demo clock is labelled. No background push. |
@@ -43,7 +44,7 @@ All original clinician routes are unchanged (`/`, `/patients`, `/smutthan`, `/pr
 
 ## Tests run
 - `npx tsc --noEmit`: clean.
-- `npm test`: **52/52 passed** after the mockup gaps (was 49/49) (35 original + 2 red-flag regressions + 12 YaiPrompt policy/store/frame-quality tests mapped to T05–T09, T11, T14–T16, T22).
+- `npm test`: **60/60 passed** with Thai OCR parser/guidance tests (52/52 after the mockup gaps, 49/49 before) (35 original + 2 red-flag regressions + 12 YaiPrompt policy/store/frame-quality tests mapped to T05–T09, T11, T14–T16, T22).
 - `npm run build`: succeeds; the patient app is a separate lazy chunk (~60 kB, ~19 kB gzip).
 - Manual browser checks (dev server, in-app browser): full scan → review → save → "มีแค่นี้" flow; clinic request → partner confirm → clinician packet → revoke → denied; reminders with demo clock; no horizontal overflow on all 19 routes at 390px; `/smutthan` and `/prescribe` still render. Screenshots were inspected during the session but **not saved** to the repo.
 

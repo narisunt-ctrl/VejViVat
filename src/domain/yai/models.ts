@@ -71,6 +71,8 @@ export interface CapturedPhoto {
   capturedAt: string;
   source: 'CAMERA' | 'UPLOAD';
   quality?: { brightness: number; sharpness: number; glare: number };
+  /** on-device OCR result for this photo, if it has been read */
+  ocr?: { status: 'DONE' | 'FAILED'; text: string; lines: { text: string; confidence: number }[]; confidence: number; engine: string; at: string };
 }
 
 export interface ConsentGrant {
@@ -165,6 +167,8 @@ export interface YaiSettings {
   familyPhone: string;
   onboarded: boolean;
   role: 'PATIENT' | 'CAREGIVER';
+  /** spoken scan guidance; off unless the user turns it on */
+  voiceGuide?: boolean;
 }
 
 export interface YaiState {
