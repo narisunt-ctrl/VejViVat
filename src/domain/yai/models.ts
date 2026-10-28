@@ -4,6 +4,7 @@
 
 import type { JournalEntry } from './journal';
 import type { LinkedOrderRef, OrderNotice, SyncedOrderRecord } from './prescriptionSync';
+import type { HomeLocation } from './facilityRanking';
 
 export type PatientId = string;
 
@@ -163,6 +164,13 @@ export interface Clinic {
   accessibility: ('WHEELCHAIR' | 'CAREGIVER_FRIENDLY' | 'PARKING')[];
   verification: 'DEMO_LISTING';
   description: string;
+  /** HOSPITAL = hospital with a Thai traditional medicine service; CLINIC = clinic / TTM centre / pharmacy */
+  kind?: 'HOSPITAL' | 'CLINIC';
+  /** a licensed Thai traditional medicine practitioner works here (demo listing, not verified) */
+  hasTtmDoctor?: boolean;
+  lat?: number;
+  lng?: number;
+  hours?: string;
 }
 
 export type AuditAction =
@@ -206,6 +214,8 @@ export interface YaiSettings {
   voiceGuide?: boolean;
   /** agreed to send label photos to the OCR server (and Typhoon); undefined = not asked yet */
   cloudOcrConsent?: boolean;
+  /** home area used to sort hospitals/clinics nearest first; stays in this browser */
+  home?: HomeLocation;
 }
 
 export interface YaiState {
