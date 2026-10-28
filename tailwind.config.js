@@ -18,6 +18,9 @@ export default {
           ink: '#15312E',
           warn: '#A75C16',
           alert: '#B42318',
+          // public-health-app accents: calm blue header and pale sky background
+          blue: '#0B6FB8',
+          sky: '#EAF4FB',
         },
         brand: {
           50: '#F0FDF4',
