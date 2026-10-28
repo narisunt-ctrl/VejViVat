@@ -70,7 +70,7 @@ export const VoiceEntryButton: React.FC<{
         </p>
       )}
       {!listening && !problem && (
-        <p className="text-sm text-white/85">
+        <p className="text-sm text-yai-ink/70">
           {supported ? 'เบราว์เซอร์จะแปลงเสียงเป็นข้อความ (อาจส่งเสียงไปยังบริการของเบราว์เซอร์) แล้วให้ยายตรวจก่อนบันทึก' : 'เครื่องนี้ฟังเสียงไม่ได้ กดแล้วจะเปิดช่องพิมพ์ให้'}
         </p>
       )}
