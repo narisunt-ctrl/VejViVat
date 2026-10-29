@@ -27,6 +27,9 @@ import { GuidelinesPage, GuidelineNewPage, GuidelineViewPage } from './pages/cli
 import { HandoverPage } from './pages/clinician/HandoverPage';
 import { HolisticHubPage } from './pages/clinician/HolisticHubPage';
 import { ValuePropositionPage } from './pages/clinician/ValuePropositionPage';
+import { DoctorHomePage } from './pages/clinician/DoctorHomePage';
+import { BusinessDashboardPage } from './pages/clinician/BusinessDashboardPage';
+import { FeasibilityPage } from './pages/clinician/FeasibilityPage';
 
 export const App: React.FC = () => {
   const navigate = useNavigate();
@@ -160,6 +163,9 @@ export const App: React.FC = () => {
               <Route path="/clinician/handover" element={<HandoverPage />} />
               <Route path="/holistic" element={<HolisticHubPage />} />
               <Route path="/value" element={<ValuePropositionPage />} />
+              <Route path="/doctor" element={<DoctorHomePage currentCase={currentCase} />} />
+              <Route path="/business" element={<BusinessDashboardPage />} />
+              <Route path="/feasibility" element={<FeasibilityPage />} />
               <Route
                 path="*"
                 element={
