@@ -58,7 +58,7 @@ export const LeaderboardPage: React.FC = () => {
                 {r.avatar}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-lg font-bold">{r.isMe ? `${r.name} (ยาย)` : r.name}</span>
+                <span className="block truncate text-lg font-bold">{r.isMe ? `${r.name.replace(/\s*\(.*\)\s*$/, '')} (คุณ)` : r.name}</span>
                 {r.isSynthetic && <span className="text-xs text-yai-ink/50">เพื่อนตัวอย่าง (ข้อมูลจำลอง)</span>}
               </span>
               <span className="text-xl font-bold">{r.points}</span>

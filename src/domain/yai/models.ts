@@ -284,7 +284,12 @@ export interface YaiSettings {
   goals?: string[];
   /** daily step goal the user picked (steps/day) */
   stepGoal?: number;
+  /** which synthetic demo user is loaded (absent = the retiree, คุณยายสมศรี) */
+  persona?: DemoPersona;
 }
+
+/** Synthetic demo users for presentations: an active retiree (68) and an active professional (48) */
+export type DemoPersona = 'RETIREE' | 'PROFESSIONAL';
 
 /** One self-reported daily wellness check-in; every field is optional and nothing is filled in for the user */
 export interface WellnessCheckin {

@@ -107,7 +107,7 @@ export function sleepEnergyObservation(s: YaiState, today: string): Observation 
   const text =
     Math.abs(diff) < 0.3
       ? 'ในวันที่นอน 7 ชม.ขึ้นไป กับวันที่นอนน้อยกว่า ความสดชื่นที่คุณบันทึกใกล้เคียงกัน'
-      : `ในวันที่นอน 7 ชม.ขึ้นไป คุณบันทึกความสดชื่น${diff > 0 ? 'สูงกว่า' : 'ต่ำกว่า'}วันที่นอนน้อยกว่าเล็กน้อย`;
+      : `ในวันที่นอน 7 ชม.ขึ้นไป คุณบันทึกความสดชื่น${diff > 0 ? 'สูงกว่า' : 'ต่ำกว่า'}วันที่นอนน้อยกว่า${Math.abs(diff) < 1 ? 'เล็กน้อย' : ''}`;
   return { text, groupA: { label: 'นอน ≥ 7 ชม.', n: a.length, mean: ma }, groupB: { label: 'นอน < 7 ชม.', n: b.length, mean: mb } };
 }
 

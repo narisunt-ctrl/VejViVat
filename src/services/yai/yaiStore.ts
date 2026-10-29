@@ -4,6 +4,7 @@ import {
   AuditAction,
   CapturedPhoto,
   ConsentScope,
+  DemoPersona,
   DoseSelfReport,
   EvidenceOrigin,
   Friend,
@@ -21,6 +22,7 @@ import { bangkokDate, JournalEntry, SuggestedSegment } from '../../domain/yai/jo
 import { importOrderSnapshot, ImportOutcome, MedicationOrderSnapshot } from '../../domain/yai/prescriptionSync';
 import { createSeedState, field, seedCheckins, seedHabitLogs } from '../../data/yai/fixtures';
 import { linkForPatient } from '../../data/yai/demoLinks';
+import { createPersonaSeedState } from '../../data/yai/personas';
 import { photoStore } from './photoStore';
 
 // Synthetic, browser-local demo store. Not a health record database:
@@ -81,7 +83,15 @@ export const yaiStore = {
   },
 
   reset() {
-    set(audit(createSeedState(), 'DEMO_RESET', 'all'));
+    // a reset reloads the demo user that is currently selected
+    set(audit(createPersonaSeedState(state.settings.persona ?? 'RETIREE'), 'DEMO_RESET', 'all'));
+    if (photoStore.available()) photoStore.clear().catch(() => undefined);
+  },
+
+  /** Load another synthetic demo user (presentations); keeps the viewer's theme and text size */
+  switchPersona(persona: DemoPersona) {
+    const next = createPersonaSeedState(persona);
+    set(audit({ ...next, settings: { ...next.settings, theme: state.settings.theme, fontScale: state.settings.fontScale } }, 'DEMO_RESET', `persona:${persona}`));
     if (photoStore.available()) photoStore.clear().catch(() => undefined);
   },
 

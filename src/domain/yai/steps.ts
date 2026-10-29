@@ -58,7 +58,7 @@ export interface StepBoardRow {
 
 /** Weekly walking challenge: my 7-day total next to friends' shared weekly totals, highest first */
 export function stepBoard(s: YaiState, today: string): StepBoardRow[] {
-  const me: StepBoardRow = { id: 'me', name: s.patient.displayName, avatar: '👵', steps: stepWeek(s, today).total, isMe: true, isSynthetic: false };
+  const me: StepBoardRow = { id: 'me', name: s.patient.displayName, avatar: s.settings.persona === 'PROFESSIONAL' ? '🧑' : '👵', steps: stepWeek(s, today).total, isMe: true, isSynthetic: false };
   const friends = (s.friends ?? []).filter((f) => typeof f.weeklySteps === 'number').map((f) => ({ id: f.id, name: f.name, avatar: f.avatar, steps: f.weeklySteps!, isMe: false, isSynthetic: true }));
   return [me, ...friends].sort((a, b) => b.steps - a.steps || a.name.localeCompare(b.name, 'th'));
 }
