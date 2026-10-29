@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Activity, BatteryMedium, BookOpenCheck, ClipboardList, Moon, RefreshCw, Search, ShieldCheck, Smile, Stethoscope, Sun } from 'lucide-react';
+import { Activity, BatteryMedium, BookOpenCheck, ClipboardList, Footprints, Moon, RefreshCw, Search, ShieldCheck, Smile, Stethoscope, Sun } from 'lucide-react';
 import { demoNow, useYai, yaiStore } from '../../../services/yai/yaiStore';
 import { bangkokDate } from '../../../domain/yai/journal';
 import { checkinOn, goalProgress, METRICS, MetricId, progressWords, series } from '../../../domain/yai/wellness';
 import { greetingFor } from '../../../domain/yai/dailyGreeting';
 import { herbOfTheDay } from '../../../domain/yai/herbDiscovery';
+import { stepGoalOf, stepsOn, stepWeek, stepWords } from '../../../domain/yai/steps';
 import { LxCard, LxSectionHeader, ProgressBar, SourceTag } from './ui';
 
 const timeTh = (iso: string) => new Date(iso).toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
@@ -262,6 +263,34 @@ export const TodayCareStrip: React.FC = () => {
         <span className="block text-sm text-lx-muted">
           เตือนกินยา {active} รายการ{pending ? ` · รอตรวจสอบ ${pending} รายการ` : ''}
         </span>
+      </span>
+    </Link>
+  );
+};
+
+/** Today's steps against the user's goal, linking to the step activity page */
+export const StepsCard: React.FC = () => {
+  const state = useYai((s) => s);
+  const today = bangkokDate(demoNow(state));
+  const goal = stepGoalOf(state);
+  const t = stepsOn(state, today);
+  const week = stepWeek(state, today);
+  return (
+    <Link to="/yai/steps" className="flex min-h-[64px] items-center gap-3 rounded-2xl border border-lx-line bg-lx-surface px-4 py-3 transition hover:border-lx-accent/60" aria-label={`กิจกรรมก้าวเดิน ${stepWords(t.value, goal)}`}>
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-lx-accent/15 text-lx-accent" aria-hidden="true">
+        <Footprints className="h-5 w-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-baseline justify-between gap-2">
+          <span className="font-semibold">กิจกรรมก้าวเดิน</span>
+          <span className="num shrink-0 text-sm text-lx-muted">
+            {t.value === null ? 'ยังไม่ได้บันทึก' : `${t.value.toLocaleString('th-TH')} / ${goal.toLocaleString('th-TH')}`}
+          </span>
+        </span>
+        <span className="mt-1.5 block">
+          <ProgressBar value={t.value ?? 0} max={goal} label={`ก้าววันนี้ ${t.value ?? 0} จากเป้า ${goal}`} />
+        </span>
+        <span className="mt-1 block text-xs text-lx-muted">สัปดาห์นี้ถึงเป้า {week.goalDays} วัน · ชวนเพื่อนเดิน</span>
       </span>
     </Link>
   );

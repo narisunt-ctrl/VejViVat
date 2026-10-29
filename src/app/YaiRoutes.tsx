@@ -32,6 +32,7 @@ import { HerbDetailPage } from '../pages/yai/HerbDetailPage';
 import { JourneyPage } from '../pages/yai/JourneyPage';
 import { ConsultPage } from '../pages/yai/ConsultPage';
 import { CarePage } from '../pages/yai/CarePage';
+import { StepsPage } from '../pages/yai/StepsPage';
 
 const NotFound: React.FC = () => (
   <div className="space-y-4 py-10 text-center">
@@ -75,6 +76,7 @@ const YaiRoutes: React.FC = () => (
       <Route path="journey" element={<JourneyPage />} />
       <Route path="consult" element={<ConsultPage />} />
       <Route path="care" element={<CarePage />} />
+      <Route path="steps" element={<StepsPage />} />
       <Route path="profile" element={<ProfilePage />} />
       <Route path="exercise" element={<ExercisePage />} />
       <Route path="*" element={<NotFound />} />

@@ -408,15 +408,15 @@ export function seedMeasurements(now: Date = new Date()): Measurement[] {
 }
 
 export const SEED_FRIENDS: Friend[] = [
-  { id: 'friend-boonma', name: 'ยายบุญมา (ตัวอย่าง)', avatar: '👵', weeklyPoints: 212, streak: 9, isSynthetic: true },
-  { id: 'friend-sommai', name: 'ตาสมหมาย (ตัวอย่าง)', avatar: '👴', weeklyPoints: 168, streak: 5, isSynthetic: true },
-  { id: 'friend-chan', name: 'ยายจันทร์ (ตัวอย่าง)', avatar: '👵', weeklyPoints: 131, streak: 3, isSynthetic: true },
-  { id: 'friend-thongkham', name: 'ยายทองคำ (ตัวอย่าง)', avatar: '👵', weeklyPoints: 96, streak: 2, isSynthetic: true },
+  { id: 'friend-boonma', name: 'ยายบุญมา (ตัวอย่าง)', avatar: '👵', weeklyPoints: 212, weeklySteps: 31200, streak: 9, isSynthetic: true },
+  { id: 'friend-sommai', name: 'ตาสมหมาย (ตัวอย่าง)', avatar: '👴', weeklyPoints: 168, weeklySteps: 26500, streak: 5, isSynthetic: true },
+  { id: 'friend-chan', name: 'ยายจันทร์ (ตัวอย่าง)', avatar: '👵', weeklyPoints: 131, weeklySteps: 22400, streak: 3, isSynthetic: true },
+  { id: 'friend-thongkham', name: 'ยายทองคำ (ตัวอย่าง)', avatar: '👵', weeklyPoints: 96, weeklySteps: 18900, streak: 2, isSynthetic: true },
 ];
 
 /** Friends that can be added with a demo invite code */
 export const INVITABLE_FRIENDS: Record<string, Friend> = {
-  'YAI-1234': { id: 'friend-somjit', name: 'ยายสมจิต (ตัวอย่าง)', avatar: '👵', weeklyPoints: 150, streak: 4, isSynthetic: true },
+  'YAI-1234': { id: 'friend-somjit', name: 'ยายสมจิต (ตัวอย่าง)', avatar: '👵', weeklyPoints: 150, weeklySteps: 24800, streak: 4, isSynthetic: true },
 };
 
 export const SEED_FRIEND_REVIEWS: HerbReview[] = [

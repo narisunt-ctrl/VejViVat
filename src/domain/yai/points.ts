@@ -37,7 +37,8 @@ export interface DayPoints {
 
 function dayPoints(s: YaiState, date: string): DayPoints {
   const journal = (s.journal ?? []).filter((e) => isConfirmed(e) && e.recordedLocalDate === date);
-  const steps = (s.measurements ?? []).filter((m) => m.type === 'STEPS' && m.date === date).reduce((max, m) => Math.max(max, m.value), 0);
+  // the latest step count of the day is the day's total (a later entry corrects an earlier one)
+  const steps = (s.measurements ?? []).filter((m) => m.type === 'STEPS' && m.date === date).sort((a, b) => b.at.localeCompare(a.at))[0]?.value ?? 0;
   const measured = (s.measurements ?? []).some((m) => m.type !== 'STEPS' && m.date === date && m.source === 'MANUAL');
   const doses = s.doseLogs.filter((l) => bangkokDate(l.scheduledAt) === date).length;
   const reviews = (s.herbReviews ?? []).filter((r) => r.isSelf && bangkokDate(r.at) === date).length;

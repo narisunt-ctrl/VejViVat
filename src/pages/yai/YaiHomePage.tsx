@@ -4,7 +4,7 @@ import { Bell, Keyboard, SlidersHorizontal } from 'lucide-react';
 import { useYai, demoNow } from '../../services/yai/yaiStore';
 import { VoiceEntryButton } from '../../components/yai/VoiceEntryButton';
 import { DoctorMessagesCard } from '../../components/yai/DoctorMessagesCard';
-import { CareBridgeCard, DailyWisdom, DiscoverCard, JourneyCard, TodayCareStrip, WeeklyTrends, WellnessOverview } from '../../components/yai/lx/WellnessCards';
+import { CareBridgeCard, DailyWisdom, DiscoverCard, JourneyCard, StepsCard, TodayCareStrip, WeeklyTrends, WellnessOverview } from '../../components/yai/lx/WellnessCards';
 import { LxNotice } from '../../components/yai/lx/ui';
 import { useClinicianMessages } from '../../services/yai/clinicianMessages';
 import { canRead } from '../../domain/yai/policies';
@@ -111,6 +111,7 @@ export const YaiHomePage: React.FC = () => {
         {/* B. daily overview */}
         <div className="space-y-4 lg:col-span-3">
           <WellnessOverview />
+          <StepsCard />
           <DailyWisdom />
           <TodayCareStrip />
         </div>
