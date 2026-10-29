@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { baseline, BASELINE_MIN_DAYS, goalProgress, OBSERVATION_MIN_PER_GROUP, progressWords, series, sleepEnergyObservation, weekOf } from '../../domain/yai/wellness';
-import { FORBIDDEN_CLAIMS, HERB_CARDS, herbOfTheDay, interactionsWithMyMedicines, searchHerbs } from '../../domain/yai/herbDiscovery';
+import { FORBIDDEN_CLAIMS, FORMULARY_CARDS, HERB_CARDS, herbOfTheDay, interactionsWithMyMedicines, searchHerbs } from '../../domain/yai/herbDiscovery';
 import { createSeedState } from '../../data/yai/fixtures';
 import { demoNow, yaiStore } from '../../services/yai/yaiStore';
 import { bangkokDate } from '../../domain/yai/journal';
@@ -94,8 +94,8 @@ describe('check-in store', () => {
 
 describe('Thai herbal discovery', () => {
   it('builds a card for every formulary entry with its source reference', () => {
-    expect(HERB_CARDS.length).toBeGreaterThanOrEqual(20);
-    for (const c of HERB_CARDS) {
+    expect(FORMULARY_CARDS.length).toBeGreaterThanOrEqual(20);
+    for (const c of FORMULARY_CARDS) {
       expect(c.thaiName).toBeTruthy();
       expect(c.scientificName).toBeTruthy();
       expect(c.reviewStatus).toBeTruthy();

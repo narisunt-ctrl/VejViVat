@@ -115,7 +115,17 @@ export const InteractionAlerts: React.FC<InteractionAlertsProps> = ({ interactio
 
               {/* Footnote Source & Reviewer */}
               <div className="mt-2 pt-1 border-t border-black/5 flex items-center justify-between text-[10px] text-slate-500">
-                <span className="truncate max-w-[280px]">แหล่งอ้างอิง: {item.sources}</span>
+                <span className="truncate max-w-[280px]">
+                  แหล่งอ้างอิง: {item.sources}
+                  {item.source_url && (
+                    <>
+                      {' · '}
+                      <a href={item.source_url} target="_blank" rel="noreferrer" className="font-semibold text-teal-700 underline">
+                        บทความต้นทาง
+                      </a>
+                    </>
+                  )}
+                </span>
                 <span className="font-medium">{item.reviewer}</span>
               </div>
             </div>

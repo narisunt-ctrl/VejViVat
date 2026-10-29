@@ -1,5 +1,6 @@
 import formulary from '../../../data/formulary/thai-formulary.json';
 import hdi from '../../../data/hdi/herb-drug-interactions.json';
+import { MEDPLANT_HERBS, MEDPLANT_SOURCE, medplantHerbFor, medplantMatchesForNames, MedplantRow, rowsForHerb } from '../medplant';
 
 // Thai herbal knowledge cards for YaiPrompt Discover, built only from the project's own data files:
 // - the national herbal formulary entries (listed indications, contraindications, precautions, source reference);
@@ -70,6 +71,10 @@ export interface HerbCard {
   listCategory?: string;
   reviewStatus: string;
   sourceReference: string;
+  /** FORMULARY = national herbal list entry; MEDPLANT = herb known only from the interaction database */
+  source: 'FORMULARY' | 'MEDPLANT';
+  /** interaction records from the medplant database (Mahidol), each with its article link */
+  medplant: MedplantRow[];
 }
 
 const PRECAUTION_LABEL: Record<string, string> = {
@@ -89,10 +94,9 @@ function herbKeyOf(name: string): string {
 
 const SEVERITY_TH: Record<HdiRow['severity_code'], string> = { HIGH: 'ควรหลีกเลี่ยง/ปรึกษาก่อน (สูง)', MODERATE: 'ต้องระวัง (ปานกลาง)', LOW: 'ระวังเล็กน้อย (ต่ำ)', UNCLEAR: 'ข้อมูลยังไม่ชัด' };
 
-export const HERB_CARDS: HerbCard[] = (formulary as FormularyRow[]).map((f) => {
-  const herbKey = herbKeyOf(f.thai_name);
-  const interactions = (hdi as HdiRow[])
-    .filter((r) => r.herb_thai_name.split('/').some((n) => f.thai_name.includes(n.trim())))
+function hdiFor(name: string): HerbInteraction[] {
+  return (hdi as HdiRow[])
+    .filter((r) => r.herb_thai_name.split('/').some((n) => name.includes(n.trim())))
     .map((r) => ({
       id: r.interaction_id,
       drug: r.drug_generic_name,
@@ -104,6 +108,11 @@ export const HERB_CARDS: HerbCard[] = (formulary as FormularyRow[]).map((f) => {
       sources: r.sources,
       reviewStatus: r.reviewer,
     }));
+}
+
+export const FORMULARY_CARDS: HerbCard[] = (formulary as FormularyRow[]).map((f) => {
+  const herbKey = herbKeyOf(f.thai_name);
+  const mp = medplantHerbFor(f.thai_name, f.scientific_name);
   return {
     id: f.drug_code_24,
     thaiName: f.thai_name,
@@ -117,13 +126,38 @@ export const HERB_CARDS: HerbCard[] = (formulary as FormularyRow[]).map((f) => {
     listedIndications: f.indications ?? [],
     contraindications: f.contraindications ?? [],
     precautions: Object.entries(f.precautions ?? {}).map(([k, text]) => ({ label: PRECAUTION_LABEL[k] ?? k, text })),
-    interactions,
+    interactions: hdiFor(f.thai_name),
     inNationalList: f.nlem_status === 'ใช่',
     listCategory: f.nlem_category,
     reviewStatus: f.verification_status ?? 'ยังไม่ระบุสถานะการตรวจสอบ',
     sourceReference: f.source_reference ?? '',
+    source: 'FORMULARY',
+    medplant: mp ? rowsForHerb(mp.id) : [],
   };
 });
+
+// Herbs that are in the interaction database but not in the formulary: shown for their interaction data only
+const coveredMedplant = new Set(FORMULARY_CARDS.flatMap((c) => c.medplant.map((r) => r.herbId)));
+export const MEDPLANT_CARDS: HerbCard[] = MEDPLANT_HERBS.filter((h) => !coveredMedplant.has(h.id)).map((h) => ({
+  id: `mp-${h.id}`,
+  thaiName: h.name,
+  herbKey: h.name,
+  commonName: h.synonyms.find((x) => /^[A-Z]/.test(x))?.toLowerCase() ?? '',
+  scientificName: h.scientificName,
+  type: 'สมุนไพร/พืชอาหาร',
+  form: '',
+  listedIndications: [],
+  contraindications: [],
+  precautions: [],
+  interactions: hdiFor(h.name),
+  inNationalList: false,
+  reviewStatus: MEDPLANT_SOURCE.reviewStatus,
+  sourceReference: MEDPLANT_SOURCE.name,
+  source: 'MEDPLANT',
+  medplant: rowsForHerb(h.id),
+}));
+
+export const HERB_CARDS: HerbCard[] = [...FORMULARY_CARDS, ...MEDPLANT_CARDS];
 
 /** Search Thai, common and scientific names (case-insensitive, ignores spaces) */
 export function searchHerbs(q: string, cards: HerbCard[] = HERB_CARDS): HerbCard[] {
@@ -133,7 +167,7 @@ export function searchHerbs(q: string, cards: HerbCard[] = HERB_CARDS): HerbCard
 }
 
 /** Featured card rotates by date only */
-export function herbOfTheDay(date: string, cards: HerbCard[] = HERB_CARDS): HerbCard {
+export function herbOfTheDay(date: string, cards: HerbCard[] = FORMULARY_CARDS): HerbCard {
   return cards[Number(date.replace(/-/g, '')) % cards.length];
 }
 
@@ -155,4 +189,10 @@ export function interactionsWithMyMedicines(card: HerbCard, medicines: { display
     }
   }
   return out;
+}
+
+/** Medplant cautions whose drug appears in the user's medicine list (recorded names and ingredients only) */
+export function medplantWithMyMedicines(card: HerbCard, medicines: { displayName: { value: string | null }; ingredients: { value: string | null }[] }[]) {
+  const names = medicines.flatMap((m) => [m.displayName.value, ...m.ingredients.map((x) => x.value)]).filter((x): x is string => !!x);
+  return medplantMatchesForNames(card.medplant, names);
 }

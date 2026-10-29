@@ -4,7 +4,7 @@ import { AlertTriangle, ArrowRight, BookCheck, ClipboardCheck, Compass, FlaskCon
 import type { SyntheticCase } from '../../types/patient';
 import { DEMO_PATIENT_LINKS } from '../../data/yai/demoLinks';
 import { yaiStore } from '../../services/yai/yaiStore';
-import { getAllInteractionsDatabase } from '../../services/interactionMatcher';
+import { getScreeningRules } from '../../services/interactionMatcher';
 import { screenPatientInteractions } from '../../domain/yai/interactionCheck';
 import { bangkokDate } from '../../domain/yai/journal';
 import { useConsults } from '../../services/carebridge/consults';
@@ -25,7 +25,7 @@ export const DoctorHomePage: React.FC<{ currentCase: SyntheticCase }> = ({ curre
   const screen = useMemo(
     () =>
       snap?.allowed
-        ? screenPatientInteractions({ medicines: snap.medicines ?? [], journal: snap.journal, syncedOrders: snap.syncedOrders ?? [] }, getAllInteractionsDatabase(), bangkokDate(new Date(Date.now() - 14 * 86_400_000)))
+        ? screenPatientInteractions({ medicines: snap.medicines ?? [], journal: snap.journal, syncedOrders: snap.syncedOrders ?? [] }, getScreeningRules(), bangkokDate(new Date(Date.now() - 14 * 86_400_000)))
         : null,
     [snap]
   );
