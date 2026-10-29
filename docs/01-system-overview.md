@@ -5,6 +5,9 @@
 **ลิงก์ระบบ Live Production:** [https://narisunt-ctrl.github.io/VejViVat/](https://narisunt-ctrl.github.io/VejViVat/)  
 **ข้อความปฏิเสธความรับผิดชอบ:** *เอกสารนี้ใช้สำหรับข้อมูลสังเคราะห์เพื่อการสาธิตการแข่งขัน Hackathon 2026 เท่านั้น มิใช่ข้อมูลผู้ป่วยจริง*
 
+
+> **ขอบเขตเอกสาร:** อธิบายเครื่องมือฝั่งคลินิก (เดิมชื่อ TTM Smutthan Engine ปัจจุบันอยู่ใน CareBridge) ภาพรวมระบบล่าสุดรวมแอปผู้ใช้ยายพร้อม ดูที่ [docs/README.md](README.md)
+
 ---
 
 ## 1. ที่มาและความสำคัญของปัญหา (Clinical Problem Statement & Pain Points)
