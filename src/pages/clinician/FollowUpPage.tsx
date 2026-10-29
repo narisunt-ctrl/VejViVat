@@ -252,6 +252,10 @@ export const FollowUpPage: React.FC = () => {
             อ่านข้อมูลเมื่อ {readAt ? new Date(readAt).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' }) : '-'} ·{' '}
             <Link to="/research" className="inline-flex items-center gap-1 font-semibold text-brand-700 underline">
               <BookOpen className="h-3.5 w-3.5" /> คลังงานวิจัยประกอบการตัดสินใจ
+            </Link>{' '}
+            ·{' '}
+            <Link to="/clinician/handover" className="font-semibold text-brand-700 underline">
+              สร้างสรุปส่งต่อ (Clinical Handover)
             </Link>
           </p>
         </>
