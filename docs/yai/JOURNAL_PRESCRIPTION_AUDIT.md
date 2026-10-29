@@ -170,3 +170,12 @@ Not done / limits: reviews, guidelines and handovers are stored in this browser 
 
 Tests: 17 files, 125 pass. Limit: safety sentences from unstructured abstracts may include background statements.
 
+## Doctor UX, revenue dashboard, feasibility (branch `feat/doctor-ux-business`)
+
+- Doctor sidebar grouped by task (งานประจำวัน / ประเมินและสั่งยา / หลักฐานและแนวทาง / โครงการและธุรกิจ / ข้อมูลระบบ), badge noise removed.
+- `#/doctor` doctor home: today's to-dos (HIGH interaction pairs from consented data, pending consults, guidelines awaiting approval, unacknowledged messages), followed patients with one-click "30-second summary" and Handover, current case and quick actions.
+- `#/business` revenue simulation (synthetic): three scenarios, editable assumptions, KPIs (MRR at 12/36 months, continuous-profit month, extra funding needed), stacked revenue by stream and cumulative cash charts (validated palette, legend, table view), simulated partner clinic cases, and revenue the project will not take (pay-to-rank, prescription commissions, selling identifiable data). Model: `src/services/business/revenueModel.ts`, tests `src/tests/revenueModel.test.ts`.
+- `#/feasibility` feasibility study: conditional go for a one-province pilot; market facts with sources (NSO elderly 20.2%, hospital herbal substitution 3.57–4.03% vs 10% target, market size, ~400 TTM primary units from 2019), technical, legal (telemedicine guidelines, SaMD under the Medical Device Act, UDI for SaMD from 20 Jun 2026, PDPA), financial table computed live from the model, operations, risks, proposed go/no-go criteria.
+
+Prices, adoption and costs are assumptions to test in the pilot, not forecasts. Tests: 18 files, 130 pass.
+

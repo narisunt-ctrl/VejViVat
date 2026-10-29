@@ -24,6 +24,9 @@ import {
   ClipboardCheck,
   Layers3,
   Target,
+  LayoutDashboard,
+  TrendingUp,
+  Scale,
 } from 'lucide-react';
 import teamLogo from '@/assets/team-logo.png';
 
@@ -47,25 +50,54 @@ export const Sidebar: React.FC<SidebarProps> = ({
   // The mobile drawer always shows the full menu, even if the desktop rail is collapsed
   const collapsed = collapsedDesktop && !mobileOpen;
 
-  const menuItems = [
-    { to: '/', label: 'หน้าแรก & วิสัยทัศน์', icon: Sparkles, badge: '' },
-    { to: '/patients', label: `เคสผู้ป่วย (${casesCount} เคส)`, icon: Users, badge: `${casesCount}` },
-    { to: '/holistic', label: 'Holistic Care MVP', icon: Layers3, badge: 'ใหม่' },
-    { to: '/value', label: 'Value Proposition', icon: Target, badge: 'ใหม่' },
-    { to: '/clinician/followup', label: 'ติดตามผู้ป่วย (ยายพร้อม)', icon: HeartPulse, badge: 'ใหม่' },
-    { to: '/clinician/handover', label: 'Clinical Handover', icon: ClipboardCheck, badge: 'ใหม่' },
-    { to: '/research', label: 'คลังงานวิจัย + รีวิว', icon: BookOpen, badge: 'ใหม่' },
-    { to: '/guidelines', label: 'Guideline ร่วมทบทวน', icon: BookCheck, badge: 'ใหม่' },
-    { to: '/smutthan', label: '1. Smutthan Engine', icon: Compass, badge: 'AI' },
-    { to: '/prescribe', label: '2. สั่งยาแผนไทย & ตรวจ HDI', icon: Pill, badge: 'Core' },
-    { to: '/prescription-print', label: 'ใบสั่งยา & ฉลากยา', icon: FileText, badge: 'Print' },
-    { to: '/care-plan', label: '3. แผนการรักษา & ติดตามผล', icon: CalendarClock, badge: 'Final' },
-    { to: '/analytics', label: '4. ICD-10-TM Analytics', icon: BarChart3, badge: 'Real-time' },
-    { to: '/inter-rater', label: 'ความสอดคล้องแพทย์', icon: GitCompare, badge: '' },
-    { to: '/admin-hdi', label: 'ฐานข้อมูลกลาง HDI', icon: Database, badge: 'MOPH' },
-    { to: '/status', label: 'สถานะระบบต้นแบบ', icon: Info, badge: 'MVP' },
-    { to: '/clinician/previsit', label: 'สรุปก่อนพบแพทย์ (ยายพร้อม)', icon: ClipboardList, badge: 'ใหม่' },
-    { to: '/yai', label: 'แอปผู้ป่วย ยายพร้อม', icon: Smartphone, badge: 'ใหม่' },
+  // Grouped by what a doctor is doing, daily work first; badges only where they carry information
+  const menuGroups: { title: string; items: { to: string; label: string; icon: typeof Users; badge?: string }[] }[] = [
+    {
+      title: 'งานประจำวัน',
+      items: [
+        { to: '/doctor', label: 'หน้าหลักแพทย์', icon: LayoutDashboard },
+        { to: '/patients', label: 'เคสผู้ป่วย', icon: Users, badge: `${casesCount}` },
+        { to: '/clinician/followup', label: 'ติดตามผู้ป่วย (ยายพร้อม)', icon: HeartPulse },
+        { to: '/clinician/previsit', label: 'สรุปก่อนพบแพทย์', icon: ClipboardList },
+        { to: '/clinician/handover', label: 'Clinical Handover', icon: ClipboardCheck },
+      ],
+    },
+    {
+      title: 'ประเมินและสั่งยา',
+      items: [
+        { to: '/smutthan', label: 'ประเมินสมุฏฐาน', icon: Compass },
+        { to: '/prescribe', label: 'สั่งยาแผนไทย & ตรวจ HDI', icon: Pill },
+        { to: '/prescription-print', label: 'ใบสั่งยา & ฉลากยา', icon: FileText },
+        { to: '/care-plan', label: 'แผนการรักษา & ติดตามผล', icon: CalendarClock },
+      ],
+    },
+    {
+      title: 'หลักฐานและแนวทาง',
+      items: [
+        { to: '/research', label: 'คลังงานวิจัย + รีวิว', icon: BookOpen },
+        { to: '/guidelines', label: 'Guideline ร่วมทบทวน', icon: BookCheck },
+        { to: '/admin-hdi', label: 'ฐานข้อมูลยาตีกัน (HDI)', icon: Database },
+      ],
+    },
+    {
+      title: 'โครงการและธุรกิจ',
+      items: [
+        { to: '/holistic', label: 'Holistic Care MVP', icon: Layers3 },
+        { to: '/value', label: 'Value Proposition', icon: Target },
+        { to: '/business', label: 'แดชบอร์ดรายได้ (จำลอง)', icon: TrendingUp },
+        { to: '/feasibility', label: 'ศึกษาความเป็นไปได้', icon: Scale },
+        { to: '/', label: 'วิสัยทัศน์', icon: Sparkles },
+      ],
+    },
+    {
+      title: 'ข้อมูลระบบ',
+      items: [
+        { to: '/analytics', label: 'ICD-10-TM Analytics', icon: BarChart3 },
+        { to: '/inter-rater', label: 'ความสอดคล้องแพทย์', icon: GitCompare },
+        { to: '/status', label: 'สถานะระบบต้นแบบ', icon: Info },
+        { to: '/yai', label: 'แอปผู้ป่วย ยายพร้อม', icon: Smartphone },
+      ],
+    },
   ];
 
   return (
@@ -143,32 +175,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {/* Navigation Links */}
-        <nav className="p-3 space-y-1">
-          {menuItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all group ${
-                  isActive
-                    ? 'bg-gradient-to-r from-brand-700 to-teal-700 text-white shadow-md shadow-brand-950/40 font-semibold'
-                    : 'text-slate-400 hover:bg-slate-800/80 hover:text-white'
-                }`
-              }
-              title={collapsed ? item.label : undefined}
-            >
-              <item.icon className="w-4 h-4 shrink-0 transition group-hover:scale-110 group-hover:text-amber-300" />
-              {!collapsed && (
-                <div className="flex items-center justify-between w-full truncate">
-                  <span className="truncate">{item.label}</span>
-                  {item.badge && (
-                    <span className="text-[10px] bg-slate-800/90 text-brand-300 px-1.5 py-0.5 rounded-full font-mono border border-slate-700/60 shadow-inner">
-                      {item.badge}
-                    </span>
-                  )}
-                </div>
+        <nav className="space-y-3 p-3" aria-label="เมนูแพทย์">
+          {menuGroups.map((group) => (
+            <div key={group.title} className="space-y-0.5">
+              {!collapsed ? (
+                <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">{group.title}</p>
+              ) : (
+                <div className="mx-3 border-t border-slate-800" aria-hidden="true" />
               )}
-            </NavLink>
+              {group.items.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.to === '/'}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-medium transition-all group ${
+                      isActive ? 'bg-gradient-to-r from-brand-700 to-teal-700 font-semibold text-white shadow-md shadow-brand-950/40' : 'text-slate-400 hover:bg-slate-800/80 hover:text-white'
+                    }`
+                  }
+                  title={collapsed ? item.label : undefined}
+                >
+                  <item.icon className="h-4 w-4 shrink-0 transition group-hover:text-amber-300" />
+                  {!collapsed && (
+                    <div className="flex w-full items-center justify-between truncate">
+                      <span className="truncate">{item.label}</span>
+                      {item.badge && <span className="rounded-full border border-slate-700/60 bg-slate-800/90 px-1.5 py-0.5 font-mono text-[10px] text-brand-300">{item.badge}</span>}
+                    </div>
+                  )}
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
       </div>
