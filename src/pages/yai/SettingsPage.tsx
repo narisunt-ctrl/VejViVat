@@ -71,6 +71,9 @@ export const SettingsPage: React.FC = () => {
             </span>
           </label>
         )}
+        <Link to="/yai/privacy" className="block min-h-[44px] text-base font-semibold text-yai-deep underline">
+          อ่านประกาศความเป็นส่วนตัว
+        </Link>
         {!confirmReset ? (
           <BigButton variant="secondary" onClick={() => setConfirmReset(true)}>
             ล้างข้อมูลสาธิตทั้งหมด

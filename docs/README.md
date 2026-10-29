@@ -30,6 +30,7 @@
 
 | ไฟล์ | เนื้อหา | สถานะ |
 |---|---|---|
+| [AI_GOVERNANCE.md](AI_GOVERNANCE.md) | ธรรมาภิบาล AI: หลักการ ทะเบียนโมเดล 15 ส่วน การเปลี่ยนรุ่น การติดตามผล บทบาท และสิ่งที่ต้องทำก่อนนำร่อง | ปัจจุบัน |
 | [yai/IMPLEMENTATION_STATUS.md](yai/IMPLEMENTATION_STATUS.md) | หน้าจอทั้งหมด อะไรใช้ได้จริง อะไรเป็นข้อมูลจำลอง ผลทดสอบ ช่องว่างที่เหลือ | **ปัจจุบัน** อ่านไฟล์นี้ก่อน |
 | [yai/JOURNAL_PRESCRIPTION_AUDIT.md](yai/JOURNAL_PRESCRIPTION_AUDIT.md) | บันทึกการเปลี่ยนแปลงทีละ branch พร้อมเหตุผลด้านความปลอดภัย | ปัจจุบัน (changelog) |
 | [yai/THIRD_PARTY_NOTICES.md](yai/THIRD_PARTY_NOTICES.md) | ไลบรารี โมเดล OCR แหล่งข้อมูล และสัญญาอนุญาต | ปัจจุบัน |

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, LifeBuoy, Moon, Pill, Route as RouteIcon, Settings, Sun, Users, Watch } from 'lucide-react';
+import { Eye, FileText, LifeBuoy, Moon, Pill, Route as RouteIcon, Settings, Sun, Users, Watch } from 'lucide-react';
 import { useYai, yaiStore } from '../../services/yai/yaiStore';
 import { LxCard, LxLinkRow, LxPageHeader, SourceTag } from '../../components/yai/lx/ui';
 import { WELLNESS_GOALS } from '../../domain/yai/wellness';
@@ -208,6 +208,7 @@ export const ProfilePage: React.FC = () => {
           </LxCard>
 
           <div className="space-y-2">
+            <LxLinkRow to="/yai/privacy" icon={FileText} title="ประกาศความเป็นส่วนตัว" sub="เก็บข้อมูลอะไร ใช้ทำอะไร สิทธิของคุณ" />
             <LxLinkRow to="/yai/care" icon={Pill} title="ยาและการดูแล" sub="สมุดยา สแกนฉลาก เตือนกินยา" />
             <LxLinkRow to="/yai/settings" icon={Settings} title="ตั้งค่าเพิ่มเติม" sub="ข้อมูลจำลอง เสียงนำทาง OCR" />
             <LxLinkRow to="/yai/help" icon={LifeBuoy} title="ช่วยเหลือและฉุกเฉิน" sub="โทร 1669" />

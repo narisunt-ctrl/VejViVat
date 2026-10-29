@@ -3,7 +3,7 @@
 - **Updated:** 2026-10-29, matches the live site (main `3f4578a`, gh-pages `3d2ff4d`).
 - **Live:** https://narisunt-ctrl.github.io/VejViVat/#/yai (patient) · https://narisunt-ctrl.github.io/VejViVat/#/doctor (CareBridge)
 - **Demo mode:** always on. Patients, clinics, friends, check-ins, device steps and clinic responses are synthetic and labelled "ข้อมูลจำลอง". There is no login and no server database; data stays in the browser (`localStorage` key `yai-demo-v1`, photos in IndexedDB) and can be wiped in Settings.
-- **Change history:** branch-by-branch notes are in `JOURNAL_PRESCRIPTION_AUDIT.md`.
+- **Change history:** branch-by-branch notes are in `JOURNAL_PRESCRIPTION_AUDIT.md`. AI components and their oversight: `../AI_GOVERNANCE.md`.
 
 ## Design system
 
@@ -21,7 +21,7 @@ Bottom navigation (side rail on desktop): **Home** `/yai` · **Insights** `/yai/
 | Journey | `/yai/journey`, `/yai/exercise`, `/yai/leaderboard` |
 | Expert consultation | `/yai/consult` (`/yai/ask` redirects here), `/yai/clinics`, `/yai/clinics/:id`, `/yai/appointments`, `/yai/previsit` |
 | Medicine & care | `/yai/care`, `/yai/scan`, `/yai/scan/review`, `/yai/medicines`, `/yai/medicines/:id`, `/yai/reminders`, `/yai/passport`, `/yai/food` |
-| Profile & other | `/yai/profile`, `/yai/health`, `/yai/family`, `/yai/settings`, `/yai/help`, `/yai/onboarding` |
+| Profile & other | `/yai/profile`, `/yai/privacy`, `/yai/health`, `/yai/family`, `/yai/settings`, `/yai/help`, `/yai/onboarding` |
 
 CareBridge (clinician shell): `/doctor`, `/patients`, `/smutthan`, `/prescribe`, `/clinician/previsit`, `/clinician/followup`, `/clinician/handover`, `/research`, `/guidelines`, `/holistic`, `/value`, `/business`, `/feasibility`, `/admin-hdi`, `/status`. Partner portal: `/partner`.
 
@@ -41,6 +41,8 @@ CareBridge (clinician shell): `/doctor`, `/patients`, `/smutthan`, `/prescribe`,
 | Expert consultation | Five steps (find expert, service details, wellness summary, request, consent) and a wellness-summary preview the user alone sees until they consent on the pre-visit page. |
 | Medicine & care | OCR label scan, unlabelled medicines (identity never guessed), Evidence Passport, reminders (in-app only), verified CareBridge orders, self-reported dose history. |
 | CareBridge → ยายพร้อม order sync | **Simulated approval/dispense, real gate.** `evaluateReminderSync()` requires approval, dispense, confirmed clock times, right patient and consent; versioned and idempotent. Same-browser demo channel; no HIS/FHIR live link, no push. |
+| Privacy notice | `/yai/privacy`: data collected, purpose and PDPA basis (sections 19, 23, 24, 26), sharing, external services (including browser speech and the optional OCR server), rights (sections 30–36) and how to use them in the app. Prototype version; the real notice needs the controller, contact and DPO, and a legal review. |
+| Demo personas | Profile switcher between คุณยายสมศรี (68, warfarin, clinic-linked) and คุณเอ (48, executive, no medicines, sleep/stress pattern, watch steps); keeps theme and text size; reset reloads the selected user. |
 | Consent and access history | **Real code, local only.** Scoped consents with expiry and revocation; every read, denied read, share and revocation is in the audit log shown on Profile. |
 | Nearest facility finder | Real ranking (zone first, then straight-line distance) over 16 fictional facilities. |
 | Thai OCR | On-device Tesseract.js (`tha+eng`) with a two-pass pipeline; results stay "รอตรวจสอบ" until the user checks the text. Optional server (`ocr-server/`, PaddleOCR + Typhoon OCR 1.5 2B, Apache-2.0) is **not deployed** (GitHub Pages cannot host Python). Measurements and caveats: `OCR_NOTES.md` and `ocr-bench/`. Typhoon can invent text, so its output is always a draft. |

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { CheckCircle2, Circle, Volume2, VolumeX } from 'lucide-react';
 import { LiveCamera, CaptureResult } from '../../components/medsight/LiveCamera';
 import { yaiStore, useYai, demoNow } from '../../services/yai/yaiStore';
@@ -252,7 +252,12 @@ export const ScanPage: React.FC = () => {
             รูปฉลากจะถูกส่งไปที่เซิร์ฟเวอร์ของยายพร้อม (อ่านด้วย PaddleOCR) และถ้าอ่านไม่ชัด จะส่งต่อให้ Typhoon OCR ของ SCB 10X อ่านอีกครั้ง
             เซิร์ฟเวอร์ไม่เก็บรูป ถ้าไม่อนุญาต ระบบจะอ่านในเครื่องนี้แทน (แม่นน้อยกว่า)
           </p>
-          <p className="text-sm text-yai-ink/70">ถ่ายเฉพาะฉลากยา อย่าให้เห็นชื่อ ที่อยู่ หรือใบสั่งยาของคุณยาย เปลี่ยนได้ที่ตั้งค่า</p>
+          <p className="text-sm text-yai-ink/70">
+            ถ่ายเฉพาะฉลากยา อย่าให้เห็นชื่อ ที่อยู่ หรือใบสั่งยาของคุณยาย เปลี่ยนได้ที่ตั้งค่า ·{' '}
+            <Link to="/yai/privacy" className="font-semibold underline">
+              ประกาศความเป็นส่วนตัว
+            </Link>
+          </p>
           <div className="grid grid-cols-2 gap-2">
             <BigButton onClick={() => yaiStore.updateSettings({ cloudOcrConsent: true })}>อนุญาต</BigButton>
             <BigButton variant="secondary" onClick={() => yaiStore.updateSettings({ cloudOcrConsent: false })}>
