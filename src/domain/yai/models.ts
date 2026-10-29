@@ -113,7 +113,7 @@ export interface ConsentGrant {
   expiresAt?: string;
   revokedAt?: string;
 }
-export type ConsentScope = 'PREVISIT_REPORT' | 'MEDICINES' | 'APPOINTMENTS' | 'REMINDER_ALERTS';
+export type ConsentScope = 'PREVISIT_REPORT' | 'MEDICINES' | 'APPOINTMENTS' | 'REMINDER_ALERTS' | 'HERB_DATA';
 
 export type AppointmentStatus = 'DRAFT' | 'REQUESTED' | 'OFFERED' | 'CONFIRMED' | 'DECLINED' | 'CANCELLED';
 export interface AppointmentRequest {
@@ -243,7 +243,11 @@ export type AuditAction =
   | 'FRIEND_ADDED'
   | 'CHECKIN_SAVED'
   | 'HABIT_LOGGED'
-  | 'GOALS_UPDATED';
+  | 'GOALS_UPDATED'
+  | 'HERB_DATA_READ'
+  | 'HERB_DATA_READ_DENIED'
+  | 'RESEARCH_CONSENT_CHANGED'
+  | 'RESEARCH_DATA_READ';
 export interface AuditEvent {
   id: string;
   at: string;
@@ -284,8 +288,20 @@ export interface YaiSettings {
   goals?: string[];
   /** daily step goal the user picked (steps/day) */
   stepGoal?: number;
+  /** herb research sharing: separate from care consent; de-identified; withdrawable */
+  herbResearch?: HerbResearchConsent;
   /** which synthetic demo user is loaded (absent = the retiree, คุณยายสมศรี) */
   persona?: DemoPersona;
+}
+
+export interface HerbResearchConsent {
+  /** share de-identified herb-use data for approved research (may support product development) */
+  research: boolean;
+  /** may be contacted about joining a study */
+  contact: boolean;
+  /** when the current choice was made, and which notice version it was made under */
+  at: string;
+  version: string;
 }
 
 /** Synthetic demo users for presentations: an active retiree (68) and an active professional (48) */

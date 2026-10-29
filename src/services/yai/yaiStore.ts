@@ -23,6 +23,7 @@ import { importOrderSnapshot, ImportOutcome, MedicationOrderSnapshot } from '../
 import { createSeedState, field, seedCheckins, seedHabitLogs } from '../../data/yai/fixtures';
 import { linkForPatient } from '../../data/yai/demoLinks';
 import { createPersonaSeedState } from '../../data/yai/personas';
+import { herbUseRecords, HerbUse, researchRecord, ResearchRecord, RESEARCH_NOTICE_VERSION } from '../../domain/yai/herbSharing';
 import { photoStore } from './photoStore';
 
 // Synthetic, browser-local demo store. Not a health record database:
@@ -351,6 +352,29 @@ export const yaiStore = {
           pendingMedicines: state.medicines.filter((m) => m.pendingIdentification).length,
         }
       : { allowed, logs: [], plans: [], journal: [], pendingMedicines: 0 };
+  },
+
+  /** Clinic reads the user's herb use (CARE purpose); needs scope HERB_DATA; every read is audited */
+  readHerbUseForClinician(recipientId: string): { allowed: boolean; uses: HerbUse[] } {
+    const allowed = canRead(state.consents, recipientId, 'HERB_DATA', demoNow());
+    set(audit(state, allowed ? 'HERB_DATA_READ' : 'HERB_DATA_READ_DENIED', recipientId, recipientId));
+    return { allowed, uses: allowed ? herbUseRecords(state) : [] };
+  },
+
+  /** De-identified research record (RESEARCH purpose); null without the separate research consent; audited */
+  readHerbResearchRecord(reader: string): ResearchRecord | null {
+    const rec = researchRecord(state);
+    if (rec) set(audit(state, 'RESEARCH_DATA_READ', reader, reader));
+    return rec;
+  },
+
+  /** Change the research choices; records time and notice version (withdrawal stops new sharing) */
+  setHerbResearch(patch: { research?: boolean; contact?: boolean }) {
+    const prev = state.settings.herbResearch ?? { research: false, contact: false, at: '', version: RESEARCH_NOTICE_VERSION };
+    const next = { ...prev, ...patch, at: demoNow().toISOString(), version: RESEARCH_NOTICE_VERSION };
+    // contact for studies only makes sense with research sharing on
+    if (!next.research) next.contact = false;
+    set(audit({ ...state, settings: { ...state.settings, herbResearch: next } }, 'RESEARCH_CONSENT_CHANGED', `research:${next.research},contact:${next.contact}`));
   },
 
   /** Grandma (or caregiver) types a measurement; the app shows it as recorded and does not interpret it */
