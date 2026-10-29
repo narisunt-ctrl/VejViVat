@@ -42,3 +42,48 @@
     border: 1px solid #e2e8f0 !important;
   }
 }
+
+/* YaiPrompt "Premium Longevity" design system. Scoped to the patient app (.lx) so CareBridge is untouched.
+   Colours are RGB triplets so Tailwind opacity modifiers work (bg-lx-accent/15). Dark is the default look;
+   data-theme="light" is the high-contrast daytime look. Text pairs are chosen for >= 4.5:1. */
+.lx {
+  --lx-bg: 16 28 26;          /* #101C1A */
+  --lx-surface: 23 40 37;     /* #172825 */
+  --lx-surface2: 30 51 47;    /* #1E332F */
+  --lx-line: 42 64 59;        /* #2A403B */
+  --lx-ink: 247 246 241;      /* #F7F6F1 */
+  --lx-muted: 167 184 178;    /* #A7B8B2 */
+  --lx-accent: 66 197 172;    /* #42C5AC teal */
+  --lx-link: 66 197 172;
+  --lx-onaccent: 11 31 27;
+  --lx-lime: 195 237 129;     /* #C3ED81 */
+  --lx-forest: 16 59 50;      /* #103B32 */
+  --lx-emerald: 22 139 113;   /* #168B71 */
+  --lx-chart: 43 168 142;     /* #2BA88E, validated on the dark surface */
+  --lx-warn: 242 196 107;
+  --lx-warnbg: 58 50 32;
+  --lx-alert: 255 138 128;
+  --lx-alertbg: 64 30 28;
+  color-scheme: dark;
+  font-family: 'Noto Sans Thai', 'IBM Plex Sans Thai', sans-serif;
+}
+.lx[data-theme='light'] {
+  --lx-bg: 247 246 241;       /* #F7F6F1 ivory */
+  --lx-surface: 255 255 255;
+  --lx-surface2: 238 242 236;
+  --lx-line: 221 227 220;
+  --lx-ink: 16 59 50;         /* #103B32 */
+  --lx-muted: 75 95 89;
+  --lx-accent: 22 139 113;    /* #168B71 */
+  --lx-link: 15 110 89;
+  --lx-onaccent: 255 255 255;
+  --lx-chart: 22 139 113;
+  --lx-warn: 138 83 0;
+  --lx-warnbg: 255 244 220;
+  --lx-alert: 180 35 24;
+  --lx-alertbg: 254 236 234;
+  color-scheme: light;
+}
+.lx .num {
+  font-variant-numeric: tabular-nums;
+}

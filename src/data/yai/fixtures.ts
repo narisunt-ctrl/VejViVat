@@ -1,4 +1,4 @@
-import { Clinic, EvidenceField, Friend, HerbReview, Measurement, MedicationPassport, YaiState } from '../../domain/yai/models';
+import { Clinic, EvidenceField, Friend, HabitLog, HerbReview, Measurement, MedicationPassport, WellnessCheckin, YaiState } from '../../domain/yai/models';
 import { bangkokDate, JournalCategory, JournalEntry } from '../../domain/yai/journal';
 
 // All people, clinics and medicine records here are fictional demo data (ข้อมูลจำลอง).
@@ -357,6 +357,41 @@ export function seedJournal(now: Date = new Date()): JournalEntry[] {
 }
 
 /** Example measurements a few days ago, labelled ตัวอย่าง in the UI */
+/**
+ * 21 days of SYNTHETIC self-reported check-ins ending yesterday (today is left empty so the home screen shows
+ * "ยังไม่ได้บันทึก"). A few days are skipped on purpose; values are deterministic so the demo is stable.
+ */
+export function seedCheckins(now: Date = new Date()): WellnessCheckin[] {
+  const rows: WellnessCheckin[] = [];
+  for (let d = 21; d >= 1; d--) {
+    if (d % 6 === 0) continue;
+    const at = new Date(now.getTime() - d * 86_400_000).toISOString();
+    const k = (d * 7) % 5;
+    rows.push({
+      id: `checkin-seed-${d}`,
+      date: bangkokDate(at),
+      at,
+      sleepHours: [6, 6.5, 7, 7.5, 8][k],
+      sleepQuality: ([2, 3, 4, 4, 5] as const)[k],
+      energy: ([2, 3, 3, 4, 4] as const)[(k + (d % 2)) % 5],
+      mood: ([3, 3, 4, 4, 5] as const)[(k + 1) % 5],
+      activityMinutes: [10, 20, 30, 15, 40][(d * 3) % 5],
+      source: 'SELF_REPORTED',
+      isSynthetic: true,
+    });
+  }
+  return rows;
+}
+
+export function seedHabitLogs(now: Date = new Date()): HabitLog[] {
+  const at = (d: number) => new Date(now.getTime() - d * 86_400_000).toISOString();
+  return [
+    { goalId: 'STRENGTH', d: 2 },
+    { goalId: 'RELAX', d: 1 },
+    { goalId: 'RELAX', d: 3 },
+  ].map(({ goalId, d }) => ({ goalId, date: bangkokDate(at(d)), at: at(d), isSynthetic: true }));
+}
+
 export function seedMeasurements(now: Date = new Date()): Measurement[] {
   const at = (daysAgo: number) => new Date(now.getTime() - daysAgo * 86_400_000).toISOString();
   const m = (id: string, type: Measurement['type'], value: number, daysAgo: number, value2?: number): Measurement => ({
@@ -414,7 +449,7 @@ export function createSeedState(): YaiState {
     ],
     doseLogs: [],
     audit: [],
-    settings: { fontScale: 125, familyName: '', familyPhone: '', onboarded: false, role: 'PATIENT' },
+    settings: { fontScale: 125, familyName: '', familyPhone: '', onboarded: false, role: 'PATIENT', theme: 'dark', goals: ['SLEEP', 'ACTIVE', 'STRENGTH', 'RELAX'] },
     demoClockOffsetMinutes: 0,
     journal: seedJournal(),
     syncedOrders: [],
@@ -422,5 +457,7 @@ export function createSeedState(): YaiState {
     measurements: seedMeasurements(),
     herbReviews: structuredClone(SEED_FRIEND_REVIEWS),
     friends: structuredClone(SEED_FRIENDS),
+    checkins: seedCheckins(),
+    habitLogs: seedHabitLogs(),
   };
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import { YaiShell } from './YaiShell';
 import { YaiHomePage } from '../pages/yai/YaiHomePage';
 import { OnboardingPage } from '../pages/yai/OnboardingPage';
@@ -23,9 +23,15 @@ import { FoodPage } from '../pages/yai/FoodPage';
 import { HealthRecordPage } from '../pages/yai/HealthRecordPage';
 import { LeaderboardPage } from '../pages/yai/LeaderboardPage';
 import { HerbReviewsPage } from '../pages/yai/HerbReviewsPage';
-import { AskDoctorPage } from '../pages/yai/AskDoctorPage';
 import { ProfilePage } from '../pages/yai/ProfilePage';
 import { ExercisePage } from '../pages/yai/ExercisePage';
+import { CheckinPage } from '../pages/yai/CheckinPage';
+import { InsightsPage } from '../pages/yai/InsightsPage';
+import { DiscoverPage } from '../pages/yai/DiscoverPage';
+import { HerbDetailPage } from '../pages/yai/HerbDetailPage';
+import { JourneyPage } from '../pages/yai/JourneyPage';
+import { ConsultPage } from '../pages/yai/ConsultPage';
+import { CarePage } from '../pages/yai/CarePage';
 
 const NotFound: React.FC = () => (
   <div className="space-y-4 py-10 text-center">
@@ -61,7 +67,14 @@ const YaiRoutes: React.FC = () => (
       <Route path="health" element={<HealthRecordPage />} />
       <Route path="leaderboard" element={<LeaderboardPage />} />
       <Route path="herb-reviews" element={<HerbReviewsPage />} />
-      <Route path="ask" element={<AskDoctorPage />} />
+      <Route path="ask" element={<Navigate to="/yai/consult" replace />} />
+      <Route path="checkin" element={<CheckinPage />} />
+      <Route path="insights" element={<InsightsPage />} />
+      <Route path="discover" element={<DiscoverPage />} />
+      <Route path="discover/:id" element={<HerbDetailPage />} />
+      <Route path="journey" element={<JourneyPage />} />
+      <Route path="consult" element={<ConsultPage />} />
+      <Route path="care" element={<CarePage />} />
       <Route path="profile" element={<ProfilePage />} />
       <Route path="exercise" element={<ExercisePage />} />
       <Route path="*" element={<NotFound />} />

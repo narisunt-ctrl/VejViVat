@@ -238,7 +238,10 @@ export type AuditAction =
   | 'MEASUREMENT_ADDED'
   | 'DEVICE_LINKED'
   | 'HERB_REVIEWED'
-  | 'FRIEND_ADDED';
+  | 'FRIEND_ADDED'
+  | 'CHECKIN_SAVED'
+  | 'HABIT_LOGGED'
+  | 'GOALS_UPDATED';
 export interface AuditEvent {
   id: string;
   at: string;
@@ -273,6 +276,34 @@ export interface YaiSettings {
   hiddenAds?: string[];
   /** greeting quotes grandma did not like */
   greetingSkips?: string[];
+  /** YaiPrompt colour theme; dark is the default premium look */
+  theme?: 'dark' | 'light';
+  /** wellness goals the user chose (ids from WELLNESS_GOALS) */
+  goals?: string[];
+}
+
+/** One self-reported daily wellness check-in; every field is optional and nothing is filled in for the user */
+export interface WellnessCheckin {
+  id: string;
+  /** Asia/Bangkok local date, one check-in per date (saving again updates it) */
+  date: string;
+  at: string;
+  sleepHours?: number;
+  /** 1..5 how rested the user feels */
+  sleepQuality?: 1 | 2 | 3 | 4 | 5;
+  energy?: 1 | 2 | 3 | 4 | 5;
+  mood?: 1 | 2 | 3 | 4 | 5;
+  activityMinutes?: number;
+  source: 'SELF_REPORTED';
+  isSynthetic: boolean;
+}
+
+/** User ticked a habit for a goal on a date (self-reported) */
+export interface HabitLog {
+  date: string;
+  goalId: string;
+  at: string;
+  isSynthetic: boolean;
 }
 
 export interface YaiState {
@@ -299,4 +330,6 @@ export interface YaiState {
   measurements?: Measurement[];
   herbReviews?: HerbReview[];
   friends?: Friend[];
+  checkins?: WellnessCheckin[];
+  habitLogs?: HabitLog[];
 }
