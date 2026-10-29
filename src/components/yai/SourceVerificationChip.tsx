@@ -1,10 +1,14 @@
 import React from 'react';
 import { CATEGORY_LABEL, JournalCategory, JournalInputSource, JournalReviewStatus, SOURCE_LABEL } from '../../domain/yai/journal';
 
-const CATEGORY_CLS: Record<JournalCategory, string> = {
+export const CATEGORY_CLS: Record<JournalCategory, string> = {
   SYMPTOM: 'bg-rose-50 text-rose-900 border-rose-200',
   MEDICINE_USE_REPORT: 'bg-violet-50 text-violet-900 border-violet-200',
   FOOD_CONSUMED: 'bg-amber-50 text-amber-950 border-amber-200',
+  MOOD: 'bg-sky-50 text-sky-900 border-sky-200',
+  SLEEP: 'bg-indigo-50 text-indigo-900 border-indigo-200',
+  ACTIVITY: 'bg-lime-50 text-lime-900 border-lime-200',
+  LIFE_CONTEXT: 'bg-teal-50 text-teal-900 border-teal-200',
   OTHER: 'bg-slate-100 text-slate-800 border-slate-300',
 };
 

@@ -5,7 +5,8 @@
 import type { PatientId } from './models';
 
 export type JournalInputSource = 'VOICE_TRANSCRIPT' | 'MANUAL_TEXT' | 'PHOTO_OCR' | 'CAREGIVER_TEXT';
-export type JournalCategory = 'SYMPTOM' | 'MEDICINE_USE_REPORT' | 'FOOD_CONSUMED' | 'OTHER';
+/** Holistic: body (symptoms), medicines, food, mind (mood), sleep, physical activity, and life context */
+export type JournalCategory = 'SYMPTOM' | 'MEDICINE_USE_REPORT' | 'FOOD_CONSUMED' | 'MOOD' | 'SLEEP' | 'ACTIVITY' | 'LIFE_CONTEXT' | 'OTHER';
 export type JournalReviewStatus = 'DRAFT' | 'PATIENT_CONFIRMED' | 'CAREGIVER_CONFIRMED';
 /** What a photo in the journal shows, tagged by the user after taking it (never detected from the image) */
 export type JournalPhotoTag = 'MEDICINE_LABEL' | 'UNLABELED_MEDICINE' | 'FOOD' | 'OTHER';
@@ -138,8 +139,14 @@ export const CATEGORY_LABEL: Record<JournalCategory, string> = {
   SYMPTOM: 'อาการ',
   MEDICINE_USE_REPORT: 'ยา/สมุนไพร',
   FOOD_CONSUMED: 'อาหารที่กิน',
+  MOOD: 'อารมณ์/จิตใจ',
+  SLEEP: 'การนอน',
+  ACTIVITY: 'การเคลื่อนไหว',
+  LIFE_CONTEXT: 'ครอบครัว/สังคม',
   OTHER: 'เรื่องอื่น ๆ',
 };
+
+export const ALL_CATEGORIES: JournalCategory[] = ['SYMPTOM', 'MEDICINE_USE_REPORT', 'FOOD_CONSUMED', 'MOOD', 'SLEEP', 'ACTIVITY', 'LIFE_CONTEXT', 'OTHER'];
 
 export const SOURCE_LABEL: Record<JournalInputSource, string> = {
   VOICE_TRANSCRIPT: 'ยายเล่า',

@@ -77,13 +77,33 @@ export const CONDITIONS: { en: string; th: string }[] = [
   { en: 'hyperlipidemia', th: 'ไขมันในเลือดสูง' },
 ];
 
+/** Modern-medicine comparators for head-to-head safety and efficacy questions */
+export const COMPARATORS: { en: string; th: string }[] = [
+  { en: 'placebo', th: 'ยาหลอก' },
+  { en: 'diclofenac', th: 'diclofenac (NSAID)' },
+  { en: 'ibuprofen', th: 'ibuprofen (NSAID)' },
+  { en: 'non-steroidal anti-inflammatory', th: 'กลุ่ม NSAIDs' },
+  { en: 'omeprazole', th: 'omeprazole (PPI)' },
+  { en: 'paracetamol', th: 'paracetamol' },
+  { en: 'metformin', th: 'metformin' },
+];
+
+export interface QueryOptions {
+  /** only studies with a Thai affiliation or "Thai" in title/abstract */
+  thaiOnly?: boolean;
+  /** modern-medicine comparator, e.g. "diclofenac" */
+  comparator?: string;
+}
+
 const STUDY_FILTER =
   '(meta-analysis[pt] OR systematic review[pt] OR randomized controlled trial[pt] OR clinical trial[pt] OR practice guideline[pt] OR guideline[pt])';
 
-export function buildQuery(herb: HerbOption, condition?: string): string {
+export function buildQuery(herb: HerbOption, condition?: string, opts: QueryOptions = {}): string {
   const herbPart = `(${herb.terms.map((t) => `"${t}"[tiab]`).join(' OR ')})`;
   const cond = condition?.trim() ? ` AND ("${condition.trim()}"[tiab])` : '';
-  return `${herbPart}${cond} AND ${STUDY_FILTER}`;
+  const comp = opts.comparator?.trim() ? ` AND ("${opts.comparator.trim()}"[tiab])` : '';
+  const thai = opts.thaiOnly ? ' AND (Thailand[ad] OR Thai[tiab])' : '';
+  return `${herbPart}${cond}${comp}${thai} AND ${STUDY_FILTER}`;
 }
 
 export type EvidenceTier = 'A' | 'B' | 'C' | 'PRECLINICAL';
@@ -158,8 +178,8 @@ export interface EvidenceResult {
 }
 
 /** Search PubMed for one herb (and optional condition), then rank by study type. Throws on network failure. */
-export async function searchHerbEvidence(herb: HerbOption, condition?: string, fetchImpl: typeof fetch = fetch): Promise<EvidenceResult> {
-  const query = buildQuery(herb, condition);
+export async function searchHerbEvidence(herb: HerbOption, condition?: string, fetchImpl: typeof fetch = fetch, opts: QueryOptions = {}): Promise<EvidenceResult> {
+  const query = buildQuery(herb, condition, opts);
   const cacheKey = `herb-evidence:${query}`;
   try {
     const cached = globalThis.sessionStorage?.getItem(cacheKey);

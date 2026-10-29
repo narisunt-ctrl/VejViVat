@@ -7,9 +7,9 @@ import { demoNow, useYai, yaiStore } from '../../services/yai/yaiStore';
 import { journalDraft } from '../../services/yai/journalDraft';
 import { suggestSegments } from '../../services/yai/healthTextClassifier';
 import { speakThai, stopSpeaking } from '../../services/yai/thaiVoiceJournal';
-import { bangkokDate, CATEGORY_LABEL, JournalCategory, PHOTO_TAG_LABEL, SuggestedSegment } from '../../domain/yai/journal';
+import { ALL_CATEGORIES, bangkokDate, CATEGORY_LABEL, JournalCategory, PHOTO_TAG_LABEL, SuggestedSegment } from '../../domain/yai/journal';
 
-const CATEGORIES: JournalCategory[] = ['SYMPTOM', 'MEDICINE_USE_REPORT', 'FOOD_CONSUMED', 'OTHER'];
+const CATEGORIES: JournalCategory[] = ALL_CATEGORIES;
 
 /** Screen 3 "ยายตรวจสอบ": nothing is stored until the patient presses a save button */
 export const JournalReviewPage: React.FC = () => {

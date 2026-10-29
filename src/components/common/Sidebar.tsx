@@ -20,6 +20,10 @@ import {
   ClipboardList,
   HeartPulse,
   BookOpen,
+  BookCheck,
+  ClipboardCheck,
+  Layers3,
+  Target,
 } from 'lucide-react';
 import teamLogo from '@/assets/team-logo.png';
 
@@ -46,8 +50,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const menuItems = [
     { to: '/', label: 'หน้าแรก & วิสัยทัศน์', icon: Sparkles, badge: '' },
     { to: '/patients', label: `เคสผู้ป่วย (${casesCount} เคส)`, icon: Users, badge: `${casesCount}` },
+    { to: '/holistic', label: 'Holistic Care MVP', icon: Layers3, badge: 'ใหม่' },
+    { to: '/value', label: 'Value Proposition', icon: Target, badge: 'ใหม่' },
     { to: '/clinician/followup', label: 'ติดตามผู้ป่วย (ยายพร้อม)', icon: HeartPulse, badge: 'ใหม่' },
-    { to: '/research', label: 'คลังงานวิจัย', icon: BookOpen, badge: 'ใหม่' },
+    { to: '/clinician/handover', label: 'Clinical Handover', icon: ClipboardCheck, badge: 'ใหม่' },
+    { to: '/research', label: 'คลังงานวิจัย + รีวิว', icon: BookOpen, badge: 'ใหม่' },
+    { to: '/guidelines', label: 'Guideline ร่วมทบทวน', icon: BookCheck, badge: 'ใหม่' },
     { to: '/smutthan', label: '1. Smutthan Engine', icon: Compass, badge: 'AI' },
     { to: '/prescribe', label: '2. สั่งยาแผนไทย & ตรวจ HDI', icon: Pill, badge: 'Core' },
     { to: '/prescription-print', label: 'ใบสั่งยา & ฉลากยา', icon: FileText, badge: 'Print' },

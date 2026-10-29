@@ -9,7 +9,11 @@ export const CLASSIFIER_NAME = 'กฎคำสำคัญภาษาไทย
 // "ยา" but not "ยาย" (grandmother)
 const MEDICINE_RE = /(ยา(?!ย)|สมุนไพร|แคปซูล|เม็ด|ลูกกลอน|ยาหม่อง|ยาดม|วิตามิน|อาหารเสริม|ฉีด)/;
 const SYMPTOM_RE =
-  /(ปวด|เจ็บ|เมื่อย|ไอ|ไข้|เวียนหัว|เวียนศีรษะ|มึน|คลื่นไส้|อาเจียน|ท้องอืด|ท้องเฟ้อ|จุกเสียด|แน่นท้อง|ท้องผูก|ท้องเสีย|ถ่ายเหลว|เหนื่อย|อ่อนเพลีย|นอนไม่หลับ|บวม|คัน|ผื่น|เหน็บชา|มือชา|เท้าชา|ชาตาม|หายใจไม่อิ่ม|ใจสั่น|เจ็บหน้าอก|แสบ|ร้อนใน|ขัด|ตึง|ตาพร่า|หูอื้อ|ไม่สบาย|ไม่ค่อยดี)/;
+  /(ปวด|เจ็บ|เมื่อย|ไอ|ไข้|เวียนหัว|เวียนศีรษะ|มึน|คลื่นไส้|อาเจียน|ท้องอืด|ท้องเฟ้อ|จุกเสียด|แน่นท้อง|ท้องผูก|ท้องเสีย|ถ่ายเหลว|เหนื่อย|อ่อนเพลีย|บวม|คัน|ผื่น|เหน็บชา|มือชา|เท้าชา|ชาตาม|หายใจไม่อิ่ม|ใจสั่น|เจ็บหน้าอก|แสบ|ร้อนใน|ขัด|ตึง|ตาพร่า|หูอื้อ|ไม่สบาย|ไม่ค่อยดี)/;
+const MOOD_RE = /(เครียด|เหงา|กังวล|เศร้า|ดีใจ|สบายใจ|มีความสุข|หงุดหงิด|ท้อ|กลัว|ใจไม่ดี|คิดมาก|อารมณ์)/;
+const SLEEP_RE = /(นอน|หลับ|ตื่นกลางดึก|ตื่นเช้า|งีบ)/;
+const ACTIVITY_RE = /(เดินเล่น|เดินออกกำลัง|ออกกำลัง|รำไม้พลอง|รำ|ทำสวน|กายบริหาร|ยืดเส้น|ปั่นจักรยาน|ว่ายน้ำ|โยคะ|ไทเก็ก)/;
+const LIFE_RE = /(หลาน|ลูก|เพื่อน|ญาติ|ไปวัด|ทำบุญ|อยู่คนเดียว|คุยกับ|ชมรม|ผู้ดูแล|ครอบครัว)/;
 const FOOD_RE =
   /(ข้าว|อาหาร|กับข้าว|แกง|ผัด|ต้มจืด|ต้มยำ|ผัก|ผลไม้|ขนม|นม|กาแฟ|น้ำชา|ชาเขียว|ดื่มชา|น้ำเต้าหู้|โจ๊ก|ก๋วยเตี๋ยว|ปลา|หมู|ไก่|ไข่|ส้ม|กล้วย|มะละกอ|ดื่มน้ำ|น้ำผลไม้|ขนมปัง|บะหมี่|ส้มตำ)/;
 
@@ -21,7 +25,11 @@ function classify(text: string): { category: JournalCategory; confidence: number
   // medicine first: "กินยาหลังอาหาร" mentions food words but is a statement about medicine use
   if (MEDICINE_RE.test(text)) return { category: 'MEDICINE_USE_REPORT', confidence: 0.8 };
   if (SYMPTOM_RE.test(text)) return { category: 'SYMPTOM', confidence: 0.8 };
+  if (MOOD_RE.test(text)) return { category: 'MOOD', confidence: 0.7 };
+  if (SLEEP_RE.test(text)) return { category: 'SLEEP', confidence: 0.7 };
   if (FOOD_RE.test(text)) return { category: 'FOOD_CONSUMED', confidence: 0.7 };
+  if (ACTIVITY_RE.test(text)) return { category: 'ACTIVITY', confidence: 0.6 };
+  if (LIFE_RE.test(text)) return { category: 'LIFE_CONTEXT', confidence: 0.6 };
   return { category: 'OTHER', confidence: 0 };
 }
 

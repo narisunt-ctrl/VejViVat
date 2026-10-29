@@ -140,3 +140,33 @@ creates a schedule), Playwright E2E (not installed).
 Checked in the in-app browser: facility ranking for อ.สันทราย (same-district hospital 1.5 km first; Chom Thong 62 km before Lamphun 30 km because Lamphun is another province), follow-up page flags HDI-001 (ขมิ้นชัน + warfarin) and HDI-013 (ยาสหัศธารา order + warfarin), message → acknowledge → doctor sees acknowledgement, research links open the real databases. Tests: 14 files, 107 pass (`src/tests/yai/yai-care-network.test.ts` adds 11).
 
 Limits: facility data, coordinates and opening hours are fictional; distance is straight-line; HDI database has 14 sample pairs and no food–drug rules beyond herbs in it; "no flag" never means safe. The research page does not fetch or summarise papers itself.
+
+## Holistic Care MVP (branch `feat/holistic-guidelines`, 2026-10-29)
+
+Entry page `#/holistic` lists the five items from the advisor's checklist and how data flows between ยายพร้อม and CareBridge.
+
+| Checklist item | Implementation | Files |
+|---|---|---|
+| Evidence Passport ฝั่งยายพร้อม | `#/yai/passport` (earlier), linked from the hub, follow-up and handover | `src/pages/yai/EvidencePassportPage.tsx` |
+| Integrated Guideline Viewer | `#/guidelines/:id`: Thai column from the system formulary (indications, adult dose, NLEM status, source reference, verification status); modern and Chinese columns written by reviewers and only with a link or DOI; empty columns show live search links | `src/pages/clinician/GuidelinesPage.tsx` |
+| Benefit–Harm Comparison | Same page: efficacy from reviewer consensus per article, harms from formulary contraindications/precautions + HDI pairs for the herb + harm-signal reviews, automatic evidence limitations | `src/pages/clinician/GuidelinesPage.tsx` |
+| Automatic Heuristic Engine | PubMed search ranked by study type, extractive abstract summaries (authors' conclusion and result sentences, sample sizes found in the text), shown automatically on `/prescribe` for the selected herb | `src/services/carebridge/herbEvidence.ts`, `abstracts.ts`, `src/components/carebridge/EvidenceMiniPanel.tsx`, `HerbEvidenceSearch.tsx` |
+| Clinical Handover | `#/clinician/handover`: SBAR; S/B/A assembled from consented ยายพร้อม data with sources, R written by the clinician, reviewer sign-off | `src/pages/clinician/HandoverPage.tsx` |
+
+Peer review → guideline: each clinician reviews an article after reading it (verdict + GRADE-style certainty + note; one review per person per article). A draft can be created when ≥3 human-study articles have ≥2 reviewers each and both a modern-medicine and a Thai traditional medicine doctor took part. The panel writes the recommendation; approval needs one modern-medicine and one Thai traditional medicine approver; any edit sends it back to draft. Rules are pure functions in `src/services/carebridge/evidenceReviews.ts` with tests in `src/tests/yai/guidelines.test.ts`.
+
+Not done / limits: reviews, guidelines and handovers are stored in this browser only (needs a shared backend, real accounts, conflict-of-interest declarations and a PTC committee). The summary is extractive from abstracts, not an AI paraphrase; an LLM summary would need a server-side model key. Checked in the in-app browser: turmeric + osteoarthritis summary (top meta-analysis: 39 RCTs, 4599 patients, authors' conclusion shown), ginger evidence on `/prescribe` (502 PubMed records), hub, guideline and handover pages load. Tests: 16 files, 120 pass.
+
+## Advisor follow-up: holistic, guideline sources, Thai to global, safety, value (branch `feat/holistic-value`)
+
+| Advisor point | What was added |
+|---|---|
+| Holistic | Journal categories อารมณ์/จิตใจ, การนอน, การเคลื่อนไหว, ครอบครัว/สังคม (keyword rules) and a one-tap mood card on the ยายพร้อม home; the modern-doctor summary counts low-mood, sleep and activity days automatically. Not a screening tool. |
+| Automatic, no extra workflow | Unchanged principle: new data is summarised for doctors without extra input. |
+| Modern and Chinese medicine guidelines | `src/data/carebridge/guidelineSources.ts`: official sources per system (Thai: DTAM, Thai FDA, ThaiJO, Thai Clinical Trials Registry; modern: NICE, WHO, Cochrane; Chinese: NATCM, WHO TCIM) and PubMed guideline searches per system, shown in the guideline editor and viewer. The app links only; reviewers cite the document they used. |
+| Thai evidence to global | "เฉพาะงานวิจัยจากไทย" filter (Thailand affiliation / Thai in title-abstract); FHIR R4 PlanDefinition export of a guideline with PubMed citations (`src/services/carebridge/fhirExport.ts`); value page explains the real-world-evidence path from ยายพร้อม (consented, de-identified). |
+| Fewer side effects | "เทียบกับยาแผนปัจจุบัน" comparator in the evidence search and verbatim safety sentences from abstracts, side by side. Checked live: curcumin vs diclofenac in knee OA (RCT 2019) reports adverse effects 13% vs 38%. The app does not claim herbs are safer in general. |
+| Value proposition | `#/value`: stakeholder pains/gains linked to features, safety framing, Thai-to-global steps, and metrics counted from the app. |
+
+Tests: 17 files, 125 pass. Limit: safety sentences from unstructured abstracts may include background statements.
+

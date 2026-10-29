@@ -23,6 +23,10 @@ import { SystemStatusPage } from './pages/SystemStatusPage';
 import { PreVisitQueuePage, PreVisitDetailPage } from './pages/clinician/PreVisitQueuePage';
 import { FollowUpPage } from './pages/clinician/FollowUpPage';
 import { ResearchLibraryPage } from './pages/clinician/ResearchLibraryPage';
+import { GuidelinesPage, GuidelineNewPage, GuidelineViewPage } from './pages/clinician/GuidelinesPage';
+import { HandoverPage } from './pages/clinician/HandoverPage';
+import { HolisticHubPage } from './pages/clinician/HolisticHubPage';
+import { ValuePropositionPage } from './pages/clinician/ValuePropositionPage';
 
 export const App: React.FC = () => {
   const navigate = useNavigate();
@@ -150,6 +154,12 @@ export const App: React.FC = () => {
               <Route path="/clinician/previsit/:clinicId" element={<PreVisitDetailPage />} />
               <Route path="/clinician/followup" element={<FollowUpPage />} />
               <Route path="/research" element={<ResearchLibraryPage />} />
+              <Route path="/guidelines" element={<GuidelinesPage />} />
+              <Route path="/guidelines/new" element={<GuidelineNewPage />} />
+              <Route path="/guidelines/:id" element={<GuidelineViewPage />} />
+              <Route path="/clinician/handover" element={<HandoverPage />} />
+              <Route path="/holistic" element={<HolisticHubPage />} />
+              <Route path="/value" element={<ValuePropositionPage />} />
               <Route
                 path="*"
                 element={

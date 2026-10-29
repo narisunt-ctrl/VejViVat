@@ -18,6 +18,7 @@ import { PrescriptionCart } from '../components/prescribing/PrescriptionCart';
 import { NlemFormularyCatalog } from '../components/prescribing/NlemFormularyCatalog';
 import { CareBridgePrescriptionSyncPanel } from '../components/carebridge/CareBridgePrescriptionSyncPanel';
 import { KneeOAEvidencePanel } from '../components/carebridge/KneeOAEvidencePanel';
+import { EvidenceMiniPanel } from '../components/carebridge/EvidenceMiniPanel';
 import {
   ArrowLeft,
   ArrowRight,
@@ -557,6 +558,9 @@ export const PrescribePage: React.FC<PrescribePageProps> = ({ currentCase }) => 
 
         {/* Column 3 (Right 4 cols): Real-Time HDI Alerts & Prescription Cart */}
         <div className="xl:col-span-4 space-y-4">
+          {/* Clinical evidence for the selected herb, found and ranked automatically */}
+          <EvidenceMiniPanel herbName={selectedHerb.thai_name} />
+
           {/* Live Alerts for Currently Selected Herb */}
           <InteractionAlerts interactions={liveInteractions} />
 
