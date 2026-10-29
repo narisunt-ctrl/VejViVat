@@ -26,6 +26,7 @@ import { DEMO_CLINICS } from '../../data/yai/fixtures';
 import { DailyHeatmap } from '../../components/yai/DailyHeatmap';
 import { VoiceEntryButton } from '../../components/yai/VoiceEntryButton';
 import { DoctorMessagesCard } from '../../components/yai/DoctorMessagesCard';
+import { MoodTapCard } from '../../components/yai/MoodTapCard';
 import { CategoryChip, SourceVerificationChip } from '../../components/yai/SourceVerificationChip';
 import { bangkokDate, isConfirmed, recordedDaysInMonth, thaiDateLabel } from '../../domain/yai/journal';
 import { journalDraft } from '../../services/yai/journalDraft';
@@ -167,6 +168,7 @@ export const YaiHomePage: React.FC = () => {
           </Notice>
         )}
         <DoctorMessagesCard />
+        <MoodTapCard />
 
         {/* upcoming: appointment and next reminder, side by side on a swipe row */}
         <section aria-label="สิ่งที่กำลังจะมาถึง" className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1">

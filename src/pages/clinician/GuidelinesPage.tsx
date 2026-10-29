@@ -4,7 +4,8 @@ import { BookCheck, CheckCircle2, ExternalLink, Printer, ShieldAlert, Scale } fr
 import formulary from '../../../data/formulary/thai-formulary.json';
 import type { ThaiHerbFormularyItem } from '../../types/drug';
 import { HERB_OPTIONS, CONDITIONS } from '../../services/carebridge/herbEvidence';
-import { searchLinks } from '../../data/carebridge/research';
+import { GUIDELINE_SOURCES, guidelineSearchUrl, MedicalSystem, SYSTEM_TH } from '../../data/carebridge/guidelineSources';
+import { toFhirPlanDefinition } from '../../services/carebridge/fhirExport';
 import { getAllInteractionsDatabase } from '../../services/interactionMatcher';
 import { herbAliases, SEVERITY_TH } from '../../domain/yai/interactionCheck';
 import {
@@ -114,6 +115,8 @@ export const GuidelineNewPage: React.FC = () => {
           <Input label="อ้างอิงแผนปัจจุบัน (ลิงก์หรือ DOI)" value={form.modernCitation} onChange={set('modernCitation')} bad={!!form.modernText.trim() && !isCitation(form.modernCitation)} />
           <Area label="แผนจีน: มุมมอง/หลักฐาน (ถ้ามี)" value={form.chineseText} onChange={set('chineseText')} />
           <Input label="อ้างอิงแผนจีน (ลิงก์หรือ DOI)" value={form.chineseCitation} onChange={set('chineseCitation')} bad={!!form.chineseText.trim() && !isCitation(form.chineseCitation)} />
+          <Sources system="MODERN" condition={condition} />
+          <Sources system="CHINESE" condition={condition} />
           <Area label="ประโยชน์ที่คณะผู้ทบทวนเห็น" value={form.benefitsNote} onChange={set('benefitsNote')} />
           <Area label="ความเสี่ยง/ข้อควรระวังที่คณะผู้ทบทวนเห็น" value={form.harmsNote} onChange={set('harmsNote')} />
         </div>
@@ -180,7 +183,6 @@ export const GuidelineViewPage: React.FC = () => {
   const unclear = byArticle.length - supports - noEffect;
   const harmReviews = reviews.filter((r) => r.verdict === 'HARM_SIGNAL');
   const certainty = overallCertainty(reviews);
-  const tcmQuery = `${HERB_OPTIONS.find((h) => h.id === g.herbId)?.terms[0] ?? ''} traditional Chinese medicine ${g.condition}`.trim();
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 py-4 print:max-w-none sm:px-6">
@@ -200,6 +202,21 @@ export const GuidelineViewPage: React.FC = () => {
           <StatusBadge g={g} />
           <button type="button" onClick={() => window.print()} className="flex min-h-[36px] items-center gap-1 rounded-lg border border-slate-300 px-3 text-sm print:hidden">
             <Printer className="h-4 w-4" /> พิมพ์
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const blob = new Blob([JSON.stringify(toFhirPlanDefinition(g, item), null, 2)], { type: 'application/fhir+json' });
+              const a = document.createElement('a');
+              a.href = URL.createObjectURL(blob);
+              a.download = `guideline-${g.id}-v${g.version}.fhir.json`;
+              a.click();
+              URL.revokeObjectURL(a.href);
+            }}
+            className="flex min-h-[36px] items-center gap-1 rounded-lg border border-slate-300 px-3 text-sm print:hidden"
+            title="ส่งออกเป็น FHIR R4 PlanDefinition เพื่อแลกเปลี่ยนกับระบบอื่นหรือเผยแพร่ในระดับสากล"
+          >
+            ส่งออก FHIR
           </button>
         </div>
       </div>
@@ -222,16 +239,17 @@ export const GuidelineViewPage: React.FC = () => {
                 ครั้งละ {item.standard_dosing.adult.dose_per_admin} {item.standard_dosing.adult.dose_unit} วันละ {item.standard_dosing.adult.frequency_per_day} ครั้ง {item.standard_dosing.adult.timing} · ไม่เกิน {item.standard_dosing.adult.max_duration_days} วัน
               </p>
               {item.nlem_status === 'ใช่' && <p className="mt-1 text-xs font-semibold text-emerald-800">{item.nlem_category}</p>}
+              <Sources system="THAI" condition={g.condition} />
             </>
           ) : (
             <p>ไม่พบในบัญชียาของระบบ</p>
           )}
         </Column>
         <Column title="แผนปัจจุบัน" tone="sky" source={g.modern.citation || null}>
-          {g.modern.text ? <p className="whitespace-pre-line">{g.modern.text}</p> : <Empty query={`${g.condition || 'standard care'} clinical practice guideline`} />}
+          {g.modern.text ? <p className="whitespace-pre-line">{g.modern.text}</p> : <Sources system="MODERN" condition={g.condition} empty />}
         </Column>
         <Column title="แผนจีน" tone="rose" source={g.chinese.citation || null}>
-          {g.chinese.text ? <p className="whitespace-pre-line">{g.chinese.text}</p> : <Empty query={tcmQuery} />}
+          {g.chinese.text ? <p className="whitespace-pre-line">{g.chinese.text}</p> : <Sources system="CHINESE" condition={g.condition} empty />}
         </Column>
       </section>
 
@@ -358,16 +376,19 @@ const Column: React.FC<{ title: string; tone: keyof typeof TONE; source: string 
   </div>
 );
 
-const Empty: React.FC<{ query: string }> = ({ query }) => (
+const Sources: React.FC<{ system: MedicalSystem; condition: string; empty?: boolean }> = ({ system, condition, empty }) => (
   <div className="space-y-1 text-slate-600">
-    <p>ยังไม่มีข้อมูลที่คณะผู้ทบทวนตรวจแล้ว</p>
-    <p className="text-xs">ค้นหลักฐาน:</p>
+    {empty && <p>ยังไม่มีข้อมูลที่คณะผู้ทบทวนตรวจแล้ว</p>}
+    <p className="text-xs font-semibold">แหล่ง Guideline ทางการ{SYSTEM_TH[system]}:</p>
     <div className="flex flex-wrap gap-1">
-      {searchLinks(query).map((l) => (
-        <a key={l.url} href={l.url} target="_blank" rel="noreferrer" className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs underline">
-          {l.label}
+      {GUIDELINE_SOURCES[system].map((src) => (
+        <a key={src.url} href={src.url} target="_blank" rel="noreferrer" title={src.note} className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs underline">
+          {src.name}
         </a>
       ))}
+      <a href={guidelineSearchUrl(system, condition)} target="_blank" rel="noreferrer" className="rounded border border-emerald-300 bg-white px-1.5 py-0.5 text-xs font-semibold text-emerald-800 underline">
+        ค้น Guideline{SYSTEM_TH[system]}ใน PubMed
+      </a>
     </div>
   </div>
 );

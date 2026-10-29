@@ -12,6 +12,7 @@ import { consults, useConsults } from '../../services/carebridge/consults';
 import { herbForName } from '../../services/carebridge/herbEvidence';
 import { getElementSummaryForPatient } from '../../services/yai/elementSummaryAdapter';
 import { ModernDoctorSummary } from '../../components/carebridge/ModernDoctorSummary';
+import { CATEGORY_CLS } from '../../components/yai/SourceVerificationChip';
 
 type Role = 'MODERN' | 'TTM';
 const ROLE_KEY = 'carebridge-role';
@@ -175,11 +176,7 @@ export const FollowUpPage: React.FC = () => {
                       <ul className="mt-1 space-y-0.5">
                         {segs.map(({ s, synthetic }) => (
                           <li key={s.id} className="flex flex-wrap gap-2">
-                            <span
-                              className={`rounded px-1.5 text-xs font-semibold ${
-                                s.category === 'SYMPTOM' ? 'bg-rose-50 text-rose-800' : s.category === 'MEDICINE_USE_REPORT' ? 'bg-violet-50 text-violet-800' : s.category === 'FOOD_CONSUMED' ? 'bg-amber-50 text-amber-800' : 'bg-slate-100 text-slate-700'
-                              }`}
-                            >
+                            <span className={`rounded border px-1.5 text-xs font-semibold ${CATEGORY_CLS[s.category]}`}>
                               {CATEGORY_LABEL[s.category]}
                             </span>
                             <span>{s.unknown ? `${s.text} (ไม่ทราบ)` : s.text}</span>

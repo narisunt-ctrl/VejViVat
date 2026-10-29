@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, FileText, FlaskConical, Loader2, Search, Users } from 'lucide-react';
-import { CONDITIONS, EvidenceArticle, EvidenceResult, HERB_OPTIONS, herbForName, searchHerbEvidence, TIER_LABEL } from '../../services/carebridge/herbEvidence';
+import { COMPARATORS, CONDITIONS, EvidenceArticle, EvidenceResult, HERB_OPTIONS, herbForName, searchHerbEvidence, TIER_LABEL } from '../../services/carebridge/herbEvidence';
+import { GUIDELINE_SOURCES } from '../../data/carebridge/guidelineSources';
 import { AbstractSummary, fetchAbstracts, overviewOf } from '../../services/carebridge/abstracts';
 import {
   CERTAINTY_TH,
@@ -29,6 +30,8 @@ const VERDICT_CLS: Record<Verdict, string> = { SUPPORTS: 'bg-emerald-50 text-eme
 export const HerbEvidenceSearch: React.FC<{ initialHerb?: string | null; initialCondition?: string | null }> = ({ initialHerb, initialCondition }) => {
   const [herbId, setHerbId] = useState(() => (initialHerb && herbForName(initialHerb)?.id) || HERB_OPTIONS[1]?.id || HERB_OPTIONS[0].id);
   const [condition, setCondition] = useState(initialCondition ?? '');
+  const [thaiOnly, setThaiOnly] = useState(false);
+  const [comparator, setComparator] = useState('');
   const [result, setResult] = useState<EvidenceResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +50,7 @@ export const HerbEvidenceSearch: React.FC<{ initialHerb?: string | null; initial
     setError(null);
     setSummaries(null);
     try {
-      setResult(await searchHerbEvidence(herb, condition));
+      setResult(await searchHerbEvidence(herb, condition, fetch, { thaiOnly, comparator }));
     } catch {
       setError('เชื่อมต่อ PubMed ไม่ได้ตอนนี้ ลองใหม่ หรือใช้ลิงก์ค้นหาด้านล่าง');
     } finally {
@@ -107,7 +110,31 @@ export const HerbEvidenceSearch: React.FC<{ initialHerb?: string | null; initial
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />} ค้นหลักฐาน
         </button>
       </div>
-      <p className="text-xs text-slate-500">คำค้น: {herb.terms.join(', ')} · เฉพาะ meta-analysis, systematic review, RCT, clinical trial และแนวทางเวชปฏิบัติใน PubMed</p>
+      <div className="flex flex-wrap items-center gap-3 text-sm">
+        <label className="flex items-center gap-1.5">
+          <input type="checkbox" checked={thaiOnly} onChange={(e) => setThaiOnly(e.target.checked)} /> เฉพาะงานวิจัยจากไทย
+        </label>
+        <label className="flex items-center gap-1.5">
+          เทียบกับยาแผนปัจจุบัน
+          <select className="rounded-lg border border-slate-300 px-2 py-1" value={comparator} onChange={(e) => setComparator(e.target.value)}>
+            <option value="">ไม่ระบุ</option>
+            {COMPARATORS.map((c) => (
+              <option key={c.en} value={c.en}>
+                {c.th}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <p className="text-xs text-slate-500">
+        คำค้น: {herb.terms.join(', ')} · เฉพาะ meta-analysis, systematic review, RCT, clinical trial และแนวทางเวชปฏิบัติใน PubMed · แหล่งไทยเพิ่มเติม:{' '}
+        {GUIDELINE_SOURCES.THAI.filter((s) => /ThaiJO|Clinical Trials/.test(s.name)).map((s, i) => (
+          <a key={s.url} href={s.url} target="_blank" rel="noreferrer" className="underline">
+            {i ? ', ' : ''}
+            {s.name}
+          </a>
+        ))}
+      </p>
 
       <div className="flex flex-wrap items-center gap-2 rounded-xl bg-slate-50 p-2 text-sm">
         <Users className="h-4 w-4 text-slate-500" />
@@ -166,7 +193,7 @@ export const HerbEvidenceSearch: React.FC<{ initialHerb?: string | null; initial
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button type="button" onClick={loadSummaries} disabled={sumBusy || shown.length === 0} className="flex min-h-[38px] items-center gap-1.5 rounded-xl border border-emerald-300 px-3 text-sm font-semibold text-emerald-800 disabled:opacity-50">
+            <button type="button" onClick={loadSummaries} disabled={busy || sumBusy || shown.length === 0} className="flex min-h-[38px] items-center gap-1.5 rounded-xl border border-emerald-300 px-3 text-sm font-semibold text-emerald-800 disabled:opacity-50">
               {sumBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />} ดูสรุปย่อจากบทคัดย่อ
             </button>
             {hiddenPre > 0 && (
@@ -175,6 +202,8 @@ export const HerbEvidenceSearch: React.FC<{ initialHerb?: string | null; initial
               </button>
             )}
           </div>
+
+          {summaries && comparator && result.query.includes(`"${comparator}"[tiab]`) && <SafetyCompare summaries={summaries} articles={shown} comparator={comparator} />}
 
           <GuidelineBar ready={readiness.ready} missing={readiness.missing} reviewed={readiness.reviewedArticles} herbId={herbId} condition={condition} />
 
@@ -270,6 +299,11 @@ const ArticleCard: React.FC<{
               <b>ข้อสรุปของผู้วิจัย:</b> {summary.conclusion}
             </p>
           )}
+          {summary.safetySentences.length > 0 && (
+            <p className="text-rose-900">
+              <b>ความปลอดภัย/ผลข้างเคียง:</b> {summary.safetySentences.join(' ')}
+            </p>
+          )}
           {!summary.keyResult && !summary.conclusion && <p>ไม่มีบทคัดย่อใน PubMed</p>}
         </div>
       )}
@@ -334,5 +368,33 @@ const ArticleCard: React.FC<{
         </button>
       )}
     </li>
+  );
+};
+
+/** Safety statements from trials that compared the herb with a modern drug, verbatim and side by side */
+const SafetyCompare: React.FC<{ summaries: Map<string, AbstractSummary>; articles: EvidenceArticle[]; comparator: string }> = ({ summaries, articles, comparator }) => {
+  if (!comparator) return null;
+  const rows = articles.filter((a) => a.tier !== 'PRECLINICAL').map((a) => ({ a, s: summaries.get(a.pmid) })).filter((r) => r.s && r.s.safetySentences.length);
+  return (
+    <div className="space-y-1 rounded-xl border border-rose-200 bg-rose-50/50 p-3 text-sm">
+      <p className="font-bold text-slate-900">เทียบผลข้างเคียงกับ {COMPARATORS.find((c) => c.en === comparator)?.th ?? comparator} (จากบทคัดย่อ)</p>
+      {rows.length === 0 ? (
+        <p className="text-xs text-slate-600">บทคัดย่อที่ดึงมายังไม่มีประโยคเรื่องผลข้างเคียง ต้องอ่านฉบับเต็ม</p>
+      ) : (
+        <ul className="space-y-1 text-xs">
+          {rows.map(({ a, s }) => (
+            <li key={a.pmid}>
+              <a href={`https://pubmed.ncbi.nlm.nih.gov/${a.pmid}/`} target="_blank" rel="noreferrer" className="font-semibold underline">
+                [{a.tier}] {a.year}
+              </a>{' '}
+              {s!.safetySentences.join(' ')}
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="text-xs text-slate-500">
+        แสดงข้อความของผู้วิจัยตามจริง ระบบไม่สรุปว่า "ผลข้างเคียงน้อยกว่า" แทนแพทย์ ผลขึ้นกับสมุนไพร ขนาดยา โรค และคุณภาพงานวิจัย
+      </p>
+    </div>
   );
 };

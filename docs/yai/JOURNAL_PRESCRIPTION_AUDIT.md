@@ -157,3 +157,16 @@ Peer review → guideline: each clinician reviews an article after reading it (v
 
 Not done / limits: reviews, guidelines and handovers are stored in this browser only (needs a shared backend, real accounts, conflict-of-interest declarations and a PTC committee). The summary is extractive from abstracts, not an AI paraphrase; an LLM summary would need a server-side model key. Checked in the in-app browser: turmeric + osteoarthritis summary (top meta-analysis: 39 RCTs, 4599 patients, authors' conclusion shown), ginger evidence on `/prescribe` (502 PubMed records), hub, guideline and handover pages load. Tests: 16 files, 120 pass.
 
+## Advisor follow-up: holistic, guideline sources, Thai to global, safety, value (branch `feat/holistic-value`)
+
+| Advisor point | What was added |
+|---|---|
+| Holistic | Journal categories อารมณ์/จิตใจ, การนอน, การเคลื่อนไหว, ครอบครัว/สังคม (keyword rules) and a one-tap mood card on the ยายพร้อม home; the modern-doctor summary counts low-mood, sleep and activity days automatically. Not a screening tool. |
+| Automatic, no extra workflow | Unchanged principle: new data is summarised for doctors without extra input. |
+| Modern and Chinese medicine guidelines | `src/data/carebridge/guidelineSources.ts`: official sources per system (Thai: DTAM, Thai FDA, ThaiJO, Thai Clinical Trials Registry; modern: NICE, WHO, Cochrane; Chinese: NATCM, WHO TCIM) and PubMed guideline searches per system, shown in the guideline editor and viewer. The app links only; reviewers cite the document they used. |
+| Thai evidence to global | "เฉพาะงานวิจัยจากไทย" filter (Thailand affiliation / Thai in title-abstract); FHIR R4 PlanDefinition export of a guideline with PubMed citations (`src/services/carebridge/fhirExport.ts`); value page explains the real-world-evidence path from ยายพร้อม (consented, de-identified). |
+| Fewer side effects | "เทียบกับยาแผนปัจจุบัน" comparator in the evidence search and verbatim safety sentences from abstracts, side by side. Checked live: curcumin vs diclofenac in knee OA (RCT 2019) reports adverse effects 13% vs 38%. The app does not claim herbs are safer in general. |
+| Value proposition | `#/value`: stakeholder pains/gains linked to features, safety framing, Thai-to-global steps, and metrics counted from the app. |
+
+Tests: 17 files, 125 pass. Limit: safety sentences from unstructured abstracts may include background statements.
+

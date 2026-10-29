@@ -20,7 +20,11 @@ export interface AbstractSummary {
   keyResult: string | null;
   /** "n = 1,234 participants", "12 RCTs" … found verbatim in the abstract */
   sizeMentions: string[];
+  /** sentences about adverse events / safety / tolerability, verbatim */
+  safetySentences: string[];
 }
+
+const SAFETY_RE = /adverse|side[- ]effect|safety|\bsafe\b|tolera(b|nce|ted)|toxicit|gastrointestinal|bleeding|hepatotox|liver (injury|enzyme)|nausea|vomit|diarrh|flatulence|dyspeps|rash|dizz/i;
 
 const decode = (s: string) =>
   s
@@ -65,7 +69,12 @@ export function parseAbstracts(xml: string): AbstractSummary[] {
       conclusion = sentences(all).slice(-2).join(' ') || null;
     }
     const sizeMentions = [...new Set([...all.matchAll(SIZE_RE)].map((m) => m[0].trim()))].slice(0, 4);
-    out.push({ pmid, sections, conclusion, keyResult: results ? firstSentences(results.text, 2) : null, sizeMentions });
+    const safetySentences = sections
+      .filter((s) => !/BACKGROUND|OBJECTIVE|INTRODUCTION|METHOD/.test(s.label))
+      .flatMap((s) => sentences(s.text))
+      .filter((x) => SAFETY_RE.test(x))
+      .slice(0, 2);
+    out.push({ pmid, sections, conclusion, keyResult: results ? firstSentences(results.text, 2) : null, sizeMentions, safetySentences });
   }
   return out;
 }

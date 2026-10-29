@@ -5,9 +5,9 @@ import { BigButton, Card, formatThaiDateTime, inputCls, Notice, PageTitle } from
 import { DailyHeatmap } from '../../components/yai/DailyHeatmap';
 import { CategoryChip, SourceVerificationChip } from '../../components/yai/SourceVerificationChip';
 import { demoNow, useYai, yaiStore } from '../../services/yai/yaiStore';
-import { bangkokDate, CATEGORY_LABEL, isConfirmed, JournalCategory, JournalEntry, PHOTO_TAG_LABEL, thaiDateLabel } from '../../domain/yai/journal';
+import { ALL_CATEGORIES, bangkokDate, CATEGORY_LABEL, isConfirmed, JournalCategory, JournalEntry, PHOTO_TAG_LABEL, thaiDateLabel } from '../../domain/yai/journal';
 
-const CATEGORIES: JournalCategory[] = ['SYMPTOM', 'MEDICINE_USE_REPORT', 'FOOD_CONSUMED', 'OTHER'];
+const CATEGORIES: JournalCategory[] = ALL_CATEGORIES;
 
 /** Screen 4 "ผลลัพธ์และประวัติ": confirmed entries by day, with provenance and version history */
 export const JournalHistoryPage: React.FC = () => {

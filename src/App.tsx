@@ -26,6 +26,7 @@ import { ResearchLibraryPage } from './pages/clinician/ResearchLibraryPage';
 import { GuidelinesPage, GuidelineNewPage, GuidelineViewPage } from './pages/clinician/GuidelinesPage';
 import { HandoverPage } from './pages/clinician/HandoverPage';
 import { HolisticHubPage } from './pages/clinician/HolisticHubPage';
+import { ValuePropositionPage } from './pages/clinician/ValuePropositionPage';
 
 export const App: React.FC = () => {
   const navigate = useNavigate();
@@ -158,6 +159,7 @@ export const App: React.FC = () => {
               <Route path="/guidelines/:id" element={<GuidelineViewPage />} />
               <Route path="/clinician/handover" element={<HandoverPage />} />
               <Route path="/holistic" element={<HolisticHubPage />} />
+              <Route path="/value" element={<ValuePropositionPage />} />
               <Route
                 path="*"
                 element={

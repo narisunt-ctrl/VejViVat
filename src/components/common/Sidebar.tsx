@@ -23,6 +23,7 @@ import {
   BookCheck,
   ClipboardCheck,
   Layers3,
+  Target,
 } from 'lucide-react';
 import teamLogo from '@/assets/team-logo.png';
 
@@ -50,6 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { to: '/', label: 'หน้าแรก & วิสัยทัศน์', icon: Sparkles, badge: '' },
     { to: '/patients', label: `เคสผู้ป่วย (${casesCount} เคส)`, icon: Users, badge: `${casesCount}` },
     { to: '/holistic', label: 'Holistic Care MVP', icon: Layers3, badge: 'ใหม่' },
+    { to: '/value', label: 'Value Proposition', icon: Target, badge: 'ใหม่' },
     { to: '/clinician/followup', label: 'ติดตามผู้ป่วย (ยายพร้อม)', icon: HeartPulse, badge: 'ใหม่' },
     { to: '/clinician/handover', label: 'Clinical Handover', icon: ClipboardCheck, badge: 'ใหม่' },
     { to: '/research', label: 'คลังงานวิจัย + รีวิว', icon: BookOpen, badge: 'ใหม่' },

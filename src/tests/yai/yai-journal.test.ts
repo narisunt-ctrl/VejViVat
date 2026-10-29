@@ -46,7 +46,14 @@ describe('daily journal (J01–J06)', () => {
     // works without spaces too (speech recognisers often drop them)
     expect(suggestSegments('วันนี้ยายปวดเข่ากินยาหลังอาหารเช้าแล้วกินข้าวต้ม').map((s) => s.category)).toEqual(['SYMPTOM', 'MEDICINE_USE_REPORT', 'FOOD_CONSUMED']);
     // "ยาย" is not "ยา", and unknown text stays OTHER
-    expect(suggestSegments('ยายไปวัดมา')[0].category).toBe('OTHER');
+    expect(suggestSegments('ยายไปตลาดมา')[0].category).toBe('OTHER');
+    // holistic: mind, sleep, movement and life context
+    expect(suggestSegments('เมื่อคืนนอนไม่หลับ เครียดเรื่องหลาน เช้านี้เดินออกกำลัง ไปวัดกับเพื่อน').map((s) => s.category)).toEqual([
+      'SLEEP',
+      'MOOD',
+      'ACTIVITY',
+      'LIFE_CONTEXT',
+    ]);
   });
 
   it('J03: a draft or a cancelled review is never counted', () => {

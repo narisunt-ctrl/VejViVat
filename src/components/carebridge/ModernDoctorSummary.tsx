@@ -27,6 +27,10 @@ export const ModernDoctorSummary: React.FC<{
   const symptoms = journal.flatMap((e) => e.segments.filter((s) => s.category === 'SYMPTOM').map((s) => ({ s, date: e.recordedLocalDate })));
   const symptomDays = new Set(symptoms.map((x) => x.date)).size;
   const high = screen.flags.filter((f) => f.rule.severity_code === 'HIGH').length;
+  const daysWith = (pred: (s: JournalEntry['segments'][number]) => boolean) => new Set(journal.filter((e) => e.segments.some(pred)).map((e) => e.recordedLocalDate)).size;
+  const lowMoodDays = daysWith((s) => s.category === 'MOOD' && /ไม่ค่อยดี|แย่|เครียด|เศร้า|เหงา|กังวล|ท้อ/.test(s.text));
+  const sleepDays = daysWith((s) => s.category === 'SLEEP');
+  const activityDays = daysWith((s) => s.category === 'ACTIVITY');
 
   return (
     <div className="space-y-3">
@@ -89,7 +93,10 @@ export const ModernDoctorSummary: React.FC<{
               </li>
             ))}
           </ul>
-          <p className="text-xs text-slate-500">คำบอกเล่าของผู้ป่วย ไม่ใช่การวินิจฉัย</p>
+          <p className="text-sm">
+            อารมณ์ไม่ดี {lowMoodDays} วัน · เรื่องการนอน {sleepDays} วัน · ขยับร่างกาย {activityDays} วัน
+          </p>
+          <p className="text-xs text-slate-500">คำบอกเล่าของผู้ป่วย ไม่ใช่การวินิจฉัยหรือแบบคัดกรอง</p>
         </section>
 
         <section className="space-y-2 rounded-2xl border border-slate-200 bg-white p-4">

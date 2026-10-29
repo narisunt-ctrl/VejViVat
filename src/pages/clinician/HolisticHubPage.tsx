@@ -7,7 +7,7 @@ import { ArrowRight, BookCheck, CheckCircle2, ClipboardCheck, FlaskConical, Scal
 const ITEMS = [
   {
     title: 'Evidence Passport ฝั่งยายพร้อม',
-    what: 'ยา สมุนไพร อาการ และแหล่งที่มาของทุกข้อมูล (ฉลาก/ยายเล่า/ผู้ดูแล/บุคลากร) พร้อมสถานะการยืนยัน',
+    what: 'ยา สมุนไพร อาการ อาหาร อารมณ์ การนอน การเคลื่อนไหว และครอบครัว/สังคม พร้อมแหล่งที่มาของทุกข้อมูล (ฉลาก/ยายเล่า/ผู้ดูแล/บุคลากร) และสถานะการยืนยัน',
     links: [
       { to: '/yai/passport', label: 'เปิด Evidence Passport (มุมผู้ป่วย)' },
       { to: '/clinician/followup', label: 'ติดตามผู้ป่วย (มุมแพทย์)' },
@@ -17,7 +17,7 @@ const ITEMS = [
   {
     title: 'Integrated Guideline Viewer',
     what: 'แผนไทย แผนปัจจุบัน และแผนจีนเทียบกัน แต่ละช่องมีที่มา แผนไทยดึงจากบัญชียาของระบบ ช่องอื่นต้องมีลิงก์หรือ DOI',
-    links: [{ to: '/guidelines', label: 'Guideline ที่แพทย์ร่วมทบทวน' }],
+    links: [{ to: '/guidelines', label: 'Guideline ที่แพทย์ร่วมทบทวน (มีแหล่ง Guideline ทางการ + ส่งออก FHIR)' }],
     icon: BookCheck,
   },
   {
@@ -79,6 +79,9 @@ export const HolisticHubPage: React.FC = () => (
         </li>
       ))}
     </ul>
+    <Link to="/value" className="block rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-4 font-bold text-emerald-900">
+      Value Proposition · ผลข้างเคียงแบบมีหลักฐาน · Evidence ไทยสู่ระดับโลก →
+    </Link>
     <p className="text-xs text-slate-500">ต้นแบบด้วยข้อมูลจำลอง · การอนุมัติและรีวิวเก็บในเบราว์เซอร์นี้ · ใช้งานจริงต้องมีระบบยืนยันตัวตน ฐานข้อมูลกลาง และคณะกรรมการ PTC</p>
   </div>
 );
