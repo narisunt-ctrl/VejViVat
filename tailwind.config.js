@@ -26,6 +26,13 @@ export default {
           greendeep: '#1D6B4C',
           lime: '#B6EFC6',
         },
+        // YaiPrompt Premium Longevity tokens (CSS variables in index.css, scoped to .lx)
+        lx: Object.fromEntries(
+          ['bg', 'surface', 'surface2', 'line', 'ink', 'muted', 'accent', 'link', 'onaccent', 'lime', 'forest', 'emerald', 'chart', 'warn', 'warnbg', 'alert', 'alertbg'].map((k) => [
+            k,
+            `rgb(var(--lx-${k}) / <alpha-value>)`,
+          ])
+        ),
         brand: {
           50: '#F0FDF4',
           100: '#DCFCE7',

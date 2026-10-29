@@ -7,17 +7,19 @@ import {
   DoseSelfReport,
   EvidenceOrigin,
   Friend,
+  HabitLog,
   HerbReview,
   Measurement,
   MedicationPassport,
   ReminderSource,
   YaiSettings,
+  WellnessCheckin,
   YaiState,
 } from '../../domain/yai/models';
 import { canCreateReminder, canRead, canTransitionAppointment, isValidTime } from '../../domain/yai/policies';
 import { bangkokDate, JournalEntry, SuggestedSegment } from '../../domain/yai/journal';
 import { importOrderSnapshot, ImportOutcome, MedicationOrderSnapshot } from '../../domain/yai/prescriptionSync';
-import { createSeedState, field } from '../../data/yai/fixtures';
+import { createSeedState, field, seedCheckins, seedHabitLogs } from '../../data/yai/fixtures';
 import { linkForPatient } from '../../data/yai/demoLinks';
 import { photoStore } from './photoStore';
 
@@ -32,7 +34,8 @@ function load(): YaiState {
     const raw = globalThis.localStorage?.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as YaiState;
-      if (parsed.schemaVersion === 1) return parsed;
+      // stores saved before the wellness redesign get the labelled demo check-ins once
+      if (parsed.schemaVersion === 1) return parsed.checkins ? parsed : { ...parsed, checkins: seedCheckins(), habitLogs: parsed.habitLogs ?? seedHabitLogs() };
     }
   } catch {
     // storage unavailable or corrupt: fall back to the seed
@@ -386,6 +389,42 @@ export const yaiStore = {
 
   hideAd(adId: string) {
     set({ ...state, settings: { ...state.settings, hiddenAds: [...new Set([...(state.settings.hiddenAds ?? []), adId])] } });
+  },
+
+  /** Save today's check-in; fields left empty stay empty (never defaulted). Saving again the same day updates it. */
+  saveCheckin(fields: Omit<WellnessCheckin, 'id' | 'date' | 'at' | 'source' | 'isSynthetic'>): string {
+    const at = demoNow().toISOString();
+    const date = bangkokDate(at);
+    const clean = Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined && v !== null && !Number.isNaN(v)));
+    const existing = (state.checkins ?? []).find((c) => c.date === date);
+    const row: WellnessCheckin = { ...(existing ?? {}), ...clean, id: existing?.id ?? uid('checkin'), date, at, source: 'SELF_REPORTED', isSynthetic: false };
+    set(audit({ ...state, checkins: [row, ...(state.checkins ?? []).filter((c) => c.date !== date)] }, 'CHECKIN_SAVED', date));
+    return row.id;
+  },
+
+  /** Tick or untick a habit for today */
+  toggleHabit(goalId: string) {
+    const at = demoNow().toISOString();
+    const date = bangkokDate(at);
+    const logs = state.habitLogs ?? [];
+    const has = logs.some((l) => l.date === date && l.goalId === goalId);
+    const next: HabitLog[] = has ? logs.filter((l) => !(l.date === date && l.goalId === goalId)) : [{ date, goalId, at, isSynthetic: false }, ...logs];
+    set(audit({ ...state, habitLogs: next }, 'HABIT_LOGGED', goalId));
+  },
+
+  setGoals(goals: string[]) {
+    set(audit({ ...state, settings: { ...state.settings, goals } }, 'GOALS_UPDATED', goals.join(',')));
+  },
+
+  /** Remove every demo (synthetic) wellness record so the empty states can be seen */
+  clearDemoWellness() {
+    set({
+      ...state,
+      checkins: (state.checkins ?? []).filter((c) => !c.isSynthetic),
+      habitLogs: (state.habitLogs ?? []).filter((l) => !l.isSynthetic),
+      measurements: (state.measurements ?? []).filter((m) => !m.isSynthetic),
+      journal: (state.journal ?? []).filter((e) => !e.isSynthetic),
+    });
   },
 
   skipGreeting(quote: string) {
