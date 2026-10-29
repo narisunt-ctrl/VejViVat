@@ -13,3 +13,18 @@
 | FastAPI, Uvicorn, OpenCV (cv2) | see `ocr-server/requirements.txt` | MIT / BSD / Apache-2.0 | OCR server |
 
 No code was copied from MeredyddKJones/scanner (no license found); see `research-repos.md`.
+
+## Data sources
+
+| Source | Use | Terms / status |
+|---|---|---|
+| Herb-Drug Interaction database, medplant.mahidol.ac.th (Faculty of Pharmacy, Mahidol University) | 699 herb–drug records in `data/hdi/medplant-interactions.json`, shown with a link to each source article in ยายพร้อม and CareBridge | Attributed and linked on every record. Written permission to publish is being requested from the data owner; if it is not granted, the app can show links only. |
+| Thai national herbal formulary entries (`data/formulary/thai-formulary.json`) | Listed indications, contraindications and precautions on herb pages | Source reference shown per entry; marked as waiting for pharmacist / Thai traditional medicine review. |
+| NCBI PubMed E-utilities | Live evidence search from the browser | Public API, `tool=vejvivat-demo`; results link to PubMed records. |
+
+## Fonts
+
+| Font | License | Use |
+|---|---|---|
+| Noto Sans Thai, Noto Serif Thai (Google Fonts) | SIL Open Font License 1.1 | Patient app (YaiPrompt) |
+| IBM Plex Sans Thai, Sarabun (Google Fonts) | SIL Open Font License 1.1 | Clinician app (CareBridge) |

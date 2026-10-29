@@ -4,6 +4,9 @@
 **ลิงก์ระบบ Live Production:** [https://narisunt-ctrl.github.io/VejViVat/](https://narisunt-ctrl.github.io/VejViVat/)  
 **ข้อความปฏิเสธความรับผิดชอบ:** *เอกสารนี้ใช้สำหรับข้อมูลสังเคราะห์เพื่อการสาธิตการแข่งขัน Hackathon 2026 เท่านั้น มิใช่ข้อมูลผู้ป่วยจริง*
 
+
+> **ขอบเขตเอกสาร:** อธิบายเครื่องมือฝั่งคลินิก (เดิมชื่อ TTM Smutthan Engine ปัจจุบันอยู่ใน CareBridge) ภาพรวมระบบล่าสุดรวมแอปผู้ใช้ยายพร้อม ดูที่ [docs/README.md](README.md)
+
 ---
 
 ## 1. การประเมินความเป็นไปได้ทางเทคนิค (Technical Feasibility Assessment)
@@ -17,17 +20,18 @@
   - รองรับรหัสโรค **ICD-10-TM (กลุ่มรหัส U)** และรหัสโรคสากล **Conventional ICD-10** ควบคู่กัน
 
 ### 1.2 ความพร้อมของซอฟต์แวร์และการทดสอบทางเทคนิค (Software Maturity & Automated Verification)
-- **ชุดทดสอบอัตโนมัติ (Automated Unit Tests):** มีการเขียน Unit Test ครอบคลุม 100% ของ Core Engine ผ่าน Vitest รวม **35/35 tests ผ่านทั้งหมด (100% Pass Rate)** ครอบคลุม:
+- **ชุดทดสอบอัตโนมัติ (Automated Unit Tests):** ชุดทดสอบ Vitest ปัจจุบัน **174 tests ใน 23 ไฟล์ ผ่านทั้งหมด** (29 ต.ค. 2569) ส่วนของ Core Engine ฝั่งคลินิกได้แก่:
   - `smutthanEngine.test.ts` (5 tests): การคำนวณสมุฏฐาน 5 ด้านและสมดุล 4 ธาตุ
   - `dualDiagnosisService.test.ts` (5 tests): การแนะนำ ICD-10 ↔ ICD-10-TM และ Clinician Override
-  - `redFlagService.test.ts` (5 tests): การคัดกรองฉุกเฉิน Stroke/ACS/DVT/สัญญาณชีพวิกฤต และการออกใบส่งต่อ SBAR
+  - `redFlagService.test.ts` (7 tests): การคัดกรองฉุกเฉิน Stroke/ACS/DVT/สัญญาณชีพวิกฤต และการออกใบส่งต่อ SBAR
   - `dosageValidator.test.ts` (5 tests): การตรวจสอบขนาดยาสูงสุดและข้อจำกัดช่วงวัย
   - `interactionMatcher.test.ts` (7 tests): การตรวจจับอันตรกิริยา HDI ระดับ HIGH/MODERATE
   - `analyticsEngine.test.ts` (4 tests): การวิเคราะห์เศรษฐศาสตร์สาธารณสุขและต้นทุนต่อเคส
   - `carePlanService.test.ts` (4 tests): การสร้างตารางนัดรายเดือน (Monthly Cadence) และกราฟ Trajectory
+  - ส่วนที่เพิ่มภายหลัง: ยายพร้อม (บันทึกสุขภาพ ซิงก์คำสั่งยา OCR ความยินยอม แนวโน้ม ก้าวเดิน ธาตุ) ฐานข้อมูลมหิดล งานวิจัยและ Guideline และแบบจำลองรายได้ รายละเอียดใน [yai/IMPLEMENTATION_STATUS.md](yai/IMPLEMENTATION_STATUS.md)
 - **การจัดการประสิทธิภาพฐานข้อมูลยา 1,080 รายการ (Formulary Catalog Optimization):**
   - ใช้กลยุทธ์ **Slice-based Virtualized Rendering** (`slice(0, 30)` พร้อมปุ่มแสดงเพิ่มเติม) ทำให้การพิมพ์ค้นหาแบบ Real-time และการเลื่อนหน้าจอตอบสนองลื่นไหลระดับ 60 FPS แม้มีรายการยาแผนปัจจุบันกว่า 1,080 รายการ
-- **Live Production Deployment:** ระบบ Deploy สดบน **GitHub Pages** (Deploy อัตโนมัติด้วย GitHub Actions ทุกครั้งที่ push เข้า main) (`https://narisunt-ctrl.github.io/VejViVat/`) มี CDN, HTTPS อัตโนมัติ, พร้อมใช้งานได้จริง 24/7
+- **Live Production Deployment:** ระบบ Deploy สดบน **GitHub Pages** (ปัจจุบัน deploy ด้วยมือหลังผ่าน tsc, test และ build โดยคัดลอก `dist/` ขึ้น branch `gh-pages` เพราะ GitHub Actions ไม่ได้ทำงานอัตโนมัติ) (`https://narisunt-ctrl.github.io/VejViVat/`) มี CDN, HTTPS อัตโนมัติ, พร้อมใช้งานได้จริง 24/7
 
 ### 1.3 ข้อจำกัดด้านโครงสร้างพื้นฐานระดับ รพ.สต. (Primary Care Infrastructure Constraints)
 1. **สัญญาณอินเทอร์เน็ตไม่เสถียร (Intermittent Connectivity):**

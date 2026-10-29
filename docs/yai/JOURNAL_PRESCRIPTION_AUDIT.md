@@ -179,3 +179,35 @@ Tests: 17 files, 125 pass. Limit: safety sentences from unstructured abstracts m
 
 Prices, adoption and costs are assumptions to test in the pilot, not forecasts. Tests: 18 files, 130 pass.
 
+## Daily blessing, points with friends, herb reviews, certified ads (branch `feat/yai-daily-community`)
+
+- Daily greeting in the colour of the day, Buddha image on approximate วันพระ (moon-phase calculation, labelled ±1 day) and fixed important days; "คำใหม่" / "ไม่ชอบ" never repeat a skipped quote.
+- Points designed for older adults: daily cap on every rule, steps counted up to 6,000/day, medicine answers score the same whatever the answer (no nudge to report "taken"), herb-review bonus whatever the rating; friends see weekly totals only.
+- Herb reviews with a separate, optional research consent; summaries labelled as user experience, not evidence.
+- Certified ads only (FDA registration, ad licence, GMP, no cure claims), labelled, hideable, rotated by date only; ads revenue stream added to `#/business`.
+- Tests: `src/tests/yai/yai-daily-community.test.ts`.
+
+## Premium Longevity redesign (branch `feat/yai-longevity-wellness-redesign`)
+
+- Design system `lx-*` (dark default, light option) scoped to the patient app; 5-tab navigation with a desktop side rail; screens not redesigned keep their light layout.
+- New screens: Home dashboard, tap check-in, Insights (7/30 days, personal baseline ≥ 10 days, observation ≥ 5 days per group), Thai Herbal Discovery (formulary herbs, live PubMed by study type, evidence limits, cautions, interactions), My Journey (goals, habit ticks, follow-up plan), Expert Consultation, Medicine & Care hub, Profile & Privacy (consents with revoke, access history).
+- Rules kept: no composite score, biological age or pace of aging; nothing filled in for missing days; every value labelled self-reported, device or demo; no dosing on consumer pages; Smutthan formula, OCR and order sync unchanged.
+- Older demo stores get the labelled synthetic check-ins once (none for today).
+- Tests: `src/tests/yai/yai-longevity.test.ts`.
+
+## Mahidol herb–drug data and herbs by element (branch `feat/medplant-hdi`)
+
+- `scripts/importMedplant.cjs` converts the medplant export into `data/hdi/medplant-interactions.json`: 699 records, 70 herbs, 240 drugs; only https links to medplant.mahidol.ac.th are accepted; severity normalised (raw label kept, "-" → "ไม่ระบุ", never "safe"); effects split into caution / conflicting / no effect reported / reduces side effects, mixed findings stay cautions.
+- `src/domain/medplant.ts`: herbs matched by botanical binomial (ขมิ้นอ้อย is never taken for ขมิ้นชัน), drug classes and herb names shorter than 3 letters left out of automatic screening, pairs already in the project table skipped.
+- ยายพร้อม: 70 more herbs in Discover, Mahidol section with article links on each herb page, warnings against the user's own medicines from both sources.
+- CareBridge: follow-up, doctor home, handover and prescribing checks add moderate/high Mahidol cautions, each with its source link.
+- Herbs and element: the Smutthan assessment's recommended tastes (clinic-linked case, unchanged formula) compared with formulary herb tastes; herbs that conflict with the user's medicines listed apart; information for a Thai traditional medicine doctor only.
+- Publication permission from the data owner is in progress; the data carries "รอเภสัชกร/แพทย์แผนไทยตรวจสอบ".
+- Tests: `src/tests/medplant.test.ts`, `src/tests/yai/herbElement.test.ts`.
+
+## Step activity (branch `feat/yai-steps`)
+
+- `/yai/steps`: today's steps against the user's goal (3,000–8,000, default 4,000), typed entry, demo device link, 7-day chart with goal line and table view, weekly walking challenge (weekly totals only), walking safety note.
+- The latest step entry of a day is its total (points used the highest before), so a corrected entry takes effect.
+- Steps card on Home, link from My Journey.
+- Tests: `src/tests/yai/steps.test.ts`. Full suite after this change: 174 tests in 23 files.
