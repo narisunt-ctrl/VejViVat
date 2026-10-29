@@ -214,6 +214,8 @@ export interface Friend {
   name: string;
   avatar: string;
   weeklyPoints: number;
+  /** total steps in the last 7 days, shared only as a weekly total */
+  weeklySteps?: number;
   streak: number;
   isSynthetic: true;
 }
@@ -280,6 +282,8 @@ export interface YaiSettings {
   theme?: 'dark' | 'light';
   /** wellness goals the user chose (ids from WELLNESS_GOALS) */
   goals?: string[];
+  /** daily step goal the user picked (steps/day) */
+  stepGoal?: number;
 }
 
 /** One self-reported daily wellness check-in; every field is optional and nothing is filled in for the user */
