@@ -15,12 +15,17 @@ export interface HerbDrugInteraction {
   mechanism: string;
   clinical_effects: string;
   recommendation: string;
-  evidence_level: 'A' | 'B' | 'C' | 'D';
+  /** 'ไม่ระบุ' for imported records that carry no graded evidence level */
+  evidence_level: 'A' | 'B' | 'C' | 'D' | 'ไม่ระบุ';
   sources: string;
   reviewer: string;
   review_date: string;
   version: string;
   data_disclaimer: string;
+  /** link to the source article (imported records) */
+  source_url?: string;
+  /** which database the record came from; absent = the project's reviewed table */
+  source_db?: 'MEDPLANT';
 }
 
 export interface MatchedInteractionResult {

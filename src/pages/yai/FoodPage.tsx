@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, Notice, PageTitle, formatThaiDateTime } from '../../components/yai/ui';
 import { CategoryChip } from '../../components/yai/SourceVerificationChip';
 import { demoNow, useYai } from '../../services/yai/yaiStore';
@@ -102,6 +103,9 @@ export const FoodPage: React.FC = () => {
           </ul>
         )}
       </Card>
+      <Link to="/yai/discover" className="block rounded-2xl border border-yai-green/30 bg-white p-4 text-lg font-bold text-yai-greendeep">
+        ดูสมุนไพรที่มีรสตรงกับธาตุของยาย (ข้อมูลเพื่อคุยกับแพทย์แผนไทย) →
+      </Link>
       <p className="text-center text-sm text-yai-ink/60">การเลือกยาสมุนไพรเป็นหน้าที่ของแพทย์ ระบบไม่แนะนำยาเอง</p>
     </div>
   );

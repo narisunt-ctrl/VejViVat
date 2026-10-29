@@ -1,17 +1,49 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AlertTriangle, BookOpen, ExternalLink, FlaskConical, MessageSquareQuote, Stethoscope } from 'lucide-react';
 import { useYai } from '../../services/yai/yaiStore';
 import { LxCard, LxLinkRow, LxNotice, LxPageHeader, SourceTag, btnPrimary } from '../../components/yai/lx/ui';
-import { HERB_CARDS, interactionsWithMyMedicines } from '../../domain/yai/herbDiscovery';
-import { EvidenceResult, EvidenceTier, HERB_OPTIONS, herbForName, searchHerbEvidence, TIER_LABEL } from '../../services/carebridge/herbEvidence';
+import { HERB_CARDS, interactionsWithMyMedicines, medplantWithMyMedicines } from '../../domain/yai/herbDiscovery';
+import { binomial, EFFECT_KIND_TH, isCautionRow, MEDPLANT_SEVERITY_TH, MEDPLANT_SOURCE, MedplantRow } from '../../domain/medplant';
+import { EvidenceResult, EvidenceTier, HERB_OPTIONS, herbForName, HerbOption, searchHerbEvidence, TIER_LABEL } from '../../services/carebridge/herbEvidence';
 import { searchLinks } from '../../data/carebridge/research';
+import { getElementSummaryForPatient } from '../../services/yai/elementSummaryAdapter';
+import { matchHerbsToElement } from '../../domain/yai/herbElement';
 
 // Herb knowledge page. Three kinds of information, labelled separately:
 // 1. what the national herbal formulary lists (registered indications, contraindications, precautions);
 // 2. research found live in PubMed, counted by study type (the app does not read or grade the papers);
 // 3. herb–drug interactions from the project's table, with its evidence level and review status.
 // No dosing is shown to consumers, and no sentence says a herb will treat a disease.
+
+const MP_STYLE: Record<MedplantRow['severity'], string> = {
+  HIGH: 'bg-lx-alertbg text-lx-alert',
+  MODERATE: 'bg-lx-warnbg text-lx-warn',
+  LOW: 'bg-lx-surface2 text-lx-ink',
+  UNSPECIFIED: 'bg-lx-surface2 text-lx-muted',
+};
+
+const SourceLink: React.FC<{ url: string }> = ({ url }) => (
+  <a href={url} target="_blank" rel="noreferrer" className="inline-flex min-h-[32px] items-center gap-1 text-xs font-semibold text-lx-link underline-offset-2 hover:underline">
+    บทความต้นทาง <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+  </a>
+);
+
+/** One medplant record: drug, effect, severity as given, recommendation, link to the article */
+const MedplantItem: React.FC<{ r: MedplantRow }> = ({ r }) => (
+  <li className="rounded-2xl border border-lx-line p-3">
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <span className="text-base font-semibold">{r.drugName}</span>
+      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${MP_STYLE[r.severity]}`}>ความรุนแรง{MEDPLANT_SEVERITY_TH[r.severity]}</span>
+    </div>
+    <p className="mt-1 text-sm">{r.effect}</p>
+    {r.recommendation && <p className="mt-1 text-sm text-lx-muted">{r.recommendation}</p>}
+    <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-lx-muted">
+      {r.preclinicalHint && <span>อาจเป็นการศึกษาในสัตว์/หลอดทดลอง</span>}
+      <SourceLink url={r.url} />
+    </p>
+  </li>
+);
 
 const TIER_ORDER: EvidenceTier[] = ['A', 'B', 'C', 'PRECLINICAL'];
 const SEVERITY_STYLE: Record<string, string> = {
@@ -24,6 +56,8 @@ const SEVERITY_STYLE: Record<string, string> = {
 export const HerbDetailPage: React.FC = () => {
   const { id } = useParams();
   const medicines = useYai((s) => s.medicines);
+  const patientId = useYai((s) => s.patient.id);
+  const elementMatch = useMemo(() => matchHerbsToElement(getElementSummaryForPatient(patientId), HERB_CARDS, medicines), [patientId, medicines]);
   const card = HERB_CARDS.find((h) => h.id === id);
   const [result, setResult] = useState<EvidenceResult | null>(null);
   const [busy, setBusy] = useState(false);
@@ -37,8 +71,13 @@ export const HerbDetailPage: React.FC = () => {
     );
   }
 
-  const option = HERB_OPTIONS.find((o) => o.id === card.id) ?? herbForName(card.thaiName);
+  const sciTerm = binomial(card.scientificName);
+  const option: HerbOption | null =
+    HERB_OPTIONS.find((o) => o.id === card.id) ?? herbForName(card.thaiName) ?? (sciTerm ? { id: card.id, thaiName: card.thaiName, scientificName: card.scientificName, terms: [sciTerm] } : null);
   const mine = interactionsWithMyMedicines(card, medicines);
+  const mineMp = medplantWithMyMedicines(card, medicines);
+  const mpCaution = card.medplant.filter(isCautionRow);
+  const mpOther = card.medplant.filter((r) => !isCautionRow(r));
   const query = option ? option.terms.map((t) => `"${t}"`).join(' OR ') : card.scientificName;
 
   const search = async () => {
@@ -65,20 +104,35 @@ export const HerbDetailPage: React.FC = () => {
         <SourceTag kind="SELF" text={`${card.type} · ${card.form}`} />
         {card.taste && <SourceTag kind="SELF" text={`รส${card.taste}`} />}
         <SourceTag kind="PENDING" text={card.reviewStatus} />
+        {elementMatch.matches.some((m) => m.card.id === card.id) && <SourceTag kind="DEVICE" text="รสตรงกับที่ตำราระบุสำหรับธาตุของคุณ (ไม่ใช่คำแนะนำให้ใช้)" />}
+        {elementMatch.withMedicineCaution.some((m) => m.card.id === card.id) && <SourceTag kind="PENDING" text="รสตรงกับธาตุของคุณ แต่มีข้อควรระวังกับยาที่ใช้อยู่" />}
+        {elementMatch.textCautions.some((m) => m.card.id === card.id) && <SourceTag kind="PENDING" text="ตำราให้ระวังรสร้อนเมื่อธาตุไฟเด่น" />}
       </div>
 
-      {mine.length > 0 && (
+      {(mine.length > 0 || mineMp.length > 0) && (
         <LxNotice tone="alert" title="มีข้อควรระวังกับยาในสมุดยาของคุณ">
           {mine.map((m) => (
             <span key={m.interaction.id + m.medicine} className="block">
               {m.medicine}: {m.interaction.severityTh}
             </span>
           ))}
+          {mineMp.map((m) => (
+            <span key={m.row.id + m.name} className="block">
+              {m.name}: {m.row.effect} (ความรุนแรง{MEDPLANT_SEVERITY_TH[m.row.severity]} · ฐานข้อมูลมหิดล)
+            </span>
+          ))}
           <span className="mt-1 block">อย่าเริ่ม หยุด หรือเปลี่ยนยาเอง ปรึกษาแพทย์หรือเภสัชกรก่อน</span>
         </LxNotice>
       )}
 
+      {card.source === 'MEDPLANT' && (
+        <LxNotice title="สมุนไพรนี้ไม่อยู่ในบัญชียาหลักของฐานข้อมูลต้นแบบ">
+          หน้านี้แสดงเฉพาะอันตรกิริยากับยาจากฐานข้อมูลมหิดลและงานวิจัยจาก PubMed ยังไม่มีข้อมูลข้อบ่งใช้หรือข้อห้ามใช้
+        </LxNotice>
+      )}
+
       <div className="grid gap-4 lg:grid-cols-2">
+        {card.source === 'FORMULARY' && (
         <LxCard labelledBy="ind-title">
           <h2 id="ind-title" className="flex items-center gap-2 text-lg font-semibold">
             <BookOpen className="h-5 w-5 text-lx-accent" aria-hidden="true" /> ข้อบ่งใช้ตามบัญชียาหลักแห่งชาติ
@@ -94,6 +148,7 @@ export const HerbDetailPage: React.FC = () => {
           )}
           <p className="mt-3 text-sm text-lx-muted">เป็นข้อบ่งใช้ที่ประกาศในบัญชียา (การใช้ตามภูมิปัญญาและการขึ้นทะเบียน) ไม่ได้รับรองว่าได้ผลกับทุกคน และไม่ใช่คำแนะนำให้เริ่มใช้</p>
         </LxCard>
+        )}
 
         <LxCard labelledBy="ev-title">
           <h2 id="ev-title" className="flex items-center gap-2 text-lg font-semibold">
@@ -154,6 +209,7 @@ export const HerbDetailPage: React.FC = () => {
       </LxCard>
 
       <div className="grid gap-4 lg:grid-cols-2">
+        {card.source === 'FORMULARY' && (
         <LxCard labelledBy="caution-title">
           <h2 id="caution-title" className="flex items-center gap-2 text-lg font-semibold">
             <AlertTriangle className="h-5 w-5 text-lx-warn" aria-hidden="true" /> ข้อควรระวัง
@@ -177,10 +233,11 @@ export const HerbDetailPage: React.FC = () => {
             ))}
           </dl>
         </LxCard>
+        )}
 
         <LxCard labelledBy="hdi-title">
           <h2 id="hdi-title" className="text-lg font-semibold">
-            อันตรกิริยากับยาที่มีข้อมูล
+            อันตรกิริยากับยา (ตารางของโครงการ)
           </h2>
           {card.interactions.length === 0 ? (
             <p className="mt-2 text-base text-lx-muted">ยังไม่มีข้อมูลในฐานข้อมูลต้นแบบ (ไม่ได้แปลว่าไม่มีอันตรกิริยา)</p>
@@ -203,6 +260,49 @@ export const HerbDetailPage: React.FC = () => {
           )}
         </LxCard>
       </div>
+
+      <LxCard labelledBy="mp-title">
+        <h2 id="mp-title" className="text-lg font-semibold">
+          อันตรกิริยากับยา จากฐานข้อมูล Herb-Drug มหาวิทยาลัยมหิดล
+        </h2>
+        <p className="mt-1 text-sm text-lx-muted">{MEDPLANT_SOURCE.reviewStatus} · ระดับความรุนแรงตามที่แหล่งข้อมูลระบุ</p>
+        {card.medplant.length === 0 ? (
+          <p className="mt-3 text-base text-lx-muted">ไม่พบสมุนไพรนี้ในฐานข้อมูลที่นำเข้า (ไม่ได้แปลว่าไม่มีอันตรกิริยา)</p>
+        ) : (
+          <>
+            <p className="mt-3 text-sm font-semibold">ควรระวัง หรือผลยังขัดแย้ง {mpCaution.length} รายการ</p>
+            {mpCaution.length > 0 && (
+              <ul className="mt-2 grid gap-2 md:grid-cols-2">
+                {mpCaution.map((r) => (
+                  <MedplantItem key={r.id} r={r} />
+                ))}
+              </ul>
+            )}
+            {mpOther.length > 0 && (
+              <details className="mt-3 rounded-2xl bg-lx-surface2 p-3">
+                <summary className="min-h-[44px] cursor-pointer text-sm font-semibold">รายงานว่าไม่พบผลต่อยา หรือช่วยลดผลข้างเคียง ({mpOther.length} รายการ)</summary>
+                <p className="mt-1 text-xs text-lx-muted">เป็นผลของการศึกษานั้นๆ เท่านั้น ไม่ได้รับรองว่าใช้ร่วมกันได้</p>
+                <ul className="mt-2 grid gap-2 md:grid-cols-2">
+                  {mpOther.map((r) => (
+                    <li key={r.id} className="rounded-xl border border-lx-line p-3 text-sm">
+                      <span className="font-semibold">{r.drugName}</span> · {EFFECT_KIND_TH[r.effectKind]}
+                      <span className="block text-lx-muted">{r.effect}</span>
+                      <SourceLink url={r.url} />
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </>
+        )}
+        <p className="mt-3 text-xs text-lx-muted">
+          ที่มา:{' '}
+          <a href={MEDPLANT_SOURCE.url} target="_blank" rel="noreferrer" className="underline">
+            {MEDPLANT_SOURCE.name}
+          </a>{' '}
+          · {MEDPLANT_SOURCE.permission}
+        </p>
+      </LxCard>
 
       <LxCard labelledBy="src-title">
         <h2 id="src-title" className="text-lg font-semibold">

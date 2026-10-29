@@ -1,8 +1,12 @@
 import { CurrentMedication } from '../types/patient';
 import { HerbDrugInteraction, MatchedInteractionResult } from '../types/hdi';
 import interactionsData from '../../data/hdi/herb-drug-interactions.json';
+import { medplantScreeningRules } from '../domain/medplant';
 
 const ALL_INTERACTIONS: HerbDrugInteraction[] = interactionsData as HerbDrugInteraction[];
+// The project's reviewed table first, then moderate/high cautions imported from the medplant database (Mahidol)
+// for pairs the table does not cover; imported rules carry source_db 'MEDPLANT' and a link to the article.
+const SCREENING_RULES: HerbDrugInteraction[] = [...ALL_INTERACTIONS, ...medplantScreeningRules(ALL_INTERACTIONS)];
 
 export function checkHerbDrugInteractions(
   activeMeds: CurrentMedication[],
@@ -20,7 +24,7 @@ export function checkHerbDrugInteractions(
     const drugName = convDrug.generic_name.toLowerCase();
     const drugId = convDrug.drug_id.toLowerCase();
 
-    for (const rule of ALL_INTERACTIONS) {
+    for (const rule of SCREENING_RULES) {
       // 1. Check if conventional drug matches
       const ruleDrugName = rule.drug_generic_name.toLowerCase();
       const ruleDrugId = rule.drug_id.toLowerCase();
@@ -60,4 +64,9 @@ export function checkHerbDrugInteractions(
 
 export function getAllInteractionsDatabase(): HerbDrugInteraction[] {
   return ALL_INTERACTIONS;
+}
+
+/** Rules used for screening: the project table plus imported medplant cautions */
+export function getScreeningRules(): HerbDrugInteraction[] {
+  return SCREENING_RULES;
 }

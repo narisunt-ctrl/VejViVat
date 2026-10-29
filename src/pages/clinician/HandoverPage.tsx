@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ClipboardCheck, Printer, ShieldOff } from 'lucide-react';
 import { DEMO_PATIENT_LINKS } from '../../data/yai/demoLinks';
 import { yaiStore } from '../../services/yai/yaiStore';
-import { getAllInteractionsDatabase } from '../../services/interactionMatcher';
+import { getScreeningRules } from '../../services/interactionMatcher';
 import { screenPatientInteractions, SEVERITY_TH } from '../../domain/yai/interactionCheck';
 import { bangkokDate, isConfirmed, thaiDateLabel } from '../../domain/yai/journal';
 import { orderStatusLabels } from '../../domain/yai/prescriptionSync';
@@ -44,7 +44,7 @@ export const HandoverPage: React.FC = () => {
 
   const since = bangkokDate(new Date(Date.now() - 14 * 86_400_000));
   const screen = useMemo(
-    () => (snap?.allowed ? screenPatientInteractions({ medicines: snap.medicines ?? [], journal: snap.journal, syncedOrders: snap.syncedOrders ?? [] }, getAllInteractionsDatabase(), since) : null),
+    () => (snap?.allowed ? screenPatientInteractions({ medicines: snap.medicines ?? [], journal: snap.journal, syncedOrders: snap.syncedOrders ?? [] }, getScreeningRules(), since) : null),
     [snap, since]
   );
   if (!snap) return null;
@@ -129,7 +129,7 @@ export const HandoverPage: React.FC = () => {
           <ul className="list-disc pl-5">
             {screen.flags.map((f) => (
               <li key={f.rule.interaction_id}>
-                {f.rule.herb_thai_name} + {f.rule.drug_generic_name} · ความรุนแรง{SEVERITY_TH[f.rule.severity_code]} ({f.rule.interaction_id}, หลักฐานระดับ {f.rule.evidence_level})
+                {f.rule.herb_thai_name} + {f.rule.drug_generic_name} · ความรุนแรง{SEVERITY_TH[f.rule.severity_code]} ({f.rule.source_db === 'MEDPLANT' ? `ฐานข้อมูลมหิดล ${f.rule.source_url}` : `${f.rule.interaction_id}, หลักฐานระดับ ${f.rule.evidence_level}`})
               </li>
             ))}
           </ul>

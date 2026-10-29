@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import { Search, Leaf, MessageSquareQuote, Stethoscope } from 'lucide-react';
 import { LxCard, LxLinkRow, LxNotice, LxPageHeader, SourceTag } from '../../components/yai/lx/ui';
 import { CertifiedAdBanner } from '../../components/yai/CertifiedAdBanner';
+import { ElementHerbsCard } from '../../components/yai/lx/ElementHerbsCard';
 import { HERB_CARDS, searchHerbs } from '../../domain/yai/herbDiscovery';
+import { isCautionRow, MEDPLANT_SOURCE } from '../../domain/medplant';
 
 // Thai Herbal Discovery: search herbs from the national herbal formulary in this project, with listed indications,
 // cautions, interactions and live research search on each detail page. Nothing here recommends a herb to a person.
@@ -15,6 +17,8 @@ export const DiscoverPage: React.FC = () => {
   return (
     <div className="space-y-4">
       <LxPageHeader eyebrow="Thai Herbal Discovery" title="ภูมิปัญญาสมุนไพรไทย" subtitle="ศึกษาอย่างมีหลักฐาน รู้ข้อจำกัด และปรึกษาผู้เชี่ยวชาญก่อนใช้" />
+
+      <ElementHerbsCard />
 
       <label className="relative block">
         <span className="sr-only">ค้นหาสมุนไพร</span>
@@ -47,16 +51,27 @@ export const DiscoverPage: React.FC = () => {
                   <span className="block text-sm italic text-lx-muted">{h.scientificName}</span>
                 </span>
               </span>
-              <span className="mt-3 line-clamp-2 text-sm text-lx-muted">{h.listedIndications[0] ?? 'ยังไม่มีข้อบ่งใช้ในฐานข้อมูล'}</span>
+              <span className="mt-3 line-clamp-2 text-sm text-lx-muted">
+                {h.listedIndications[0] ?? (h.source === 'MEDPLANT' ? 'มีเฉพาะข้อมูลอันตรกิริยากับยา' : 'ยังไม่มีข้อบ่งใช้ในฐานข้อมูล')}
+              </span>
               <span className="mt-auto flex flex-wrap gap-1 pt-3">
                 {h.inNationalList && <SourceTag kind="VERIFIED" text="บัญชียาหลักแห่งชาติ" />}
-                {h.interactions.length > 0 && <SourceTag kind="PENDING" text={`ระวังกับยา ${h.interactions.length}`} />}
+                {h.interactions.length + h.medplant.filter(isCautionRow).length > 0 && (
+                  <SourceTag kind="PENDING" text={`ระวังกับยา ${h.interactions.length + h.medplant.filter(isCautionRow).length}`} />
+                )}
               </span>
             </Link>
           </li>
         ))}
       </ul>
       {results.length === 0 && <p className="rounded-2xl bg-lx-surface p-6 text-center text-base text-lx-muted">ไม่พบสมุนไพรนี้ในฐานข้อมูลต้นแบบ</p>}
+      <p className="text-xs text-lx-muted">
+        ข้อมูลอันตรกิริยากับยาส่วนใหญ่มาจาก{' '}
+        <a href={MEDPLANT_SOURCE.url} target="_blank" rel="noreferrer" className="underline">
+          {MEDPLANT_SOURCE.name}
+        </a>{' '}
+        ({MEDPLANT_SOURCE.reviewStatus})
+      </p>
 
       <div className="grid gap-2 md:grid-cols-2">
         <LxLinkRow to="/yai/herb-reviews" icon={MessageSquareQuote} title="ประสบการณ์จากผู้ใช้" sub="รีวิวจากเพื่อน ๆ (ประสบการณ์ ไม่ใช่หลักฐาน)" />

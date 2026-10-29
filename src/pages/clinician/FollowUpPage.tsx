@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { AlertTriangle, BellRing, BookOpen, CheckCircle2, ClipboardList, Pill, RefreshCw, Send, ShieldOff } from 'lucide-react';
 import { DEMO_PATIENT_LINKS } from '../../data/yai/demoLinks';
 import { yaiStore } from '../../services/yai/yaiStore';
-import { getAllInteractionsDatabase } from '../../services/interactionMatcher';
+import { getScreeningRules } from '../../services/interactionMatcher';
 import { draftPatientAlert, InteractionFlag, screenPatientInteractions, SEVERITY_TH } from '../../domain/yai/interactionCheck';
 import { bangkokDate, CATEGORY_LABEL, isConfirmed, recordedDaysInMonth, thaiDateLabel } from '../../domain/yai/journal';
 import { orderStatusLabels } from '../../domain/yai/prescriptionSync';
@@ -61,7 +61,7 @@ export const FollowUpPage: React.FC = () => {
   const screen = useMemo(
     () =>
       snap?.allowed
-        ? screenPatientInteractions({ medicines: snap.medicines ?? [], journal: snap.journal, syncedOrders: snap.syncedOrders ?? [] }, getAllInteractionsDatabase(), since)
+        ? screenPatientInteractions({ medicines: snap.medicines ?? [], journal: snap.journal, syncedOrders: snap.syncedOrders ?? [] }, getScreeningRules(), since)
         : null,
     [snap, since]
   );
@@ -281,7 +281,19 @@ const FlagCard: React.FC<{ flag: InteractionFlag; link: (typeof DEMO_PATIENT_LIN
           {f.rule.herb_thai_name} + {f.rule.drug_generic_name}
         </span>
         <span className="text-xs text-slate-500">
-          {f.rule.interaction_id} · หลักฐานระดับ {f.rule.evidence_level} · ทบทวนโดย {f.rule.reviewer}
+          {f.rule.source_db === 'MEDPLANT' ? (
+            <>
+              ฐานข้อมูล Herb-Drug มหิดล ·{' '}
+              <a href={f.rule.source_url} target="_blank" rel="noreferrer" className="font-semibold text-teal-700 underline">
+                บทความต้นทาง
+              </a>{' '}
+              · {f.rule.reviewer}
+            </>
+          ) : (
+            <>
+              {f.rule.interaction_id} · หลักฐานระดับ {f.rule.evidence_level} · ทบทวนโดย {f.rule.reviewer}
+            </>
+          )}
         </span>
       </div>
       <p className="text-xs text-slate-600">
