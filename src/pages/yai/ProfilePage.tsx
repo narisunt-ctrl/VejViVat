@@ -10,7 +10,7 @@ import type { AuditAction } from '../../domain/yai/models';
 // Profile & Privacy: who I am, goals, text size and theme, consent management, connected devices, data sharing
 // and the access history (the app's own audit log, so the user sees every read and share).
 
-const SCOPE_TH: Record<string, string> = { PREVISIT_REPORT: 'สรุปก่อนพบแพทย์', MEDICINES: 'รายการยา', APPOINTMENTS: 'นัดหมาย', REMINDER_ALERTS: 'การเตือนและข้อความ' };
+const SCOPE_TH: Record<string, string> = { PREVISIT_REPORT: 'สรุปก่อนพบแพทย์', MEDICINES: 'รายการยา', APPOINTMENTS: 'นัดหมาย', REMINDER_ALERTS: 'การเตือนและข้อความ', HERB_DATA: 'ข้อมูลการใช้สมุนไพร' };
 
 const ACTION_TH: Partial<Record<AuditAction, string>> = {
   CONSENT_GRANTED: 'ให้ความยินยอมแบ่งปันข้อมูล',
@@ -26,8 +26,12 @@ const ACTION_TH: Partial<Record<AuditAction, string>> = {
   CHECKIN_SAVED: 'เช็กอินรายวัน',
   MEDICINE_SAVED: 'บันทึกยา',
   APPOINTMENT_REQUESTED: 'ขอนัดหมาย',
+  HERB_DATA_READ: 'คลินิกเปิดอ่านข้อมูลการใช้สมุนไพร',
+  HERB_DATA_READ_DENIED: 'มีการขออ่านข้อมูลสมุนไพรแต่ไม่มีสิทธิ์ (ถูกปฏิเสธ)',
+  RESEARCH_CONSENT_CHANGED: 'เปลี่ยนการยินยอมเพื่องานวิจัย',
+  RESEARCH_DATA_READ: 'ระบบวิจัยอ่านข้อมูลแบบไม่ระบุตัวตน',
 };
-const READ_ACTIONS: AuditAction[] = ['PREVISIT_READ', 'PREVISIT_READ_DENIED', 'DOSE_REPORTS_READ', 'DOSE_REPORTS_READ_DENIED', 'CONSENT_GRANTED', 'CONSENT_REVOKED', 'ORDER_SYNCED', 'ORDER_SYNC_REJECTED', 'DEVICE_LINKED'];
+const READ_ACTIONS: AuditAction[] = ['PREVISIT_READ', 'PREVISIT_READ_DENIED', 'DOSE_REPORTS_READ', 'DOSE_REPORTS_READ_DENIED', 'CONSENT_GRANTED', 'CONSENT_REVOKED', 'ORDER_SYNCED', 'ORDER_SYNC_REJECTED', 'DEVICE_LINKED', 'HERB_DATA_READ', 'HERB_DATA_READ_DENIED', 'RESEARCH_CONSENT_CHANGED', 'RESEARCH_DATA_READ'];
 const dt = (iso: string) => new Date(iso).toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
 export const ProfilePage: React.FC = () => {
@@ -208,6 +212,7 @@ export const ProfilePage: React.FC = () => {
           </LxCard>
 
           <div className="space-y-2">
+            <LxLinkRow to="/yai/herb-sharing" icon={Users} title="แบ่งปันข้อมูลสมุนไพร" sub={state.settings.herbResearch?.research ? 'ร่วมงานวิจัยอยู่' : 'ยังไม่ได้ร่วมงานวิจัย'} />
             <LxLinkRow to="/yai/privacy" icon={FileText} title="ประกาศความเป็นส่วนตัว" sub="เก็บข้อมูลอะไร ใช้ทำอะไร สิทธิของคุณ" />
             <LxLinkRow to="/yai/care" icon={Pill} title="ยาและการดูแล" sub="สมุดยา สแกนฉลาก เตือนกินยา" />
             <LxLinkRow to="/yai/settings" icon={Settings} title="ตั้งค่าเพิ่มเติม" sub="ข้อมูลจำลอง เสียงนำทาง OCR" />

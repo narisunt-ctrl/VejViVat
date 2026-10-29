@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   Sparkles,
+  FlaskConical,
   Users,
   Compass,
   Pill,
@@ -75,6 +76,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       title: 'หลักฐานและแนวทาง',
       items: [
         { to: '/research', label: 'คลังงานวิจัย + รีวิว', icon: BookOpen },
+        { to: '/research-hub', label: 'ศูนย์วิจัยสมุนไพรไทย', icon: FlaskConical },
         { to: '/guidelines', label: 'Guideline ร่วมทบทวน', icon: BookCheck },
         { to: '/admin-hdi', label: 'ฐานข้อมูลยาตีกัน (HDI)', icon: Database },
       ],

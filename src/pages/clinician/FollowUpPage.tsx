@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { AlertTriangle, BellRing, BookOpen, CheckCircle2, ClipboardList, Pill, RefreshCw, Send, ShieldOff } from 'lucide-react';
 import { DEMO_PATIENT_LINKS } from '../../data/yai/demoLinks';
 import { yaiStore } from '../../services/yai/yaiStore';
+import type { HerbUse } from '../../domain/yai/herbSharing';
 import { getScreeningRules } from '../../services/interactionMatcher';
 import { draftPatientAlert, InteractionFlag, screenPatientInteractions, SEVERITY_TH } from '../../domain/yai/interactionCheck';
 import { bangkokDate, CATEGORY_LABEL, isConfirmed, recordedDaysInMonth, thaiDateLabel } from '../../domain/yai/journal';
@@ -38,6 +39,7 @@ export const FollowUpPage: React.FC = () => {
   const link = DEMO_PATIENT_LINKS[linkIdx];
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [readAt, setReadAt] = useState<string | null>(null);
+  const [herb, setHerb] = useState<{ allowed: boolean; uses: HerbUse[] } | null>(null);
   const messages = useClinicianMessages();
   const consultList = useConsults();
   const [role, setRoleState] = useState<Role>(loadRole);
@@ -52,6 +54,7 @@ export const FollowUpPage: React.FC = () => {
 
   const refresh = useCallback(() => {
     setSnap(yaiStore.readDoseReportsForClinician(link.recipientId));
+    setHerb(yaiStore.readHerbUseForClinician(link.recipientId));
     setReadAt(new Date().toISOString());
   }, [link.recipientId]);
   useEffect(() => refresh(), [refresh]);
@@ -112,6 +115,8 @@ export const FollowUpPage: React.FC = () => {
       <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
         ข้อมูลจำลองทั้งหมด · เชื่อมภายในเบราว์เซอร์นี้เท่านั้น ไม่ใช่เวชระเบียนหรือระบบโรงพยาบาลจริง · ข้อความที่ผู้ป่วยบันทึกเป็นคำบอกเล่า ไม่ใช่การวินิจฉัย
       </p>
+
+      {herb && <HerbUseCard herb={herb} />}
 
       {snap && !snap.allowed && (
         <section className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-5">
@@ -391,3 +396,31 @@ const ElementCard: React.FC<{ patientId: string }> = ({ patientId }) => {
     </section>
   );
 };
+
+const HERB_SOURCE_TH = { MEDICINE_LIST: 'สมุดยา', JOURNAL: 'บันทึก', REVIEW: 'รีวิว' } as const;
+
+/** Herb use the patient shared for care (consent scope HERB_DATA); every read is in the patient's access history */
+const HerbUseCard: React.FC<{ herb: { allowed: boolean; uses: HerbUse[] } }> = ({ herb }) => (
+  <section className="space-y-2 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
+    <h2 className="text-base font-bold text-slate-900">การใช้สมุนไพรที่ผู้ป่วยแบ่งปันเพื่อการดูแล</h2>
+    {!herb.allowed ? (
+      <p className="text-sm text-slate-600">ผู้ป่วยยังไม่ได้ยินยอมแบ่งปันข้อมูลสมุนไพร (ขอบเขต HERB_DATA) การเปิดครั้งนี้ถูกบันทึกเป็นการขออ่านที่ไม่มีสิทธิ์</p>
+    ) : herb.uses.length === 0 ? (
+      <p className="text-sm text-slate-600">ผู้ป่วยแบ่งปันแล้ว แต่ยังไม่มีบันทึกการใช้สมุนไพร</p>
+    ) : (
+      <ul className="divide-y divide-emerald-100 text-sm">
+        {herb.uses.slice(0, 10).map((u, i) => (
+          <li key={`${u.herb}-${i}`} className="flex flex-wrap justify-between gap-2 py-1.5">
+            <span>
+              <b>{u.herb}</b> · {u.detail}
+            </span>
+            <span className="text-xs text-slate-500">
+              {HERB_SOURCE_TH[u.source]} · {u.date}
+            </span>
+          </li>
+        ))}
+      </ul>
+    )}
+    <p className="text-xs text-slate-500">ข้อมูลที่ผู้ป่วยรายงาน ใช้ประกอบการตรวจอันตรกิริยาและวางแผนดูแล ไม่ใช่หลักฐานว่าสมุนไพรได้ผล</p>
+  </section>
+);

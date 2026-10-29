@@ -146,6 +146,7 @@ export const JourneyPage: React.FC = () => {
           </LxCard>
 
           <div className="space-y-2">
+            <LxLinkRow to="/yai/food" icon={Check} title="อาหารตามธาตุ" sub="รสอาหารสัปดาห์นี้ และเมนูที่เข้ากับธาตุ" />
             <LxLinkRow to="/yai/steps" icon={Footprints} title="กิจกรรมก้าวเดิน" sub="เป้าก้าวต่อวัน กราฟ 7 วัน ชวนเพื่อนเดิน" />
             <LxLinkRow to="/yai/exercise" icon={Dumbbell} title="ท่าออกกำลังกายเบาๆ" sub="ลุก-นั่ง ยืดเหยียด เดิน หายใจ" />
             <LxLinkRow to="/yai/leaderboard" icon={Trophy} title="แต้มกับเพื่อน" sub="กำลังใจจากกลุ่มเพื่อน (เห็นแค่แต้ม)" />

@@ -30,6 +30,7 @@ import { ValuePropositionPage } from './pages/clinician/ValuePropositionPage';
 import { DoctorHomePage } from './pages/clinician/DoctorHomePage';
 import { BusinessDashboardPage } from './pages/clinician/BusinessDashboardPage';
 import { FeasibilityPage } from './pages/clinician/FeasibilityPage';
+import { ResearchHubPage } from './pages/clinician/ResearchHubPage';
 
 export const App: React.FC = () => {
   const navigate = useNavigate();
@@ -157,6 +158,7 @@ export const App: React.FC = () => {
               <Route path="/clinician/previsit/:clinicId" element={<PreVisitDetailPage />} />
               <Route path="/clinician/followup" element={<FollowUpPage />} />
               <Route path="/research" element={<ResearchLibraryPage />} />
+              <Route path="/research-hub" element={<ResearchHubPage />} />
               <Route path="/guidelines" element={<GuidelinesPage />} />
               <Route path="/guidelines/new" element={<GuidelineNewPage />} />
               <Route path="/guidelines/:id" element={<GuidelineViewPage />} />

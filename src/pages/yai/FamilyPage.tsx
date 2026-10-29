@@ -10,6 +10,7 @@ const SCOPE_LABEL: Record<ConsentScope, string> = {
   REMINDER_ALERTS: 'แจ้งเตือนเมื่อไม่ได้ตอบการเตือนกินยา',
   MEDICINES: 'รายการยา',
   PREVISIT_REPORT: 'สรุปก่อนพบหมอ',
+  HERB_DATA: 'ข้อมูลการใช้สมุนไพร',
 };
 
 export const FamilyPage: React.FC = () => {
