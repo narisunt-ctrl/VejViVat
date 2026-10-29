@@ -1,6 +1,8 @@
 // Revenue simulation for ยายพร้อม × CareBridge working with clinics and hospitals.
 // Every number is an editable assumption for planning, not a forecast. Streams are chosen to keep incentives
 // clean: patients use the core app free; clinics/hospitals pay for the clinician tools they use.
+// The free patient app may carry clearly labelled banner ads, only for products with Thai FDA registration, an
+// approved advertising licence and GMP, never targeted from health data and never on medicine/doctor pages.
 // Deliberately NOT modelled (and not allowed): pay-to-rank clinic listings, commissions on prescriptions or
 // dispensing, selling identifiable patient data.
 
@@ -27,6 +29,8 @@ export interface Assumptions {
   /** share of patients' families on an optional family plan, and its price (THB / month) */
   familyAdoption: number;
   familyFee: number;
+  /** certified-product banner ads: revenue per active patient per month (THB), untargeted */
+  adRevenuePerUser: number;
   /** monthly share of partners that leave (0..1) */
   churn: number;
   /** costs: fixed team + infrastructure (THB / month), cost per active patient, onboarding cost per new partner */
@@ -42,7 +46,7 @@ export interface MonthRow {
   clinics: number;
   hospitals: number;
   patients: number;
-  revenue: { clinic: number; hospital: number; care: number; family: number };
+  revenue: { clinic: number; hospital: number; care: number; family: number; ads: number };
   totalRevenue: number;
   cost: number;
   profit: number;
@@ -68,6 +72,7 @@ const BASE: Omit<Assumptions, 'clinicsStart' | 'clinicsPerMonth' | 'clinicsMax' 
   careFeePerPatient: 30,
   familyAdoption: 0.05,
   familyFee: 49,
+  adRevenuePerUser: 2,
   churn: 0.02,
   costPerPatient: 6,
   onboardingCost: 3000,
@@ -111,8 +116,9 @@ export function project(a: Assumptions): Projection {
       hospital: hospitals * a.hospitalFee + newHospitals * a.hospitalSetupFee,
       care: patients * a.careFeePerPatient,
       family: patients * a.familyAdoption * a.familyFee,
+      ads: patients * a.adRevenuePerUser,
     };
-    const totalRevenue = revenue.clinic + revenue.hospital + revenue.care + revenue.family;
+    const totalRevenue = revenue.clinic + revenue.hospital + revenue.care + revenue.family + revenue.ads;
     const cost = a.fixedCost + patients * a.costPerPatient + (newClinics + newHospitals) * a.onboardingCost;
     const profit = totalRevenue - cost;
     cash += profit;
@@ -121,7 +127,7 @@ export function project(a: Assumptions): Projection {
   // first month from which every later month is profitable
   let breakevenMonth: number | null = null;
   for (let i = rows.length - 1; i >= 0 && rows[i].profit >= 0; i--) breakevenMonth = rows[i].month;
-  const recurring = (r: MonthRow) => r.revenue.clinic + r.hospitals * a.hospitalFee + r.revenue.care + r.revenue.family;
+  const recurring = (r: MonthRow) => r.revenue.clinic + r.hospitals * a.hospitalFee + r.revenue.care + r.revenue.family + r.revenue.ads;
   return {
     rows,
     breakevenMonth,

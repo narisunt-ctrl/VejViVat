@@ -20,6 +20,12 @@ import { JournalReviewPage } from '../pages/yai/JournalReviewPage';
 import { JournalHistoryPage } from '../pages/yai/JournalHistoryPage';
 import { EvidencePassportPage } from '../pages/yai/EvidencePassportPage';
 import { FoodPage } from '../pages/yai/FoodPage';
+import { HealthRecordPage } from '../pages/yai/HealthRecordPage';
+import { LeaderboardPage } from '../pages/yai/LeaderboardPage';
+import { HerbReviewsPage } from '../pages/yai/HerbReviewsPage';
+import { AskDoctorPage } from '../pages/yai/AskDoctorPage';
+import { ProfilePage } from '../pages/yai/ProfilePage';
+import { ExercisePage } from '../pages/yai/ExercisePage';
 
 const NotFound: React.FC = () => (
   <div className="space-y-4 py-10 text-center">
@@ -52,6 +58,12 @@ const YaiRoutes: React.FC = () => (
       <Route path="journal/history" element={<JournalHistoryPage />} />
       <Route path="passport" element={<EvidencePassportPage />} />
       <Route path="food" element={<FoodPage />} />
+      <Route path="health" element={<HealthRecordPage />} />
+      <Route path="leaderboard" element={<LeaderboardPage />} />
+      <Route path="herb-reviews" element={<HerbReviewsPage />} />
+      <Route path="ask" element={<AskDoctorPage />} />
+      <Route path="profile" element={<ProfilePage />} />
+      <Route path="exercise" element={<ExercisePage />} />
       <Route path="*" element={<NotFound />} />
     </Route>
   </Routes>

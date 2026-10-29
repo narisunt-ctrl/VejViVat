@@ -6,6 +6,9 @@ import {
   ConsentScope,
   DoseSelfReport,
   EvidenceOrigin,
+  Friend,
+  HerbReview,
+  Measurement,
   MedicationPassport,
   ReminderSource,
   YaiSettings,
@@ -335,6 +338,58 @@ export const yaiStore = {
           pendingMedicines: state.medicines.filter((m) => m.pendingIdentification).length,
         }
       : { allowed, logs: [], plans: [], journal: [], pendingMedicines: 0 };
+  },
+
+  /** Grandma (or caregiver) types a measurement; the app shows it as recorded and does not interpret it */
+  addMeasurement(m: Pick<Measurement, 'type' | 'value' | 'value2'>): string {
+    const now = demoNow().toISOString();
+    const id = uid('meas');
+    const row: Measurement = { ...m, id, at: now, date: bangkokDate(now), source: 'MANUAL', isSynthetic: false };
+    set(audit({ ...state, measurements: [row, ...(state.measurements ?? [])] }, 'MEASUREMENT_ADDED', `${m.type}`));
+    return id;
+  },
+
+  /**
+   * Simulated device link: adds step counts for the last 7 days, labelled DEVICE_DEMO. A real link needs a native
+   * app (Android Health Connect / Apple HealthKit / the watch maker's SDK); the web prototype cannot read them.
+   */
+  connectDemoDevice(kind: 'PHONE_DEMO' | 'WATCH_DEMO') {
+    const now = demoNow();
+    const device = kind === 'WATCH_DEMO' ? 'สมาร์ทวอทช์ (จำลอง)' : 'โทรศัพท์ (จำลอง)';
+    const steps: Measurement[] = Array.from({ length: 7 }, (_, i) => {
+      const at = new Date(now.getTime() - i * 86_400_000).toISOString();
+      return { id: uid('steps'), type: 'STEPS', value: [4200, 5600, 3100, 6800, 4900, 7200, 3800][i], at, date: bangkokDate(at), source: 'DEVICE_DEMO', device, isSynthetic: true };
+    });
+    const kept = (state.measurements ?? []).filter((m) => m.source !== 'DEVICE_DEMO');
+    set(audit({ ...state, measurements: [...steps, ...kept], settings: { ...state.settings, deviceLink: kind } }, 'DEVICE_LINKED', kind));
+  },
+
+  disconnectDevice() {
+    set({ ...state, measurements: (state.measurements ?? []).filter((m) => m.source !== 'DEVICE_DEMO'), settings: { ...state.settings, deviceLink: 'NONE' } });
+  },
+
+  addHerbReview(r: Omit<HerbReview, 'id' | 'at' | 'author' | 'isSelf' | 'isSynthetic'>): string {
+    const id = uid('review');
+    const review: HerbReview = { ...r, id, at: demoNow().toISOString(), author: state.patient.displayName, isSelf: true, isSynthetic: false };
+    set(audit({ ...state, herbReviews: [review, ...(state.herbReviews ?? [])] }, 'HERB_REVIEWED', r.herbName));
+    return id;
+  },
+
+  /** Demo invite code; friends see only display name and weekly points */
+  addFriendByCode(code: string, invitable: Record<string, Friend>): { ok: boolean; reason?: string } {
+    const f = invitable[code.trim().toUpperCase()];
+    if (!f) return { ok: false, reason: 'ไม่พบรหัสนี้' };
+    if ((state.friends ?? []).some((x) => x.id === f.id)) return { ok: false, reason: 'เป็นเพื่อนกันอยู่แล้ว' };
+    set(audit({ ...state, friends: [...(state.friends ?? []), f] }, 'FRIEND_ADDED', f.id));
+    return { ok: true };
+  },
+
+  hideAd(adId: string) {
+    set({ ...state, settings: { ...state.settings, hiddenAds: [...new Set([...(state.settings.hiddenAds ?? []), adId])] } });
+  },
+
+  skipGreeting(quote: string) {
+    set({ ...state, settings: { ...state.settings, greetingSkips: [...(state.settings.greetingSkips ?? []), quote].slice(-20) } });
   },
 
   createReminder(medicineId: string, schedule: string[], source: ReminderSource): { ok: boolean; reason?: string } {

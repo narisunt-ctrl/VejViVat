@@ -36,7 +36,7 @@ export const FeasibilityPage: React.FC = () => {
   const pilot = useMemo(() => project(SCENARIOS.PILOT.a), []);
   const prov = useMemo(() => project(SCENARIOS.PROVINCE.a), []);
   const a = SCENARIOS.PROVINCE.a;
-  const perClinicRevenue = a.clinicFee + a.patientsPerClinic * (a.careFeePerPatient + a.familyAdoption * a.familyFee);
+  const perClinicRevenue = a.clinicFee + a.patientsPerClinic * (a.careFeePerPatient + a.familyAdoption * a.familyFee + a.adRevenuePerUser);
   const perClinicCost = a.patientsPerClinic * a.costPerPatient;
   const clinicsToCoverFixed = Math.ceil(a.fixedCost / (perClinicRevenue - perClinicCost));
   const need = (p: ReturnType<typeof project>) => Math.max(0, -Math.min(0, p.lowestCash));
