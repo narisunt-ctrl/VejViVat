@@ -173,6 +173,51 @@ export interface Clinic {
   hours?: string;
 }
 
+/** Health measurements grandma (or a linked device) records; values are shown as recorded, never judged by the app */
+export type MeasurementType = 'WEIGHT' | 'GLUCOSE' | 'BP' | 'STEPS';
+export interface Measurement {
+  id: string;
+  type: MeasurementType;
+  value: number;
+  /** diastolic for BP */
+  value2?: number;
+  at: string;
+  /** YYYY-MM-DD Asia/Bangkok */
+  date: string;
+  source: 'MANUAL' | 'DEVICE_DEMO';
+  device?: string;
+  isSynthetic: boolean;
+}
+
+/** A user's own experience with a herb: patient-reported, not clinical evidence */
+export interface HerbReview {
+  id: string;
+  author: string;
+  isSelf: boolean;
+  herbName: string;
+  /** how much it helped, 1..5, in the user's view */
+  rating: 1 | 2 | 3 | 4 | 5;
+  sideEffects: 'NONE' | 'MILD' | 'BOTHERSOME';
+  sideEffectNote: string;
+  weeksUsed: number;
+  wouldRecommend: boolean;
+  note: string;
+  at: string;
+  /** agreed that this review may be used, de-identified, for research */
+  consentResearch: boolean;
+  isSynthetic: boolean;
+}
+
+/** A linked friend on the points board; only display name and points are shared, never health details */
+export interface Friend {
+  id: string;
+  name: string;
+  avatar: string;
+  weeklyPoints: number;
+  streak: number;
+  isSynthetic: true;
+}
+
 export type AuditAction =
   | 'CONSENT_GRANTED'
   | 'CONSENT_REVOKED'
@@ -189,7 +234,11 @@ export type AuditAction =
   | 'ORDER_SYNCED'
   | 'ORDER_SYNC_REJECTED'
   | 'DOSE_REPORTS_READ'
-  | 'DOSE_REPORTS_READ_DENIED';
+  | 'DOSE_REPORTS_READ_DENIED'
+  | 'MEASUREMENT_ADDED'
+  | 'DEVICE_LINKED'
+  | 'HERB_REVIEWED'
+  | 'FRIEND_ADDED';
 export interface AuditEvent {
   id: string;
   at: string;
@@ -216,6 +265,14 @@ export interface YaiSettings {
   cloudOcrConsent?: boolean;
   /** home area used to sort hospitals/clinics nearest first; stays in this browser */
   home?: HomeLocation;
+  /** step source; DEMO values are simulated (a web app cannot read Health Connect / HealthKit directly) */
+  deviceLink?: 'NONE' | 'PHONE_DEMO' | 'WATCH_DEMO';
+  /** show my weekly points (not health data) to linked friends */
+  shareScore?: boolean;
+  /** ads the user chose to hide */
+  hiddenAds?: string[];
+  /** greeting quotes grandma did not like */
+  greetingSkips?: string[];
 }
 
 export interface YaiState {
@@ -239,4 +296,7 @@ export interface YaiState {
   syncedOrders?: SyncedOrderRecord[];
   /** in-app notices about order changes (no background push) */
   orderNotices?: OrderNotice[];
+  measurements?: Measurement[];
+  herbReviews?: HerbReview[];
+  friends?: Friend[];
 }

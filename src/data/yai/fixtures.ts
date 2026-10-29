@@ -1,4 +1,4 @@
-import { Clinic, EvidenceField, MedicationPassport, YaiState } from '../../domain/yai/models';
+import { Clinic, EvidenceField, Friend, HerbReview, Measurement, MedicationPassport, YaiState } from '../../domain/yai/models';
 import { bangkokDate, JournalCategory, JournalEntry } from '../../domain/yai/journal';
 
 // All people, clinics and medicine records here are fictional demo data (ข้อมูลจำลอง).
@@ -356,6 +356,42 @@ export function seedJournal(now: Date = new Date()): JournalEntry[] {
   });
 }
 
+/** Example measurements a few days ago, labelled ตัวอย่าง in the UI */
+export function seedMeasurements(now: Date = new Date()): Measurement[] {
+  const at = (daysAgo: number) => new Date(now.getTime() - daysAgo * 86_400_000).toISOString();
+  const m = (id: string, type: Measurement['type'], value: number, daysAgo: number, value2?: number): Measurement => ({
+    id,
+    type,
+    value,
+    value2,
+    at: at(daysAgo),
+    date: bangkokDate(at(daysAgo)),
+    source: 'MANUAL',
+    isSynthetic: true,
+  });
+  return [m('meas-seed-w', 'WEIGHT', 64, 1), m('meas-seed-g', 'GLUCOSE', 103, 1), m('meas-seed-bp', 'BP', 122, 1, 78)];
+}
+
+export const SEED_FRIENDS: Friend[] = [
+  { id: 'friend-boonma', name: 'ยายบุญมา (ตัวอย่าง)', avatar: '👵', weeklyPoints: 212, streak: 9, isSynthetic: true },
+  { id: 'friend-sommai', name: 'ตาสมหมาย (ตัวอย่าง)', avatar: '👴', weeklyPoints: 168, streak: 5, isSynthetic: true },
+  { id: 'friend-chan', name: 'ยายจันทร์ (ตัวอย่าง)', avatar: '👵', weeklyPoints: 131, streak: 3, isSynthetic: true },
+  { id: 'friend-thongkham', name: 'ยายทองคำ (ตัวอย่าง)', avatar: '👵', weeklyPoints: 96, streak: 2, isSynthetic: true },
+];
+
+/** Friends that can be added with a demo invite code */
+export const INVITABLE_FRIENDS: Record<string, Friend> = {
+  'YAI-1234': { id: 'friend-somjit', name: 'ยายสมจิต (ตัวอย่าง)', avatar: '👵', weeklyPoints: 150, streak: 4, isSynthetic: true },
+};
+
+export const SEED_FRIEND_REVIEWS: HerbReview[] = [
+  { id: 'rv-1', author: 'ยายบุญมา (ตัวอย่าง)', isSelf: false, herbName: 'ขมิ้นชัน', rating: 4, sideEffects: 'NONE', sideEffectNote: '', weeksUsed: 8, wouldRecommend: true, note: 'ท้องอืดน้อยลง', at: T0, consentResearch: true, isSynthetic: true },
+  { id: 'rv-2', author: 'ตาสมหมาย (ตัวอย่าง)', isSelf: false, herbName: 'ขมิ้นชัน', rating: 3, sideEffects: 'MILD', sideEffectNote: 'แสบท้องนิดหน่อยถ้ากินตอนท้องว่าง', weeksUsed: 4, wouldRecommend: true, note: '', at: T0, consentResearch: true, isSynthetic: true },
+  { id: 'rv-3', author: 'ยายจันทร์ (ตัวอย่าง)', isSelf: false, herbName: 'ไพล', rating: 4, sideEffects: 'NONE', sideEffectNote: '', weeksUsed: 2, wouldRecommend: true, note: 'ทาเข่าแล้วสบายขึ้น', at: T0, consentResearch: true, isSynthetic: true },
+  { id: 'rv-4', author: 'ยายทองคำ (ตัวอย่าง)', isSelf: false, herbName: 'ฟ้าทะลายโจร', rating: 3, sideEffects: 'MILD', sideEffectNote: 'ขมมาก', weeksUsed: 1, wouldRecommend: false, note: '', at: T0, consentResearch: false, isSynthetic: true },
+  { id: 'rv-5', author: 'ยายบุญมา (ตัวอย่าง)', isSelf: false, herbName: 'ขิง', rating: 5, sideEffects: 'NONE', sideEffectNote: '', weeksUsed: 12, wouldRecommend: true, note: 'ช่วยเรื่องคลื่นไส้', at: T0, consentResearch: true, isSynthetic: true },
+];
+
 export function createSeedState(): YaiState {
   return {
     schemaVersion: 1,
@@ -383,5 +419,8 @@ export function createSeedState(): YaiState {
     journal: seedJournal(),
     syncedOrders: [],
     orderNotices: [],
+    measurements: seedMeasurements(),
+    herbReviews: structuredClone(SEED_FRIEND_REVIEWS),
+    friends: structuredClone(SEED_FRIENDS),
   };
 }

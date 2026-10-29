@@ -5,14 +5,15 @@ import { Ban, Calculator, Table2, TrendingUp } from 'lucide-react';
 import { DEMO_CLINICS } from '../../data/yai/fixtures';
 import { Assumptions, formatMTHB, formatTHB, project, ScenarioId, SCENARIOS, simulatedClinicRevenue } from '../../services/business/revenueModel';
 
-// Revenue simulation dashboard (synthetic). Palette = reference categorical slots 1–4, validated for CVD
-// separation; two slots are below 3:1 on white, so the legend and a table view are always available.
+// Revenue simulation dashboard (synthetic). Palette = reference categorical slots 1–5, validated for CVD
+// separation; three slots are below 3:1 on white, so the legend and a table view are always available.
 
 const STREAMS = [
   { key: 'clinic', label: 'ค่าบริการคลินิก', color: '#2a78d6' },
   { key: 'hospital', label: 'โรงพยาบาล (ใบอนุญาต + เชื่อมระบบ)', color: '#eb6834' },
   { key: 'care', label: 'ค่าประสานการดูแลต่อผู้ป่วย', color: '#1baf7a' },
   { key: 'family', label: 'แผนครอบครัว (สมัครใจ)', color: '#eda100' },
+  { key: 'ads', label: 'แบนเนอร์สินค้าที่ผ่านการรับรอง', color: '#e87ba4' },
 ] as const;
 
 const short = (v: number) => (Math.abs(v) >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)} ล.` : Math.abs(v) >= 1000 ? `${Math.round(v / 1000)} พัน` : `${Math.round(v)}`);
@@ -31,6 +32,7 @@ const FIELDS: { key: keyof Assumptions; label: string; step: number; pct?: boole
   { key: 'careFeePerPatient', label: 'ค่าประสานการดูแล (บาท/คน/เดือน)', step: 5 },
   { key: 'familyAdoption', label: 'สัดส่วนครอบครัวที่สมัครแผนครอบครัว', step: 0.01, pct: true },
   { key: 'familyFee', label: 'แผนครอบครัว (บาท/เดือน)', step: 10 },
+  { key: 'adRevenuePerUser', label: 'รายได้โฆษณา (บาท/ผู้ใช้/เดือน)', step: 0.5 },
   { key: 'churn', label: 'อัตราเลิกใช้/เดือน', step: 0.005, pct: true },
   { key: 'fixedCost', label: 'ต้นทุนคงที่ (บาท/เดือน)', step: 10000 },
   { key: 'costPerPatient', label: 'ต้นทุนต่อผู้ป่วย (บาท/เดือน)', step: 1 },
@@ -247,6 +249,7 @@ export const BusinessDashboardPage: React.FC = () => {
           <li>ไม่รับค่าคอมมิชชันจากการสั่งยาหรือจ่ายยา และไม่รับเงินจากผู้ผลิตเพื่อให้ยาของตนถูกแนะนำ</li>
           <li>ไม่ขายข้อมูลที่ระบุตัวผู้ป่วย การใช้ข้อมูลเพื่อวิจัยต้องได้รับความยินยอมแยก ไม่ระบุตัวตน และผ่านคณะกรรมการจริยธรรม</li>
           <li>ฟังก์ชันหลักของผู้ป่วยใช้ฟรี (บันทึก เตือนยา Evidence Passport ส่งข้อมูลให้หมอ)</li>
+          <li>โฆษณาในแอปยายพร้อม: เฉพาะสินค้าที่มีทะเบียน อย. ใบอนุญาตโฆษณา และ GMP ไม่อ้างรักษาโรค ติดป้าย “โฆษณา” ซ่อนได้ ไม่เลือกจากข้อมูลสุขภาพ และไม่แสดงในหน้ายา เตือนยา หรือหน้าคุยกับหมอ ผู้ลงโฆษณาซื้ออันดับคลินิกหรือมีผลต่อหลักฐานที่แพทย์เห็นไม่ได้</li>
         </ul>
       </section>
     </div>

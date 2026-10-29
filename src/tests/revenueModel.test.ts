@@ -9,7 +9,7 @@ describe('revenue simulation', () => {
       const p = project(s.a);
       expect(p.rows).toHaveLength(s.a.months);
       for (const r of p.rows) {
-        const sum = r.revenue.clinic + r.revenue.hospital + r.revenue.care + r.revenue.family;
+        const sum = r.revenue.clinic + r.revenue.hospital + r.revenue.care + r.revenue.family + r.revenue.ads;
         expect(r.totalRevenue).toBeCloseTo(sum, 6);
         expect(r.profit).toBeCloseTo(r.totalRevenue - r.cost, 6);
         expect(r.clinics).toBeLessThanOrEqual(s.a.clinicsMax + 1e-9);
