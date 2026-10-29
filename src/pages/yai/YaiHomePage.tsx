@@ -57,7 +57,7 @@ export const YaiHomePage: React.FC = () => {
             {unread > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-lx-alert px-1 text-xs font-bold text-lx-bg">{unread}</span>}
           </Link>
           <Link to="/yai/profile" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-lx-lime text-lg font-semibold text-lx-forest" aria-label="โปรไฟล์">
-            {name.replace(/^คุณ(ยาย|ตา)?/, '').trim().charAt(0) || 'ย'}
+            {state.settings.persona === 'PROFESSIONAL' ? '🧑' : '👵'}
           </Link>
         </div>
         <h1 className="pt-2 text-2xl font-semibold leading-tight lg:text-3xl">

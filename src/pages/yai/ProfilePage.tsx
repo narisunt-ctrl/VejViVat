@@ -4,6 +4,7 @@ import { Eye, LifeBuoy, Moon, Pill, Route as RouteIcon, Settings, Sun, Users, Wa
 import { useYai, yaiStore } from '../../services/yai/yaiStore';
 import { LxCard, LxLinkRow, LxPageHeader, SourceTag } from '../../components/yai/lx/ui';
 import { WELLNESS_GOALS } from '../../domain/yai/wellness';
+import { PersonaSwitcher } from '../../components/yai/lx/PersonaSwitcher';
 import type { AuditAction } from '../../domain/yai/models';
 
 // Profile & Privacy: who I am, goals, text size and theme, consent management, connected devices, data sharing
@@ -47,10 +48,11 @@ export const ProfilePage: React.FC = () => {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="space-y-4">
+          <PersonaSwitcher />
           <LxCard>
             <div className="flex items-center gap-4">
               <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-lx-lime text-2xl font-semibold text-lx-forest" aria-hidden="true">
-                {name.replace(/^คุณ(ยาย|ตา)?/, '').trim().charAt(0) || 'ย'}
+                {state.settings.persona === 'PROFESSIONAL' ? '🧑' : '👵'}
               </span>
               <div className="min-w-0">
                 <p className="truncate text-xl font-semibold">{name}</p>

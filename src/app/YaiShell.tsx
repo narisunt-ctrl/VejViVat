@@ -23,6 +23,7 @@ const isLxPath = (p: string) => p === '/yai' || p === '/yai/' || LX_PREFIXES.som
 export const YaiShell: React.FC = () => {
   const fontScale = useYai((s) => s.settings.fontScale);
   const userTheme = useYai((s) => s.settings.theme ?? 'dark');
+  const persona = useYai((s) => s.settings.persona ?? 'RETIREE');
   const location = useLocation();
   const lx = isLxPath(location.pathname);
   const theme = lx ? userTheme : 'light';
@@ -75,6 +76,9 @@ export const YaiShell: React.FC = () => {
           ))}
         </nav>
         <div className="mt-auto space-y-2 px-2 text-xs text-lx-muted">
+          <Link to="/yai/profile" className="flex min-h-[44px] items-center gap-2 rounded-xl border border-lx-line px-3 text-sm font-semibold text-lx-ink hover:border-lx-accent/60">
+            <span aria-hidden="true">{persona === 'PROFESSIONAL' ? '🧑' : '👵'}</span> สลับผู้ใช้ตัวอย่าง
+          </Link>
           <DemoBadge />
           <p>ต้นแบบ ข้อมูลจำลอง ไม่ใช่การวินิจฉัยหรือสั่งยา</p>
         </div>

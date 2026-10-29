@@ -97,7 +97,7 @@ export interface BoardRow {
 
 /** Weekly board: me plus linked friends, highest first; ties keep a stable order */
 export function leaderboard(s: YaiState, today: string): BoardRow[] {
-  const me: BoardRow = { id: 'me', name: s.patient.displayName, avatar: '👵', points: weekPoints(s, today).total, isMe: true, isSynthetic: false };
+  const me: BoardRow = { id: 'me', name: s.patient.displayName, avatar: s.settings.persona === 'PROFESSIONAL' ? '🧑' : '👵', points: weekPoints(s, today).total, isMe: true, isSynthetic: false };
   return [me, ...(s.friends ?? []).map((f) => ({ id: f.id, name: f.name, avatar: f.avatar, points: f.weeklyPoints, isMe: false, isSynthetic: true }))].sort(
     (a, b) => b.points - a.points || a.name.localeCompare(b.name, 'th')
   );
