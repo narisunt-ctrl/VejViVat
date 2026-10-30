@@ -9,6 +9,7 @@ import {
   EvidenceOrigin,
   Friend,
   HabitLog,
+  QuizResult,
   HerbReview,
   Measurement,
   MedicationPassport,
@@ -444,6 +445,14 @@ export const yaiStore = {
     const has = logs.some((l) => l.date === date && l.goalId === goalId);
     const next: HabitLog[] = has ? logs.filter((l) => !(l.date === date && l.goalId === goalId)) : [{ date, goalId, at, isSynthetic: false }, ...logs];
     set(audit({ ...state, habitLogs: next }, 'HABIT_LOGGED', goalId));
+  },
+
+  /** Record a finished quiz round */
+  saveQuizResult(r: Pick<QuizResult, 'level' | 'correct' | 'total'>): string {
+    const at = demoNow().toISOString();
+    const row: QuizResult = { ...r, id: uid('quiz'), date: bangkokDate(at), at, isSynthetic: false };
+    set(audit({ ...state, quizResults: [row, ...(state.quizResults ?? [])].slice(0, 200) }, 'QUIZ_COMPLETED', `${r.level}:${r.correct}/${r.total}`));
+    return row.id;
   },
 
   setGoals(goals: string[]) {

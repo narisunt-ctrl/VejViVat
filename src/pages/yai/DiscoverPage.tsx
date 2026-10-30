@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Leaf, MessageSquareQuote, Stethoscope } from 'lucide-react';
+import { Search, Leaf, MessageSquareQuote, Stethoscope, Gamepad2 } from 'lucide-react';
 import { LxCard, LxLinkRow, LxNotice, LxPageHeader, SourceTag } from '../../components/yai/lx/ui';
 import { CertifiedAdBanner } from '../../components/yai/CertifiedAdBanner';
 import { ElementHerbsCard } from '../../components/yai/lx/ElementHerbsCard';
@@ -74,6 +74,7 @@ export const DiscoverPage: React.FC = () => {
       </p>
 
       <div className="grid gap-2 md:grid-cols-2">
+        <LxLinkRow to="/yai/herb-quiz" icon={Gamepad2} title="เกมทายสมุนไพร" sub="ฟังคำใบ้ ทายชื่อสมุนไพร เล่นจบได้ 3 แต้ม" />
         <LxLinkRow to="/yai/herb-reviews" icon={MessageSquareQuote} title="ประสบการณ์จากผู้ใช้" sub="รีวิวจากเพื่อน ๆ (ประสบการณ์ ไม่ใช่หลักฐาน)" />
         <LxLinkRow to="/yai/clinics" icon={Stethoscope} title="ปรึกษาแพทย์แผนไทย" sub="ค้นหาคลินิกที่มีแพทย์แผนไทยใกล้บ้าน" />
         <LxLinkRow to="/yai/food" icon={Leaf} title="อาหารตามธาตุ" sub="รสอาหารที่กิน เทียบกับธาตุ และเมนูที่เข้ากัน" />

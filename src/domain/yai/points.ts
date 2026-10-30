@@ -25,6 +25,7 @@ export const POINT_RULES: PointRule[] = [
   { id: 'activity', label: 'ออกกำลังกาย/ขยับร่างกาย', per: 'ต่อวัน', points: 5, dailyCap: 5 },
   { id: 'measure', label: 'บันทึกน้ำหนัก ความดัน หรือน้ำตาล', per: 'ต่อวัน', points: 3, dailyCap: 3 },
   { id: 'review', label: 'รีวิวสมุนไพรที่ใช้ (คะแนนพิเศษ ให้ดาวเท่าไรก็ได้)', per: 'ต่อรีวิว', points: 15, dailyCap: 15 },
+  { id: 'quiz', label: 'เล่นเกมทายสมุนไพรจบ 1 รอบ (ตอบถูกกี่ข้อก็ได้แต้มเท่ากัน)', per: 'ต่อวัน', points: 3, dailyCap: 3 },
 ];
 
 export const STREAK_BONUS = { days: 7, points: 20 };
@@ -50,6 +51,7 @@ function dayPoints(s: YaiState, date: string): DayPoints {
     activity: journal.some((e) => e.segments.some((x) => x.category === 'ACTIVITY')) ? 5 : 0,
     measure: measured ? 3 : 0,
     review: reviews * 15,
+    quiz: (s.quizResults ?? []).some((q) => q.date === date) ? 3 : 0,
   };
   const byRule: Record<string, number> = {};
   let total = 0;
