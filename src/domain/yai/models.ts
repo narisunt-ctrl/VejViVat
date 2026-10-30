@@ -247,7 +247,8 @@ export type AuditAction =
   | 'HERB_DATA_READ'
   | 'HERB_DATA_READ_DENIED'
   | 'RESEARCH_CONSENT_CHANGED'
-  | 'RESEARCH_DATA_READ';
+  | 'RESEARCH_DATA_READ'
+  | 'QUIZ_COMPLETED';
 export interface AuditEvent {
   id: string;
   at: string;
@@ -323,6 +324,17 @@ export interface WellnessCheckin {
   isSynthetic: boolean;
 }
 
+/** One finished round of the herb quiz (learning game; the score never affects points) */
+export interface QuizResult {
+  id: string;
+  date: string;
+  at: string;
+  level: 'EASY' | 'HARD';
+  correct: number;
+  total: number;
+  isSynthetic: boolean;
+}
+
 /** User ticked a habit for a goal on a date (self-reported) */
 export interface HabitLog {
   date: string;
@@ -357,4 +369,5 @@ export interface YaiState {
   friends?: Friend[];
   checkins?: WellnessCheckin[];
   habitLogs?: HabitLog[];
+  quizResults?: QuizResult[];
 }

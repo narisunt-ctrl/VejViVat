@@ -16,7 +16,7 @@ const NAV = [
 // Screens built on the Premium Longevity design system (dark or light by the user's choice). Every other screen
 // (medicines, OCR, reminders, journal, clinics...) keeps its existing light layout, so the shell switches to the
 // light theme there instead of restyling clinical screens.
-const LX_PREFIXES = ['/yai/insights', '/yai/discover', '/yai/journey', '/yai/profile', '/yai/checkin', '/yai/consult', '/yai/care', '/yai/steps', '/yai/privacy', '/yai/food', '/yai/herb-sharing'];
+const LX_PREFIXES = ['/yai/insights', '/yai/discover', '/yai/journey', '/yai/profile', '/yai/checkin', '/yai/consult', '/yai/care', '/yai/steps', '/yai/privacy', '/yai/food', '/yai/herb-sharing', '/yai/herb-quiz'];
 const isLxPath = (p: string) => p === '/yai' || p === '/yai/' || LX_PREFIXES.some((x) => p === x || p.startsWith(`${x}/`));
 
 /** Patient app chrome: no clinician sidebar or case state, larger type, bottom navigation (side rail on desktop). */
