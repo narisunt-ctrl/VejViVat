@@ -7,7 +7,8 @@ import { LxCard, LxPageHeader, SourceTag, btnPrimary, btnSecondary } from '../..
 import { bangkokDate } from '../../domain/yai/journal';
 import { checkinOn, METRICS } from '../../domain/yai/wellness';
 import { journalDraft } from '../../services/yai/journalDraft';
-import type { WellnessCheckin } from '../../domain/yai/models';
+import type { FeelingTag, WellnessCheckin } from '../../domain/yai/models';
+import { FeelingPicker } from '../../components/yai/FeelingPicker';
 
 // Daily Wellness Check-in. Two paths, both reviewed by the user before saving:
 // 1. tap: sleep / energy / mood / activity (every field optional, nothing pre-filled);
@@ -78,11 +79,12 @@ export const CheckinPage: React.FC = () => {
   const [energy, setEnergy] = useState<Five | undefined>(existing?.energy);
   const [mood, setMood] = useState<Five | undefined>(existing?.mood);
   const [activityMinutes, setActivity] = useState<number | undefined>(existing?.activityMinutes);
+  const [feelings, setFeelings] = useState<FeelingTag[]>(existing?.feelings ?? []);
   const [saved, setSaved] = useState(false);
-  const nothing = [sleepHours, sleepQuality, energy, mood, activityMinutes].every((v) => v === undefined);
+  const nothing = [sleepHours, sleepQuality, energy, mood, activityMinutes].every((v) => v === undefined) && feelings.length === 0;
 
   const save = () => {
-    const fields: Omit<WellnessCheckin, 'id' | 'date' | 'at' | 'source' | 'isSynthetic'> = { sleepHours, sleepQuality, energy, mood, activityMinutes };
+    const fields: Omit<WellnessCheckin, 'id' | 'date' | 'at' | 'source' | 'isSynthetic'> = { sleepHours, sleepQuality, energy, mood, activityMinutes, feelings: feelings.length ? feelings : undefined };
     yaiStore.saveCheckin(fields);
     setSaved(true);
   };
@@ -96,8 +98,8 @@ export const CheckinPage: React.FC = () => {
         <p className="mb-3 text-sm text-lx-muted">ระบบช่วยแยกการนอน อาหาร อารมณ์ กิจกรรม อาการ และการใช้ยา แล้วให้คุณตรวจทุกครั้งก่อนบันทึกลงสมุดสุขภาพ</p>
         <VoiceEntryButton
           label="กดพูด บันทึกสุขภาพ"
-          onTranscript={(text) => {
-            journalDraft.set({ originalText: text, inputSource: 'VOICE_TRANSCRIPT', capturedAt: demoNow().toISOString(), photoIds: [], photoTags: {} });
+          onTranscript={(text, voice) => {
+            journalDraft.set({ originalText: text, inputSource: 'VOICE_TRANSCRIPT', capturedAt: demoNow().toISOString(), photoIds: [], photoTags: {}, voice });
             navigate('/yai/journal/process?mode=voice');
           }}
           onFallback={(problem) => {
@@ -121,6 +123,7 @@ export const CheckinPage: React.FC = () => {
         <Scale label="ตื่นมารู้สึกได้พักแค่ไหน" value={sleepQuality} onChange={setSleepQuality} words={(n) => ['', 'ไม่ได้พัก', 'น้อย', 'พอใช้', 'ดี', 'ดีมาก'][n]} />
         <Scale label="ความสดชื่น/พลังงานวันนี้" value={energy} onChange={setEnergy} words={METRICS.energy.describe} />
         <Scale label="อารมณ์วันนี้" value={mood} onChange={setMood} words={METRICS.mood.describe} />
+        <FeelingPicker value={feelings} onChange={setFeelings} />
         <Chips label="ขยับร่างกายวันนี้" unit="นาที" options={ACTIVITY_OPTIONS} value={activityMinutes} onChange={setActivity} format={(v) => (v === 60 ? '60+' : `${v}`)} />
 
         {saved ? (

@@ -87,3 +87,66 @@
 .lx .num {
   font-variant-numeric: tabular-nums;
 }
+
+/* ยายพร้อม check-in hero: deep green with slow drifting light, and rings that breathe around the microphone */
+.hero-aurora {
+  background: radial-gradient(120% 90% at 50% 0%, #1e7862 0%, #103b32 55%, #0a2621 100%);
+}
+.aurora-blob {
+  position: absolute;
+  z-index: -1;
+  border-radius: 9999px;
+  filter: blur(48px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+.aurora-a {
+  width: 18rem;
+  height: 18rem;
+  left: -6rem;
+  top: -5rem;
+  background: #42c5ac;
+  animation: aurora-drift 14s ease-in-out infinite alternate;
+}
+.aurora-b {
+  width: 16rem;
+  height: 16rem;
+  right: -6rem;
+  top: 10rem;
+  background: rgb(195 237 129 / 0.7);
+  animation: aurora-drift 18s ease-in-out -6s infinite alternate-reverse;
+}
+.aurora-c {
+  width: 20rem;
+  height: 14rem;
+  left: 10%;
+  bottom: -7rem;
+  background: #168b71;
+  animation: aurora-drift 22s ease-in-out -3s infinite alternate;
+}
+@keyframes aurora-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(2.5rem, 1.5rem) scale(1.15); }
+  100% { transform: translate(-1.5rem, 2.5rem) scale(0.95); }
+}
+.mic-ring {
+  position: absolute;
+  inset: 1.5rem;
+  border-radius: 9999px;
+  border: 2px solid rgb(214 246 160 / 0.55);
+  animation: mic-breathe 4s ease-out infinite;
+}
+.mic-ring-2 { animation-delay: 1.33s; }
+.mic-ring-3 { animation-delay: 2.66s; }
+.mic-ring-live {
+  border-color: rgb(255 255 255 / 0.7);
+  animation-duration: 1.6s;
+}
+@keyframes mic-breathe {
+  0% { transform: scale(0.85); opacity: 0.9; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob,
+  .mic-ring { animation: none; }
+}

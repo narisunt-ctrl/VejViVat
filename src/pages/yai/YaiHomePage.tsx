@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Bell, Keyboard, SlidersHorizontal } from 'lucide-react';
-import { useYai, demoNow } from '../../services/yai/yaiStore';
+import { useYai, demoNow, yaiStore } from '../../services/yai/yaiStore';
+import { FEELING_LABEL, FEELINGS } from '../../domain/yai/voiceFeatures';
 import { VoiceEntryButton } from '../../components/yai/VoiceEntryButton';
 import { DoctorMessagesCard } from '../../components/yai/DoctorMessagesCard';
 import { CareBridgeCard, DailyWisdom, DiscoverCard, JourneyCard, StepsCard, TodayCareStrip, WeeklyTrends, WellnessOverview } from '../../components/yai/lx/WellnessCards';
@@ -9,6 +10,7 @@ import { LxNotice } from '../../components/yai/lx/ui';
 import { useClinicianMessages } from '../../services/yai/clinicianMessages';
 import { canRead } from '../../domain/yai/policies';
 import { journalDraft } from '../../services/yai/journalDraft';
+import type { VoiceMeasures } from '../../domain/yai/models';
 import { useClinicianOrderSync } from '../../services/yai/useOrderSync';
 import { thaiDateLabel, bangkokDate } from '../../domain/yai/journal';
 import yaiLogo from '../../assets/yai/yai-logo.webp';
@@ -32,9 +34,10 @@ export const YaiHomePage: React.FC = () => {
   const name = state.patient.displayName.replace(/\s*\(.*\)\s*$/, '');
   const unread = messages.filter((m) => m.patientId === state.patient.id && !m.acknowledgedAt && canRead(state.consents, m.fromRecipientId, 'REMINDER_ALERTS', now)).length;
   const latestNotice = (state.orderNotices ?? [])[0];
+  const todayFeelings = (state.checkins ?? []).find((c) => c.date === bangkokDate(now.toISOString()))?.feelings ?? [];
 
-  const startDraft = (text: string) => {
-    journalDraft.set({ originalText: text, inputSource: 'VOICE_TRANSCRIPT', capturedAt: demoNow().toISOString(), photoIds: [], photoTags: {} });
+  const startDraft = (text: string, voice?: VoiceMeasures) => {
+    journalDraft.set({ originalText: text, inputSource: 'VOICE_TRANSCRIPT', capturedAt: demoNow().toISOString(), photoIds: [], photoTags: {}, voice });
     navigate('/yai/journal/process?mode=voice');
   };
 
@@ -77,18 +80,22 @@ export const YaiHomePage: React.FC = () => {
       {latestNotice && <LxNotice title="แจ้งจากคลินิก (ข้อมูลจำลองภายในแอป)">{latestNotice.text}</LxNotice>}
 
       <div className="grid gap-4 lg:grid-cols-5 lg:gap-6">
-        {/* C. main daily check-in */}
-        <section aria-labelledby="checkin-title" className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-lx-forest via-lx-forest to-lx-emerald p-5 text-white lg:col-span-2 lg:p-6">
-          <svg className="pointer-events-none absolute -bottom-10 -right-10 h-44 w-44 text-white/[0.06]" viewBox="0 0 100 100" aria-hidden="true">
+        {/* C. main daily check-in: the hero */}
+        <section aria-labelledby="checkin-title" className="hero-aurora relative isolate overflow-clip rounded-[2rem] px-5 pb-6 pt-7 text-white shadow-lg lg:col-span-2 lg:p-7">
+          <span className="aurora-blob aurora-a" aria-hidden="true" />
+          <span className="aurora-blob aurora-b" aria-hidden="true" />
+          <span className="aurora-blob aurora-c" aria-hidden="true" />
+          <svg className="pointer-events-none absolute -right-12 -top-12 h-56 w-56 text-white/[0.06]" viewBox="0 0 100 100" aria-hidden="true">
             <path d="M50 95C20 70 15 35 50 5c35 30 30 65 0 90Z" fill="currentColor" />
           </svg>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#C3ED81]">Daily Check-in</p>
-          <h2 id="checkin-title" className="mt-1 text-2xl font-semibold">
-            วันนี้คุณรู้สึกอย่างไร?
-          </h2>
-          <p className="mb-4 mt-1 text-base text-white/85">เล่าสั้นๆ เรื่องการนอน อาหาร อารมณ์ หรืออาการ ระบบช่วยแยกหมวด แล้วคุณตรวจก่อนบันทึก</p>
-          <div>
+          <div className="relative text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#C3ED81]">Daily Check-in</p>
+            <h2 id="checkin-title" className="mt-1 text-[2.25rem] font-semibold leading-[1.15] tracking-tight">
+              วันนี้คุณรู้สึกอย่างไร?
+            </h2>
+            <p className="mx-auto mb-6 mt-2 max-w-[24rem] text-lg text-white/80">เล่าเรื่องการนอน อาหาร อารมณ์ หรืออาการ ระบบช่วยแยกหมวด แล้วคุณตรวจก่อนบันทึก</p>
             <VoiceEntryButton
+              look="orb"
               label="กดพูด บันทึกสุขภาพ"
               onTranscript={startDraft}
               onFallback={(problem) => {
@@ -96,16 +103,53 @@ export const YaiHomePage: React.FC = () => {
                 navigate('/yai/journal/process?mode=text');
               }}
             />
+
+            <p className="mt-6 font-semibold text-white/85">หรือแตะความรู้สึกตอนนี้</p>
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {FEELINGS.map((f) => {
+                const on = todayFeelings.includes(f.tag);
+                return (
+                  <button
+                    key={f.tag}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => yaiStore.setFeelings(on ? todayFeelings.filter((t) => t !== f.tag) : [...todayFeelings, f.tag])}
+                    className={`flex min-h-[64px] items-center justify-center gap-2 rounded-2xl text-lg font-semibold ring-1 backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 ${
+                      on ? 'bg-[#C3ED81] text-[#0B1F1B] ring-[#C3ED81]' : 'bg-white/10 ring-white/15 hover:bg-white/20'
+                    }`}
+                  >
+                    <span aria-hidden="true">{f.emoji}</span>
+                    {f.label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-2 min-h-[1.5rem] text-sm text-white/75" aria-live="polite">
+              {todayFeelings.length ? `บันทึกแล้ว: ${todayFeelings.map((t) => FEELING_LABEL[t]).join(' ')} · แตะอีกครั้งเพื่อเอาออก` : 'แตะได้หลายข้อ บันทึกทันที'}
+            </p>
+
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-1">
+              <Link to="/yai/checkin" className="inline-flex min-h-[48px] items-center gap-2 font-semibold text-white/90 underline decoration-white/40 underline-offset-4">
+                <SlidersHorizontal className="h-5 w-5" aria-hidden="true" /> แตะเช็กอิน
+              </Link>
+              <Link to="/yai/journal/process?mode=text" className="inline-flex min-h-[48px] items-center gap-2 font-semibold text-white/90 underline decoration-white/40 underline-offset-4">
+                <Keyboard className="h-5 w-5" aria-hidden="true" /> พิมพ์เอง
+              </Link>
+            </div>
+
+            <details className="mt-2 text-left text-sm text-white/75">
+              <summary className="min-h-[44px] cursor-pointer py-2 text-center">เสียงของฉันไปที่ไหน และวัดอะไรบ้าง</summary>
+              <p>เบราว์เซอร์จะแปลงเสียงเป็นข้อความ (อาจส่งเสียงไปยังบริการของเบราว์เซอร์) แล้วให้ตรวจก่อนบันทึกทุกครั้ง</p>
+              <label className="mt-3 flex items-start gap-3">
+                <input type="checkbox" className="mt-0.5 h-5 w-5 shrink-0 accent-[#C3ED81]" checked={!!state.settings.voiceMeasures} onChange={(e) => yaiStore.setVoiceMeasures(e.target.checked)} />
+                <span>
+                  ฟังลักษณะเสียงในเครื่องนี้ (ความเร็ว ช่วงหยุด ระดับเสียง ความดัง) แล้วเทียบกับเสียงปกติของฉันเมื่อครบ 10 ครั้ง (ทดลอง)
+                  <span className="block text-xs text-white/60">เก็บเป็นตัวเลขเท่านั้น ไม่เก็บไฟล์เสียง แอปไม่ทายอารมณ์จากเสียง ถ้าเสียงต่างจากปกติจะถามให้คุณเลือกความรู้สึกเอง ปิดได้ทุกเมื่อ</span>
+                </span>
+              </label>
+              <p className="mt-2 text-xs text-white/60">ข้อมูลจากนาฬิกา/มือถือ: เชื่อมได้ในโปรไฟล์ (ต้นแบบใช้ข้อมูลจำลอง)</p>
+            </details>
           </div>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <Link to="/yai/checkin" className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl bg-white/10 text-base font-semibold backdrop-blur hover:bg-white/20">
-              <SlidersHorizontal className="h-5 w-5" aria-hidden="true" /> แตะเช็กอิน
-            </Link>
-            <Link to="/yai/journal/process?mode=text" className="flex min-h-[52px] items-center justify-center gap-2 rounded-2xl bg-white/10 text-base font-semibold backdrop-blur hover:bg-white/20">
-              <Keyboard className="h-5 w-5" aria-hidden="true" /> พิมพ์เอง
-            </Link>
-          </div>
-          <p className="mt-3 text-xs text-white/70">ข้อมูลจากนาฬิกา/มือถือ: เชื่อมได้ในโปรไฟล์ (ต้นแบบใช้ข้อมูลจำลอง)</p>
         </section>
 
         {/* B. daily overview */}
