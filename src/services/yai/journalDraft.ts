@@ -1,5 +1,6 @@
 import type { JournalInputSource, JournalPhotoTag } from '../../domain/yai/journal';
 import type { VoiceProblem } from './thaiVoiceJournal';
+import type { VoiceMeasures } from '../../domain/yai/models';
 
 // The journal entry being written, handed from the home screen to /yai/journal/process and /yai/journal/review.
 // Kept in sessionStorage only: a draft is not a record, it never counts on the calendar until the patient confirms.
@@ -15,6 +16,8 @@ export interface JournalDraft {
   /** the text came from the labelled demo sentence, not from the patient */
   isSyntheticSample?: boolean;
   voiceProblem?: VoiceProblem;
+  /** voice numbers measured on the device while speaking (only when the user turned measures on) */
+  voice?: VoiceMeasures;
 }
 
 const KEY = 'yai-journal-draft';

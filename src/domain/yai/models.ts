@@ -248,7 +248,10 @@ export type AuditAction =
   | 'HERB_DATA_READ_DENIED'
   | 'RESEARCH_CONSENT_CHANGED'
   | 'RESEARCH_DATA_READ'
-  | 'QUIZ_COMPLETED';
+  | 'QUIZ_COMPLETED'
+  | 'FEELINGS_SAVED'
+  | 'VOICE_MEASURES_CHANGED'
+  | 'VOICE_SAMPLE_SAVED';
 export interface AuditEvent {
   id: string;
   at: string;
@@ -264,6 +267,8 @@ export type InteractionVerdict =
   | 'INSUFFICIENT_INFORMATION';
 
 export interface YaiSettings {
+  /** measure voice features on this device during voice entries (experimental, off by default) */
+  voiceMeasures?: boolean;
   fontScale: 100 | 125 | 150;
   familyName: string;
   familyPhone: string;
@@ -320,6 +325,8 @@ export interface WellnessCheckin {
   energy?: 1 | 2 | 3 | 4 | 5;
   mood?: 1 | 2 | 3 | 4 | 5;
   activityMinutes?: number;
+  /** how the user says they feel today, picked by the user (never inferred from the voice) */
+  feelings?: FeelingTag[];
   source: 'SELF_REPORTED';
   isSynthetic: boolean;
 }
@@ -370,4 +377,36 @@ export interface YaiState {
   checkins?: WellnessCheckin[];
   habitLogs?: HabitLog[];
   quizResults?: QuizResult[];
+  /** voice feature numbers from voice entries; no audio is kept */
+  voiceSamples?: VoiceSample[];
+}
+
+export type FeelingTag = 'TIRED' | 'REFRESHED' | 'WORRIED' | 'CALM';
+
+/**
+ * Numbers measured on this device while the user spoke. The audio itself is never stored or sent; only these
+ * summaries are kept, and only when the user turned voice measures on.
+ */
+export interface VoiceMeasures {
+  /** total listening time, seconds */
+  durationSec: number;
+  /** time with voice above the room's noise level, seconds */
+  voicedSec: number;
+  /** share of the speaking stretch spent in pauses (0–1) */
+  pauseRatio: number;
+  /** median voice pitch, Hz (null when too few voiced frames) */
+  pitchHz: number | null;
+  /** spread of pitch, semitones (null when too few voiced frames) */
+  pitchSpreadSt: number | null;
+  /** median loudness of voiced frames, dB relative to full scale */
+  loudnessDb: number | null;
+}
+
+export interface VoiceSample extends VoiceMeasures {
+  id: string;
+  date: string;
+  at: string;
+  /** Thai characters recognised per voiced second (null when no transcript) */
+  charsPerSec: number | null;
+  isSynthetic: boolean;
 }

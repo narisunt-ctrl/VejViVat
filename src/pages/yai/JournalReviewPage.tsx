@@ -7,6 +7,9 @@ import { demoNow, useYai, yaiStore } from '../../services/yai/yaiStore';
 import { journalDraft } from '../../services/yai/journalDraft';
 import { suggestSegments } from '../../services/yai/healthTextClassifier';
 import { speakThai, stopSpeaking } from '../../services/yai/thaiVoiceJournal';
+import { FeelingPicker } from '../../components/yai/FeelingPicker';
+import { charsPerSec } from '../../domain/yai/voiceFeatures';
+import type { FeelingTag } from '../../domain/yai/models';
 import { ALL_CATEGORIES, bangkokDate, CATEGORY_LABEL, JournalCategory, PHOTO_TAG_LABEL, SuggestedSegment } from '../../domain/yai/journal';
 
 const CATEGORIES: JournalCategory[] = ALL_CATEGORIES;
@@ -20,6 +23,7 @@ export const JournalReviewPage: React.FC = () => {
   const [segments, setSegments] = useState<SuggestedSegment[]>(() => suggestSegments(draft?.originalText ?? ''));
   const [editing, setEditing] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [feelings, setFeelings] = useState<FeelingTag[]>([]);
 
   useEffect(() => () => stopSpeaking(), []);
 
@@ -72,6 +76,8 @@ export const JournalReviewPage: React.FC = () => {
       patientSaidComplete,
       isSynthetic: !!draft.isSyntheticSample,
     });
+    if (feelings.length) yaiStore.setFeelings(feelings);
+    if (draft.voice) yaiStore.addVoiceSample(draft.voice, charsPerSec(draft.originalText, draft.voice.voicedSec));
     journalDraft.clear();
     navigate(`/yai/journal/history?date=${bangkokDate(draft.capturedAt)}&saved=1`);
   };
@@ -181,6 +187,12 @@ export const JournalReviewPage: React.FC = () => {
         >
           <Plus className="h-5 w-5" aria-hidden="true" /> เพิ่มเรื่องที่ยังขาด
         </button>
+      </Card>
+
+      <Card className="space-y-2">
+        <FeelingPicker look="light" value={feelings} onChange={setFeelings} />
+        <p className="text-sm text-yai-ink/70">หนูถามแทนการเดาจากน้ำเสียง สิ่งที่เลือกจะบันทึกเป็นความรู้สึกที่บอกเอง</p>
+        {draft.voice && <p className="text-sm text-yai-ink/70">วัดลักษณะเสียงในเครื่องแล้ว (ทดลอง): ความเร็ว ช่วงหยุด ระดับและความดังของเสียง เก็บเป็นตัวเลขเท่านั้น ไม่เก็บไฟล์เสียง</p>}
       </Card>
 
       <div className="space-y-2">

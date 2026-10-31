@@ -10,6 +10,9 @@ import {
   Friend,
   HabitLog,
   QuizResult,
+  FeelingTag,
+  VoiceMeasures,
+  VoiceSample,
   HerbReview,
   Measurement,
   MedicationPassport,
@@ -453,6 +456,32 @@ export const yaiStore = {
     const row: QuizResult = { ...r, id: uid('quiz'), date: bangkokDate(at), at, isSynthetic: false };
     set(audit({ ...state, quizResults: [row, ...(state.quizResults ?? [])].slice(0, 200) }, 'QUIZ_COMPLETED', `${r.level}:${r.correct}/${r.total}`));
     return row.id;
+  },
+
+  /** Feelings the user picked for today; merged into today's check-in. Never set from the voice. */
+  setFeelings(feelings: FeelingTag[]) {
+    const at = demoNow().toISOString();
+    const date = bangkokDate(at);
+    const existing = (state.checkins ?? []).find((c) => c.date === date);
+    const row: WellnessCheckin = { ...(existing ?? {}), feelings: [...new Set(feelings)], id: existing?.id ?? uid('checkin'), date, at, source: 'SELF_REPORTED', isSynthetic: false };
+    set(audit({ ...state, checkins: [row, ...(state.checkins ?? []).filter((c) => c.date !== date)] }, 'FEELINGS_SAVED', feelings.join(',') || 'none'));
+  },
+
+  /** Turn on-device voice measures on or off (experimental; off by default) */
+  setVoiceMeasures(on: boolean) {
+    set(audit({ ...state, settings: { ...state.settings, voiceMeasures: on } }, 'VOICE_MEASURES_CHANGED', on ? 'on' : 'off'));
+  },
+
+  /** Keep the numbers from one voice entry; only while voice measures are on */
+  addVoiceSample(v: VoiceMeasures, charsPerSec: number | null) {
+    if (!state.settings.voiceMeasures || v.voicedSec < 2) return;
+    const at = demoNow().toISOString();
+    const row: VoiceSample = { ...v, charsPerSec, id: uid('voice'), date: bangkokDate(at), at, isSynthetic: false };
+    set(audit({ ...state, voiceSamples: [row, ...(state.voiceSamples ?? [])].slice(0, 365) }, 'VOICE_SAMPLE_SAVED', row.date));
+  },
+
+  clearVoiceSamples() {
+    set(audit({ ...state, voiceSamples: [] }, 'VOICE_MEASURES_CHANGED', 'cleared'));
   },
 
   setGoals(goals: string[]) {

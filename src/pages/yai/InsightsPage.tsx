@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Toolt
 import { History, Table2, BarChart3, HeartPulse } from 'lucide-react';
 import { demoNow, useYai } from '../../services/yai/yaiStore';
 import { LxCard, LxLinkRow, LxNotice, LxPageHeader, SourceTag } from '../../components/yai/lx/ui';
+import { FeelingsVoiceCard } from '../../components/yai/lx/FeelingsVoiceCard';
 import { useLxColors } from '../../components/yai/lx/useLxColors';
 import { weekdayShort } from '../../components/yai/lx/WellnessCards';
 import { bangkokDate, thaiDateLabel } from '../../domain/yai/journal';
@@ -150,6 +151,8 @@ export const InsightsPage: React.FC = () => {
         {order.map((m) => (
           <MetricChart key={m} metric={m} days={days} asTable={asTable} />
         ))}
+
+        <FeelingsVoiceCard days={days} />
 
         <LxCard as="article" labelledBy="obs-title">
           <h2 id="obs-title" className="text-lg font-semibold">

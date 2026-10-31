@@ -118,7 +118,7 @@ export const JournalProcessPage: React.FC = () => {
           <p className="text-sm text-yai-ink/70">ข้อความนี้มาจากเสียงที่เบราว์เซอร์แปลงได้จริง ถ้าไม่ตรง แก้ได้ในขั้นต่อไป</p>
           <VoiceEntryButton
             label="พูดใหม่"
-            onTranscript={(t) => update({ originalText: t, inputSource: 'VOICE_TRANSCRIPT', capturedAt: demoNow().toISOString(), isSyntheticSample: false })}
+            onTranscript={(t, voice) => update({ originalText: t, inputSource: 'VOICE_TRANSCRIPT', capturedAt: demoNow().toISOString(), isSyntheticSample: false, voice })}
             onFallback={(p) => update({ voiceProblem: p })}
           />
         </Card>
