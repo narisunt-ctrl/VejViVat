@@ -66,13 +66,17 @@ describe('daily journal (J01–J06)', () => {
   });
 
   it('J04: two confirmed entries on one local date are 2 entries but 1 recorded day', () => {
+    // the demo data is dated relative to today, so count against what is already there
+    const before = yaiStore.getState().journal ?? [];
+    const daysBefore = recordedDaysInMonth(before, '2026-11');
+    const onDayBefore = before.filter((e) => e.recordedLocalDate === '2026-11-05').length;
     yaiStore.saveJournalEntry({ originalText: 'a', reviewedText: 'a', inputSource: 'MANUAL_TEXT', capturedAt: '2026-11-05T01:00:00Z', segments: [], photoIds: [] });
     yaiStore.saveJournalEntry({ originalText: 'b', reviewedText: 'b', inputSource: 'VOICE_TRANSCRIPT', capturedAt: '2026-11-05T10:00:00Z', segments: [], photoIds: [] });
     const journal = yaiStore.getState().journal ?? [];
-    expect(journal.filter((e) => e.recordedLocalDate === '2026-11-05')).toHaveLength(2);
-    expect(recordedDaysInMonth(journal, '2026-11')).toBe(1);
+    expect(journal.filter((e) => e.recordedLocalDate === '2026-11-05')).toHaveLength(onDayBefore + 2);
+    expect(recordedDaysInMonth(journal, '2026-11')).toBe(daysBefore + (onDayBefore ? 0 : 1));
     const cell = buildMonthGrid('2026-11', journal, '2026-11-30').find((c) => c.date === '2026-11-05');
-    expect(cell?.count).toBe(2);
+    expect(cell?.count).toBe(onDayBefore + 2);
   });
 
   it('J05: the local date is Asia/Bangkok, not the UTC date', () => {
