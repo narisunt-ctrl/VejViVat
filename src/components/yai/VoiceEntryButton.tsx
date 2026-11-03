@@ -80,7 +80,7 @@ export const VoiceEntryButton: React.FC<{
   if (look === 'orb')
     return (
       <div className="space-y-4">
-        <div className="relative mx-auto flex h-48 w-48 items-center justify-center">
+        <div className="relative mx-auto flex h-44 w-44 items-center justify-center">
           <span className={`mic-ring ${listening ? 'mic-ring-live' : ''}`} aria-hidden="true" />
           <span className={`mic-ring mic-ring-2 ${listening ? 'mic-ring-live' : ''}`} aria-hidden="true" />
           <span className={`mic-ring mic-ring-3 ${listening ? 'mic-ring-live' : ''}`} aria-hidden="true" />
@@ -89,11 +89,11 @@ export const VoiceEntryButton: React.FC<{
             onClick={() => (listening ? session.current?.stop() : start())}
             aria-pressed={listening}
             aria-label={listening ? 'เล่าจบแล้ว หยุดฟัง' : label}
-            className={`relative flex h-36 w-36 flex-col items-center justify-center rounded-full text-[#0B1F1B] shadow-[0_18px_50px_-12px_rgb(0_0_0/0.55)] transition duration-300 hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/70 active:scale-95 ${
+            className={`relative flex h-32 w-32 flex-col items-center justify-center rounded-full text-[#0B1F1B] shadow-[0_18px_50px_-12px_rgb(0_0_0/0.55)] transition duration-300 hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/70 active:scale-95 ${
               listening ? 'bg-white' : 'bg-gradient-to-br from-[#D6F6A0] to-[#A0DE6E]'
             }`}
           >
-            {listening ? <Square className="h-12 w-12 fill-current" aria-hidden="true" /> : <Mic className="h-14 w-14" aria-hidden="true" />}
+            {listening ? <Square className="h-12 w-12 fill-current" aria-hidden="true" /> : <Mic className="h-12 w-12" aria-hidden="true" />}
             <span className="mt-1 text-base font-bold">{listening ? 'เล่าจบแล้ว' : 'กดพูด'}</span>
           </button>
         </div>

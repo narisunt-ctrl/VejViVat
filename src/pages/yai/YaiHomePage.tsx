@@ -12,7 +12,7 @@ import { canRead } from '../../domain/yai/policies';
 import { journalDraft } from '../../services/yai/journalDraft';
 import type { VoiceMeasures } from '../../domain/yai/models';
 import { useClinicianOrderSync } from '../../services/yai/useOrderSync';
-import { thaiDateLabel, bangkokDate } from '../../domain/yai/journal';
+import { bangkokDate } from '../../domain/yai/journal';
 import yaiLogo from '../../assets/yai/yai-logo.webp';
 
 // Longevity Home Dashboard: today's self-reported wellness, one-tap voice check-in, 7-day trends, goals,
@@ -49,7 +49,7 @@ export const YaiHomePage: React.FC = () => {
           <img src={yaiLogo} alt="" className="h-11 w-11 rounded-2xl object-cover object-top lg:hidden" />
           <p className="min-w-0 flex-1 text-sm text-lx-muted">
             <span className="block font-semibold text-lx-ink lg:hidden">ยายพร้อม</span>
-            {thaiDateLabel(bangkokDate(now))}
+            {now.toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', weekday: 'long', day: 'numeric', month: 'short' }).replace(/^วัน/, '')}
           </p>
           <Link
             to="/yai/consult"
@@ -63,25 +63,18 @@ export const YaiHomePage: React.FC = () => {
             {state.settings.persona === 'PROFESSIONAL' ? '🧑' : '👵'}
           </Link>
         </div>
-        <h1 className="pt-2 text-2xl font-semibold leading-tight lg:text-3xl">
+        <h1 className="sr-only lg:not-sr-only lg:block lg:pt-2 lg:text-3xl lg:font-semibold lg:leading-tight">
           {greetingWord(hour)}, {name}
         </h1>
-        <p className="text-sm text-lx-muted">Live Better, Longer — ภูมิปัญญาไทยกับการดูแลที่เป็นของคุณ</p>
+        <p className="hidden text-sm text-lx-muted lg:block">Live Better, Longer — ภูมิปัญญาไทยกับการดูแลที่เป็นของคุณ</p>
       </header>
 
-      {!state.settings.onboarded && (
-        <LxNotice title="ใช้ครั้งแรกใช่ไหม?">
-          <Link to="/yai/onboarding" className="font-semibold text-lx-link underline">
-            ตั้งค่าแบบง่าย 1 นาที
-          </Link>
-        </LxNotice>
-      )}
       <DoctorMessagesCard />
       {latestNotice && <LxNotice title="แจ้งจากคลินิก (ข้อมูลจำลองภายในแอป)">{latestNotice.text}</LxNotice>}
 
       <div className="grid gap-4 lg:grid-cols-5 lg:gap-6">
         {/* C. main daily check-in: the hero */}
-        <section aria-labelledby="checkin-title" className="hero-aurora relative isolate overflow-clip rounded-[2rem] px-5 pb-6 pt-7 text-white shadow-lg lg:col-span-2 lg:p-7">
+        <section aria-labelledby="checkin-title" className="hero-aurora relative isolate overflow-clip rounded-[2rem] px-5 pb-6 pt-5 text-white shadow-lg lg:col-span-2 lg:p-7">
           <span className="aurora-blob aurora-a" aria-hidden="true" />
           <span className="aurora-blob aurora-b" aria-hidden="true" />
           <span className="aurora-blob aurora-c" aria-hidden="true" />
@@ -89,11 +82,14 @@ export const YaiHomePage: React.FC = () => {
             <path d="M50 95C20 70 15 35 50 5c35 30 30 65 0 90Z" fill="currentColor" />
           </svg>
           <div className="relative text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#C3ED81]">Daily Check-in</p>
-            <h2 id="checkin-title" className="mt-1 text-[2.25rem] font-semibold leading-[1.15] tracking-tight">
+            <p className="hidden text-sm font-semibold uppercase tracking-[0.14em] text-[#C3ED81] lg:block">Daily Check-in</p>
+            <p className="text-lg text-white/75 lg:hidden" aria-hidden="true">
+              {greetingWord(hour)} {name}
+            </p>
+            <h2 id="checkin-title" className="text-[2.25rem] lg:mt-1 font-semibold leading-[1.15] tracking-tight">
               วันนี้คุณรู้สึกอย่างไร?
             </h2>
-            <p className="mx-auto mb-6 mt-2 max-w-[24rem] text-lg text-white/80">เล่าเรื่องการนอน อาหาร อารมณ์ หรืออาการ ระบบช่วยแยกหมวด แล้วคุณตรวจก่อนบันทึก</p>
+            <p className="mx-auto mb-3 mt-2 max-w-[24rem] text-lg text-white/80">เล่าเรื่องนอน กิน อารมณ์ หรืออาการ ระบบช่วยแยกหมวด แล้วคุณตรวจก่อนบันทึก</p>
             <VoiceEntryButton
               look="orb"
               label="กดพูด บันทึกสุขภาพ"
@@ -104,8 +100,8 @@ export const YaiHomePage: React.FC = () => {
               }}
             />
 
-            <p className="mt-6 font-semibold text-white/85">หรือแตะความรู้สึกตอนนี้</p>
-            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <p className="mt-3 font-semibold text-white/85">หรือแตะความรู้สึกตอนนี้</p>
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2">
               {FEELINGS.map((f) => {
                 const on = todayFeelings.includes(f.tag);
                 return (
@@ -144,16 +140,23 @@ export const YaiHomePage: React.FC = () => {
                 <input type="checkbox" className="mt-0.5 h-5 w-5 shrink-0 accent-[#C3ED81]" checked={!!state.settings.voiceMeasures} onChange={(e) => yaiStore.setVoiceMeasures(e.target.checked)} />
                 <span>
                   ฟังลักษณะเสียงในเครื่องนี้ (ความเร็ว ช่วงหยุด ระดับเสียง ความดัง) แล้วเทียบกับเสียงปกติของฉันเมื่อครบ 10 ครั้ง (ทดลอง)
-                  <span className="block text-xs text-white/60">เก็บเป็นตัวเลขเท่านั้น ไม่เก็บไฟล์เสียง แอปไม่ทายอารมณ์จากเสียง ถ้าเสียงต่างจากปกติจะถามให้คุณเลือกความรู้สึกเอง ปิดได้ทุกเมื่อ</span>
+                  <span className="block text-sm text-white/60">เก็บเป็นตัวเลขเท่านั้น ไม่เก็บไฟล์เสียง แอปไม่ทายอารมณ์จากเสียง ถ้าเสียงต่างจากปกติจะถามให้คุณเลือกความรู้สึกเอง ปิดได้ทุกเมื่อ</span>
                 </span>
               </label>
-              <p className="mt-2 text-xs text-white/60">ข้อมูลจากนาฬิกา/มือถือ: เชื่อมได้ในโปรไฟล์ (ต้นแบบใช้ข้อมูลจำลอง)</p>
+              <p className="mt-2 text-sm text-white/60">ข้อมูลจากนาฬิกา/มือถือ: เชื่อมได้ในโปรไฟล์ (ต้นแบบใช้ข้อมูลจำลอง)</p>
             </details>
           </div>
         </section>
 
         {/* B. daily overview */}
         <div className="space-y-4 lg:col-span-3">
+          {!state.settings.onboarded && (
+            <LxNotice title="ใช้ครั้งแรกใช่ไหม?">
+              <Link to="/yai/onboarding" className="font-semibold text-lx-link underline">
+                ตั้งค่าแบบง่าย 1 นาที
+              </Link>
+            </LxNotice>
+          )}
           <WellnessOverview />
           <StepsCard />
           <DailyWisdom />
@@ -174,9 +177,9 @@ export const YaiHomePage: React.FC = () => {
       {/* G. CareBridge */}
       <CareBridgeCard />
 
-      <p className="pb-2 text-center text-xs text-lx-muted">
+      <p className="pb-2 text-center text-sm text-lx-muted">
         ต้นแบบเพื่อการสาธิต ข้อมูลจำลองติดป้ายไว้ · ไม่ใช่การวินิจฉัยหรือสั่งยา ·{' '}
-        <Link to="/" className="underline">
+        <Link to="/" className="inline-flex min-h-[44px] items-center underline">
           สำหรับบุคลากร
         </Link>
       </p>

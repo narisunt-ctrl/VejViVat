@@ -19,7 +19,7 @@ export const LxCard: React.FC<{ children: React.ReactNode; className?: string; a
 export const LxSectionHeader: React.FC<{ id?: string; title: string; eyebrow?: string; action?: { to: string; label: string } }> = ({ id, title, eyebrow, action }) => (
   <div className="mb-3 flex items-end justify-between gap-3">
     <div className="min-w-0">
-      {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.14em] text-lx-accent">{eyebrow}</p>}
+      {eyebrow && <p className="text-sm font-semibold uppercase tracking-[0.14em] text-lx-accent">{eyebrow}</p>}
       <h2 id={id} className="text-xl font-semibold leading-snug">
         {title}
       </h2>
@@ -41,7 +41,7 @@ export const LxPageHeader: React.FC<{ title: string; subtitle?: string; back?: s
     )}
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
-        {eyebrow && <p className="text-xs font-semibold uppercase tracking-[0.14em] text-lx-accent">{eyebrow}</p>}
+        {eyebrow && <p className="text-sm font-semibold uppercase tracking-[0.14em] text-lx-accent">{eyebrow}</p>}
         <h1 className="text-[1.75rem] font-semibold leading-tight">{title}</h1>
         {subtitle && <p className="mt-1 text-base text-lx-muted">{subtitle}</p>}
       </div>
@@ -68,7 +68,7 @@ const SOURCE_TEXT: Record<SourceKind, string> = {
 
 /** Small provenance tag: where a number came from */
 export const SourceTag: React.FC<{ kind: SourceKind; text?: string }> = ({ kind, text }) => (
-  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${SOURCE_STYLE[kind]}`}>{text ?? SOURCE_TEXT[kind]}</span>
+  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-sm font-semibold ${SOURCE_STYLE[kind]}`}>{text ?? SOURCE_TEXT[kind]}</span>
 );
 
 export const ProgressBar: React.FC<{ value: number; max: number; label: string }> = ({ value, max, label }) => (

@@ -90,7 +90,7 @@ export const MiniTrend: React.FC<{ metric: MetricId }> = ({ metric }) => {
     <Link to={`/yai/insights?metric=${metric}`} className="block rounded-2xl bg-lx-surface2 p-3 transition hover:ring-2 hover:ring-lx-accent/40">
       <span className="flex items-center justify-between gap-2">
         <span className="text-sm font-semibold">{def.label}</span>
-        <span className="text-xs text-lx-muted">
+        <span className="text-sm text-lx-muted">
           {recorded.length}/7 วัน
         </span>
       </span>
@@ -132,7 +132,7 @@ export const WeeklyTrends: React.FC = () => (
         <MiniTrend key={m} metric={m} />
       ))}
     </div>
-    <p className="mt-3 text-xs text-lx-muted">ข้อมูลที่คุณบอกเอง (Self-Reported) ใช้ติดตามตัวเอง ไม่ใช่ผลตรวจทางการแพทย์ · ช่องว่าง = วันที่ไม่ได้บันทึก</p>
+    <p className="mt-3 text-sm text-lx-muted">ข้อมูลที่คุณบอกเอง (Self-Reported) ใช้ติดตามตัวเอง ไม่ใช่ผลตรวจทางการแพทย์ · ช่องว่าง = วันที่ไม่ได้บันทึก</p>
   </LxCard>
 );
 
@@ -156,7 +156,7 @@ export const JourneyCard: React.FC = () => {
                 </span>
               </div>
               <ProgressBar value={g.done} max={g.target} label={`${g.goal.title} ${g.done} จาก ${g.target}`} />
-              <p className="mt-1 text-xs text-lx-muted">{progressWords(g.done, g.target)}</p>
+              <p className="mt-1 text-sm text-lx-muted">{progressWords(g.done, g.target)}</p>
             </li>
           ))}
         </ul>
@@ -176,7 +176,7 @@ export const DiscoverCard: React.FC = () => {
       </svg>
       <LxSectionHeader id="discover-title" eyebrow="Discover Thai Wellness" title="ค้นพบภูมิปัญญาไทย เพื่อสุขภาพระยะยาว" />
       <Link to={`/yai/discover/${herb.id}`} className="block rounded-2xl bg-lx-surface2 p-4 transition hover:ring-2 hover:ring-lx-accent/40">
-        <p className="text-xs font-semibold text-lx-muted">ความรู้วันนี้</p>
+        <p className="text-sm font-semibold text-lx-muted">ความรู้วันนี้</p>
         <p className="mt-1 text-lg font-semibold">{herb.thaiName}</p>
         <p className="text-sm italic text-lx-muted">{herb.scientificName}</p>
         <div className="mt-2 flex flex-wrap gap-1">
@@ -231,9 +231,9 @@ export const DailyWisdom: React.FC = () => {
         {holy ? '☸' : <Sun className="h-5 w-5" />}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold text-lx-muted">{holy ? g.occasion!.title : g.title}</p>
+        <p className="text-sm font-semibold text-lx-muted">{holy ? g.occasion!.title : g.title}</p>
         <p className="text-base leading-snug">{g.quote}</p>
-        {g.occasion?.approximate && <p className="text-xs text-lx-muted">วันพระคำนวณจากข้างขึ้นข้างแรม อาจคลาดเคลื่อน 1 วัน</p>}
+        {g.occasion?.approximate && <p className="text-sm text-lx-muted">วันพระคำนวณจากข้างขึ้นข้างแรม อาจคลาดเคลื่อน 1 วัน</p>}
       </div>
       <button
         type="button"
@@ -290,7 +290,7 @@ export const StepsCard: React.FC = () => {
         <span className="mt-1.5 block">
           <ProgressBar value={t.value ?? 0} max={goal} label={`ก้าววันนี้ ${t.value ?? 0} จากเป้า ${goal}`} />
         </span>
-        <span className="mt-1 block text-xs text-lx-muted">สัปดาห์นี้ถึงเป้า {week.goalDays} วัน · ชวนเพื่อนเดิน</span>
+        <span className="mt-1 block text-sm text-lx-muted">สัปดาห์นี้ถึงเป้า {week.goalDays} วัน · ชวนเพื่อนเดิน</span>
       </span>
     </Link>
   );
