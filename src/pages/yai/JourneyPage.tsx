@@ -150,6 +150,7 @@ export const JourneyPage: React.FC = () => {
             <LxLinkRow to="/yai/steps" icon={Footprints} title="กิจกรรมก้าวเดิน" sub="เป้าก้าวต่อวัน กราฟ 7 วัน ชวนเพื่อนเดิน" />
             <LxLinkRow to="/yai/exercise" icon={Dumbbell} title="ท่าออกกำลังกายเบาๆ" sub="ลุก-นั่ง ยืดเหยียด เดิน หายใจ" />
             <LxLinkRow to="/yai/herb-quiz" icon={Gamepad2} title="เกมทายสมุนไพร" sub="ฝึกสมองเพลิน ๆ วันละรอบ" />
+            <LxLinkRow to="/yai/adventure" icon={Gamepad2} title="ยายพร้อม ตะลุยเก็บสมุนไพร" sub="เกมผจญภัย วิ่ง กระโดด เก็บสมุนไพรไทย 5 ดินแดน" />
             <LxLinkRow to="/yai/leaderboard" icon={Trophy} title="แต้มกับเพื่อน" sub="กำลังใจจากกลุ่มเพื่อน (เห็นแค่แต้ม)" />
           </div>
         </div>
