@@ -35,11 +35,12 @@ const daysAgoIso = (now: Date, d: number, hour = 9) => {
 function professionalCheckins(now: Date): WellnessCheckin[] {
   const rows: WellnessCheckin[] = [];
   for (let d = 21; d >= 1; d--) {
-    if (d === 9 || d === 16) continue;
     const at = daysAgoIso(now, d, 7);
     const date = bangkokDate(at);
     const dow = new Date(`${date}T12:00:00+07:00`).getUTCDay();
     const weekend = dow === 0 || dow === 6;
+    // two unrecorded days, always weekdays, so every day of the week keeps 6 long-sleep weekend days
+    if ((d === 9 || d === 16) && !weekend) continue;
     const k = d % 3;
     const sleepHours = weekend ? [7.5, 8, 7][k] : [5.5, 6, 6.5][k];
     rows.push({

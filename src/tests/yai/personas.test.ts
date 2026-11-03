@@ -36,6 +36,14 @@ describe('demo personas', () => {
     expect(board.find((r) => r.isMe)!.avatar).toBe('🧑');
     expect(board.length).toBe(4);
   });
+
+  it('keeps the sleep–energy observation on every day of the week', () => {
+    for (let i = 0; i < 7; i++) {
+      const now = new Date(Date.UTC(2026, 10, 3 + i, 5));
+      const s = createProfessionalSeedState(now);
+      expect(sleepEnergyObservation(s, bangkokDate(now)), now.toISOString()).not.toBeNull();
+    }
+  });
 });
 
 describe('switching persona in the store', () => {
