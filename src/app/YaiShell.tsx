@@ -16,7 +16,7 @@ const NAV = [
 // Screens built on the Premium Longevity design system (dark or light by the user's choice). Every other screen
 // (medicines, OCR, reminders, journal, clinics...) keeps its existing light layout, so the shell switches to the
 // light theme there instead of restyling clinical screens.
-const LX_PREFIXES = ['/yai/insights', '/yai/discover', '/yai/journey', '/yai/profile', '/yai/checkin', '/yai/consult', '/yai/care', '/yai/steps', '/yai/privacy', '/yai/food', '/yai/herb-sharing', '/yai/herb-quiz'];
+const LX_PREFIXES = ['/yai/insights', '/yai/discover', '/yai/journey', '/yai/profile', '/yai/checkin', '/yai/consult', '/yai/care', '/yai/steps', '/yai/privacy', '/yai/food', '/yai/herb-sharing', '/yai/herb-quiz', '/yai/adventure'];
 const isLxPath = (p: string) => p === '/yai' || p === '/yai/' || LX_PREFIXES.some((x) => p === x || p.startsWith(`${x}/`));
 
 /** Patient app chrome: no clinician sidebar or case state, larger type, bottom navigation (side rail on desktop). */
@@ -26,6 +26,8 @@ export const YaiShell: React.FC = () => {
   const persona = useYai((s) => s.settings.persona ?? 'RETIREE');
   const location = useLocation();
   const lx = isLxPath(location.pathname);
+  // the adventure game takes the full width and hides the bottom bar so it never covers the game's controls
+  const game = location.pathname === '/yai/adventure';
   const theme = lx ? userTheme : 'light';
 
   // Tailwind sizes are rem-based, so scaling the root font scales the whole patient app
@@ -103,13 +105,13 @@ export const YaiShell: React.FC = () => {
           </header>
         )}
 
-        <main id="yai-main" className={`mx-auto w-full px-4 pb-32 pt-4 sm:px-6 lg:pb-12 lg:pt-8 ${lx ? 'max-w-xl md:max-w-3xl lg:max-w-6xl' : 'max-w-xl'}`}>
+        <main id="yai-main" className={`mx-auto w-full px-4 pb-32 pt-4 sm:px-6 lg:pb-12 lg:pt-8 ${game ? 'max-w-6xl !pb-6' : lx ? 'max-w-xl md:max-w-3xl lg:max-w-6xl' : 'max-w-xl'}`}>
           <Outlet />
         </main>
       </div>
 
       {/* mobile / tablet bottom navigation */}
-      <nav aria-label="เมนูหลัก" className="fixed bottom-0 left-0 right-0 z-30 border-t border-lx-line bg-lx-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+      {!game && <nav aria-label="เมนูหลัก" className="fixed bottom-0 left-0 right-0 z-30 border-t border-lx-line bg-lx-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
         <ul className="mx-auto grid max-w-3xl grid-cols-5">
           {NAV.map((item) => (
             <li key={item.to}>
@@ -132,7 +134,7 @@ export const YaiShell: React.FC = () => {
             </li>
           ))}
         </ul>
-      </nav>
+      </nav>}
     </div>
   );
 };

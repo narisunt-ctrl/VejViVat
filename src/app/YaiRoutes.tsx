@@ -33,6 +33,7 @@ import { JourneyPage } from '../pages/yai/JourneyPage';
 import { ConsultPage } from '../pages/yai/ConsultPage';
 import { CarePage } from '../pages/yai/CarePage';
 import { StepsPage } from '../pages/yai/StepsPage';
+import { AdventurePage } from '../pages/yai/AdventurePage';
 import { HerbQuizPage } from '../pages/yai/HerbQuizPage';
 import { PrivacyPage } from '../pages/yai/PrivacyPage';
 import { HerbSharingPage } from '../pages/yai/HerbSharingPage';
@@ -81,6 +82,7 @@ const YaiRoutes: React.FC = () => (
       <Route path="care" element={<CarePage />} />
       <Route path="steps" element={<StepsPage />} />
       <Route path="herb-quiz" element={<HerbQuizPage />} />
+      <Route path="adventure" element={<AdventurePage />} />
       <Route path="privacy" element={<PrivacyPage />} />
       <Route path="herb-sharing" element={<HerbSharingPage />} />
       <Route path="profile" element={<ProfilePage />} />

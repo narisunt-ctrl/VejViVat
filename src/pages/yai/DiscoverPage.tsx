@@ -75,6 +75,7 @@ export const DiscoverPage: React.FC = () => {
 
       <div className="grid gap-2 md:grid-cols-2">
         <LxLinkRow to="/yai/herb-quiz" icon={Gamepad2} title="เกมทายสมุนไพร" sub="ฟังคำใบ้ ทายชื่อสมุนไพร เล่นจบได้ 3 แต้ม" />
+        <LxLinkRow to="/yai/adventure" icon={Gamepad2} title="ยายพร้อม ตะลุยเก็บสมุนไพร" sub="เกมผจญภัย วิ่ง กระโดด เก็บสมุนไพรไทย 5 ดินแดน" />
         <LxLinkRow to="/yai/herb-reviews" icon={MessageSquareQuote} title="ประสบการณ์จากผู้ใช้" sub="รีวิวจากเพื่อน ๆ (ประสบการณ์ ไม่ใช่หลักฐาน)" />
         <LxLinkRow to="/yai/clinics" icon={Stethoscope} title="ปรึกษาแพทย์แผนไทย" sub="ค้นหาคลินิกที่มีแพทย์แผนไทยใกล้บ้าน" />
         <LxLinkRow to="/yai/food" icon={Leaf} title="อาหารตามธาตุ" sub="รสอาหารที่กิน เทียบกับธาตุ และเมนูที่เข้ากัน" />
